@@ -23,3 +23,9 @@ demo/v2/from_arun/
 demo/v2/cards/_work/
 demo/v2/darshan-rush-demo.mp4
 demo/v2/edit2/
+
+# local copies of build notes used by running tools
+/NOTES_*.md
+/QA_REPORT.md
+/INFRA_NOTES.md
+app/static/fonts/_unused/

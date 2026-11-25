@@ -6,10 +6,10 @@ Honest status on 25 Nov 2026. "Real" means it runs against the real service or t
 
 | What | How we know |
 |---|---|
-| Kubernetes OOMKill of the booking pod | Kernel kill of a 160Mi pod, restart count and `OOMKilled` seen with kubectl (`metrics/rehearsal1.md`, `NOTES_INTEGRATION.md`). The memory hunger is deliberate (`HEAVY_MB`), so the failure is real but injected |
+| Kubernetes OOMKill of the booking pod | Kernel kill of a 160Mi pod, restart count and `OOMKilled` seen with kubectl (`metrics/rehearsal1.md`, `notes/NOTES_INTEGRATION.md`). The memory hunger is deliberate (`HEAVY_MB`), so the failure is real but injected |
 | Latency and request numbers | Measured by the app's own middleware and the rehearsal script, on a local kind cluster |
 | Booking logic and persistence | Slots, caps, staggered spreading, bookings that survive a restart (801 kept in the rehearsal) |
-| Sarvam speech to text, text to speech, translation, chat, vision | Real calls with recorded latencies (`NOTES_BRAIN.md`, `NOTES_SARVAM.md`, `NOTES_KB.md`); tests mock them |
+| Sarvam speech to text, text to speech, translation, chat, vision | Real calls with recorded latencies (`notes/NOTES_BRAIN.md`, `notes/NOTES_SARVAM.md`, `notes/NOTES_KB.md`); tests mock them |
 | Flagsmith flags, traits, remote config, segments, flip, rollout | Real project 55985; the flip request verified with curl; rollout runs in `metrics/rollout.log`; flag list read from the edge API on 25 Nov 2026 |
 | Crash self-report and incident receiver | Exercised in the live cluster; the outbound crash POST only against a mock |
 

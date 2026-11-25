@@ -308,4 +308,15 @@ Team Phoenix, Festive Hacks 2026 (WeMakeDevs at WeAreDevelopers Conference India
 
 ## Licence
 
-MIT, see `LICENSE`. The current `LICENSE` file names a different project team ("Dukaan Duty team"), so set the copyright holder to LICENCE_HOLDER_NAME before publishing.
+MIT, see `LICENSE`.
+
+## Contributors
+
+Team Phoenix:
+
+| Name | Contact |
+|---|---|
+| Arun Siddardha | [@ArunSiddardha](https://github.com/ArunSiddardha) |
+| Adhvik Mani Sai | adhvik.murarisetty@gmail.com |
+| Devashish Boini | bdevashish957@gmail.com |
+| Savarana Datta | savaranadatta@gmail.com |

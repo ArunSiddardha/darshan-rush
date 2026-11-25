@@ -2,7 +2,7 @@
 
 **A prototype that lets a pilgrim book a darshan slot by speaking in her own language, and keeps working when the whole crowd arrives at once.**
 
-- **Watch the 2-minute film:** https://drive.google.com/file/d/1Q1--7aCu7ZJrTQjNaBVR0S58QlCgF01J/view
+- **Watch the 2-minute film:** https://drive.google.com/file/d/1iCtl5hU7A-w38qRJBh4k7SwM4Ja9yfyP/view
 - **Try it (no login, simulated crowd):** https://sacrifice-brain-troubleshooting-conference.trycloudflare.com (temporary demo link: it runs from one laptop and may be offline) (open on a phone; tap the big button and talk)
 
 > Simulated crowd. Not affiliated with any temple. Not for operational use.
@@ -53,7 +53,7 @@ All open without a login; the live ones run from one laptop through a temporary 
 - Sponsors page (Sarvam, Flagsmith and NudgeBee shown live): https://sacrifice-brain-troubleshooting-conference.trycloudflare.com/sponsors
 - Presenter page (QR code, the chain of steps, cause the rush): https://sacrifice-brain-troubleshooting-conference.trycloudflare.com/judge
 - Recovery graph: https://sacrifice-brain-troubleshooting-conference.trycloudflare.com/graph
-- Demo video: https://drive.google.com/file/d/1Q1--7aCu7ZJrTQjNaBVR0S58QlCgF01J/view
+- Demo video: https://drive.google.com/file/d/1iCtl5hU7A-w38qRJBh4k7SwM4Ja9yfyP/view
 - Repository: https://github.com/ArunSiddardha/darshan-rush
 - Proof of one real end-to-end run (crash lines, NudgeBee approval, Flagsmith before and after): https://github.com/ArunSiddardha/darshan-rush/tree/main/metrics/proof
 - How each sponsor is used, with file paths: https://github.com/ArunSiddardha/darshan-rush#readme

@@ -8,6 +8,7 @@
 - Staff side: live crowd view, incident summary in plain words, approve a fix by voice.
 - Rush recovery: NudgeBee diagnoses the crash and runs an approval workflow; Flagsmith flags switch to a lite map and staggered slots without a redeploy.
 - Measured: same simulated rush, about 3 s and a crash before; 14 ms p95, 0 errors after.
+- Scope: starts with temples and pilgrimages; the same voice-first, rush-ready layer extends to festivals, hospitals, stations, government counters and events, more Indian languages, phone lines, WhatsApp and kiosks. Each venue is a venue pack plus flags, not a new product.
 - Team: Arun Siddardha, Adhvik Mani Sai, Devashish Boini, Savarana Datta.
 
 ## Docs

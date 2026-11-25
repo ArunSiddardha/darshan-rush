@@ -2,6 +2,8 @@
 
 **A prototype that lets a pilgrim book a darshan slot by speaking in her own language, and keeps working when the whole crowd arrives at once.**
 
+It starts with temples, and the scope is much wider: the same voice-first, rush-ready layer fits any crowded public place in India, from pilgrimages and festivals to hospitals, stations and events.
+
 - **Watch the 2-minute film:** https://drive.google.com/file/d/1iCtl5hU7A-w38qRJBh4k7SwM4Ja9yfyP/view
 - **Try it (no login, simulated crowd):** https://sacrifice-brain-troubleshooting-conference.trycloudflare.com (temporary demo link: it runs from one laptop and may be offline) (open on a phone; tap the big button and talk)
 
@@ -20,6 +22,16 @@
 **Which tools does it use?** Sarvam AI (speech to text, translation, text to speech and chat for Indian languages), Flagsmith (feature flags and remote config), NudgeBee (Kubernetes incident investigation and approval workflows), FastAPI and Kubernetes.
 
 **Who is it for?** Temple trusts, devasthanam boards, pilgrimage and festival organisers, and any venue with seasonal queues: crowd management, queue management and multilingual voice help in one layer.
+
+**How big is the scope?** Large. The same layer fits any place in India where a crowd arrives at once and many people cannot use an English app:
+
+- **Temples and pilgrimages:** darshan slots, festival days, annual seasons, yatras and melas.
+- **Other queues:** government hospitals, ration and service counters, railway and bus stations, stadiums, exam centres and large events.
+- **More languages:** Sarvam AI covers many more Indian languages than the six switched on here; adding one is a configuration change.
+- **More channels:** a phone line for feature phones, WhatsApp, and kiosks at the gate, on the same assistant.
+- **More for staff:** real crowd counts from gate scanners and cameras, staffing forecasts, and the same approve-by-voice recovery for every incident type.
+
+Each venue is a new venue pack (map, stops, facilities, policies) and a set of flags, not a new product. That is why we see this as a platform for crowded public places, with temples as the first market.
 
 **Is it in use at a real temple?** No. The crowd is simulated and it is not affiliated with any temple. The crash, the diagnosis and the fix are real.
 

@@ -186,7 +186,7 @@ let liveSess=null;
 const Live={
  supported(){return !!(window.LiveSession&&(window.AudioContext||window.webkitAudioContext)&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)},
  async start(){
-  const s=new LiveSession({endpoint:'/api/live/turn',promptEndpoint:'/api/live/prompt',uid,lang:forced||lang,auto:!forced,audioEl:$('#player'),greeting:true});
+  const s=new LiveSession({endpoint:'/api/live/turn',promptEndpoint:'/api/live/prompt',uid,lang:forced||lang,auto:!forced,audioEl:$('#player'),greeting:false});
   const m=$('#mic'),caps=$('#caps'),end=$('#endLive');let youT='',appT='';
   const paint=()=>{caps.hidden=!(youT||appT);caps.textContent=appT||youT;caps.lang=lang};
   s.on('state',st=>{const map={listening:'live',hearing:'live',thinking:'think',speaking:'live'};setState(map[st]||'');

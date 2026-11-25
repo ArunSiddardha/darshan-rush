@@ -49,6 +49,21 @@ var D=curve(PT);
 function level(l){l=+l||0;if(l>1)l=l/100;return l>.66?2:l>.4?1:0}
 var LV=['calm','busy','vbusy'];
 
+/* route effort: the figures come from /api/map (paths, totals, remaining); only the words live here */
+var RS={
+ en:{d:'Distance',s:'Steps',t:'Walking time',from:'From here',all:'Whole route',steep:'steep',flat:'flat',steps:'steps',min:'min',km:'km',m:'m'},
+ hi:{d:'दूरी',s:'सीढ़ियाँ',t:'पैदल समय',from:'यहाँ से',all:'पूरा रास्ता',steep:'खड़ी चढ़ाई',flat:'समतल',steps:'सीढ़ियाँ',min:'मिनट',km:'किमी',m:'मी'},
+ ml:{d:'ദൂരം',s:'പടികൾ',t:'നടക്കാനുള്ള സമയം',from:'ഇവിടെ നിന്ന്',all:'മുഴുവൻ വഴി',steep:'കുത്തനെ',flat:'നിരപ്പ്',steps:'പടികൾ',min:'മിനിറ്റ്',km:'കി.മീ',m:'മീ'},
+ ta:{d:'தூரம்',s:'படிகள்',t:'நடை நேரம்',from:'இங்கிருந்து',all:'முழு வழி',steep:'செங்குத்து',flat:'சமதளம்',steps:'படிகள்',min:'நிமி',km:'கி.மீ',m:'மீ'},
+ te:{d:'దూరం',s:'మెట్లు',t:'నడక సమయం',from:'ఇక్కడి నుండి',all:'మొత్తం మార్గం',steep:'నిటారు',flat:'సమతలం',steps:'మెట్లు',min:'నిమి',km:'కి.మీ',m:'మీ'},
+ kn:{d:'ದೂರ',s:'ಮೆಟ್ಟಿಲುಗಳು',t:'ನಡಿಗೆ ಸಮಯ',from:'ಇಲ್ಲಿಂದ',all:'ಪೂರ್ತಿ ಮಾರ್ಗ',steep:'ಕಡಿದಾದ',flat:'ಸಮತಟ್ಟು',steps:'ಮೆಟ್ಟಿಲು',min:'ನಿಮಿ',km:'ಕಿ.ಮೀ',m:'ಮೀ'}};
+var RI={ /* 24 box line icons: route, stairs, clock */
+ d:'<path d="M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM18 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M8 17h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7"/>',
+ s:'<path d="M4 19h4v-4h4v-4h4V7h4"/><path d="M4 19v1M20 7V6"/>',
+ t:'<circle cx="12" cy="12" r="8.500"/><path d="M12 7.500V12l3 2"/>'};
+function rico(n){return '<svg class="smi rfi" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+RI[n]+'</g></svg>'}
+function dist(m,r){m=+m||0;return m>=1000?(Math.round(m/100)/10)+' '+r.km:m+' '+r.m}
+
 function create(root,o){
  o=o||{};var L=function(){return (o.lang&&o.lang())||'en'};var tx=function(){return S[L()]||S.en};
  var st={stops:[],pos:null,slot:null,sim:true,focus:null,shownPos:null,len:null,lens:null,mode:'full',timer:0,anim:0};
@@ -62,6 +77,7 @@ function create(root,o){
   st.stops=ID.map(function(id,i){var s=by[id]||{};return {id:id,i:i,wait:s.wait_min==null?null:s.wait_min,load:s.load==null?0:s.load,fac:s.facilities||FAC_DEFAULT[id],walk:s.walk_to_next_min==null?(i<4?[8,12,10,9][i]:null):s.walk_to_next_min,gate:!!s.is_slot_gate,help:s.help||s.needs_help||0}});
   st.pos=j.position!==undefined?j.position:(j.you&&j.you.position_id)||st.pos;
   if(j.slot)st.slot=j.slot.gate||st.slot; else if(j.slot===null)st.slot=null;
+  st.paths={};(j.paths||[]).forEach(function(q){st.paths[q.from]=q});st.totals=j.totals||null;st.rem=j.remaining||null;
   st.sim=j.simulated!==false;st.mode=j.map_mode||(j.rush?'lite':'full')}
  async function refresh(){
   try{var r=await fetch('/api/map?uid='+encodeURIComponent(o.uid||'')+'&lang='+L());
@@ -105,18 +121,29 @@ function create(root,o){
  function legend(){var t=tx(),used={};st.stops.forEach(function(s){(s.fac||[]).forEach(function(f){used[f]=1})});
   return Object.keys(used).map(function(f){return '<li>'+ico(f)+'<span>'+esc(t.f[f]||f)+'</span></li>'}).join('')}
 
+function rs(){return RS[L()]||RS.en}
+ function segText(q){var r=rs();return (q.steps>0?q.steps+' '+r.steps:r.flat)+(q.walk_min!=null?', '+q.walk_min+' '+r.min:'')}
+ function sumHTML(){var T=st.totals,R=st.rem,r=rs();if(!T)return '';var x=(R&&R.known_position&&st.pos)?R:T,from=x===R;
+  var f=[['d',dist(x.distance_m,r),r.d],['s',x.steps,r.s],['t',x.minutes+' '+r.min,r.t]].map(function(a){return '<li>'+rico(a[0])+'<b class="num">'+esc(a[1])+'</b><span>'+esc(a[2])+'</span></li>'}).join('');
+  return '<div class="sm-sum" role="group"><p class="sm-sumk">'+esc(from?r.from:r.all)+'</p><ul class="sm-figs">'+f+'</ul></div>'}
+ function pathLabels(){var r=rs(),h='',hard=null;Object.keys(st.paths).forEach(function(k){var q=st.paths[k];if(q.difficulty==='hard'&&(!hard||q.steps>hard.steps))hard=q});
+  ID.slice(0,4).forEach(function(id,i){var q=st.paths[id];if(!q)return;var a=PT[i],b=PT[i+1],x=((a[0]+b[0])/2/360*100).toFixed(2),y=((a[1]+b[1])/2/680*100).toFixed(2);
+   h+='<div class="seg'+(q===hard?' steep':'')+'" style="left:'+x+'%;top:'+y+'%"><span>'+esc(q.steps>0?q.steps+' '+r.steps:r.flat)+'</span><span>'+esc(q.walk_min)+' '+esc(r.min)+'</span>'+(q===hard?'<em>'+esc(r.steep)+'</em>':'')+'</div>'});
+  return h}
+
  function render(){
   var t=tx();root.classList.add('sitemap');root.classList.toggle('compact',!!o.compact);root.classList.toggle('lite',lite());
   root.setAttribute('lang',L());
   var head='<div class="sm-head"><h2 class="section-h">'+esc(o.staff?t.staffH:t.title)+'</h2><span class="sm-sim">'+esc(t.sim)+'</span></div>';
+  head+=sumHTML();
   var nl='<p class="sm-next" aria-live="polite">'+nextLine()+'</p>';
   if(lite()){
    var rows=st.stops.map(function(s,i){var lv=level(s.load),here=st.pos===s.id;
     return '<li><button type="button" class="srow'+(here?' is-you':'')+(st.focus===s.id?' is-focus':'')+'" data-id="'+s.id+'"><span class="sidx num">'+(i+1)+'</span><span class="sname" lang="'+L()+'">'+esc(nm(i))+'</span><span class="sw"><b class="num">'+(s.wait==null?'-':esc(s.wait))+'</b> '+esc(t.min)+'<span class="lv l'+lv+'"><i></i>'+esc(t[LV[lv]])+'</span></span>'
-     +((here||st.slot===s.id)?'<span class="spills">'+(here?'<span class="pill-me">'+esc(t.you)+'</span>':'')+(st.slot===s.id?'<span class="pill-gate">'+TICKET+esc(t.gate)+'</span>':'')+'</span>':'')+'</button></li>'}).join('');
+     +((here||st.slot===s.id)?'<span class="spills">'+(here?'<span class="pill-me">'+esc(t.you)+'</span>':'')+(st.slot===s.id?'<span class="pill-gate">'+TICKET+esc(t.gate)+'</span>':'')+'</span>':'')+'</button></li>'+(st.paths[s.id]?'<li class="sseg">'+esc(segText(st.paths[s.id]))+(st.paths[s.id].difficulty==='hard'?', '+esc(rs().steep):'')+'</li>':'')}).join('');
    root.innerHTML=head+'<p class="sm-lite">'+esc(t.lite)+'</p><ol class="slist">'+rows+'</ol>'+nl}
   else{
-   root.innerHTML=head+'<div class="sm-box">'+svgHTML()+st.stops.map(labelHTML).join('')+endLabel()+'</div>'+nl+'<ul class="sm-legend" aria-label="'+esc(t.legend)+'">'+legend()+'</ul>';
+   root.innerHTML=head+'<div class="sm-box">'+svgHTML()+st.stops.map(labelHTML).join('')+pathLabels()+endLabel()+'</div>'+nl+'<ul class="sm-legend" aria-label="'+esc(t.legend)+'">'+legend()+'</ul>';
    measure();placeYou(false)}
   root.querySelectorAll('[data-id]').forEach(function(e){e.addEventListener('click',function(ev){ev.stopPropagation();openSheet(e.getAttribute('data-id'))})})}
 

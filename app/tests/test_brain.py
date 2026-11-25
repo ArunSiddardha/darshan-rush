@@ -47,7 +47,7 @@ def test_position_sets_and_answers_next(text, lang):
     r = ask(text, lang)
     assert r["intent"] == "position" and r["position_gate_id"] == "g2" and r["action"] == "set_position" and r["show"] == "map"
     assert [p["state"] for p in r["progress"]] == ["done", "here", "next", "todo", "todo"]
-    assert str(queue_sim.gate_wait("g3")) in r["reply"] and "9" in r["reply"]   # next stop wait and walk, from the facts
+    assert str(queue_sim.gate_wait("g3")) in r["reply"] and "20" in r["reply"]   # next stop wait and walk (route_facts), from the facts
     assert assistant.get_position("u1") == "g2"
 
 
@@ -80,7 +80,7 @@ def test_best_gate_and_crowd_and_next():
 def test_distance_from_here():
     ask("I reached River Crossing")
     r = ask("how far is the main steps from here")
-    assert r["intent"] == "distance" and r["gate_id"] == "g5" and "29" in r["reply"]
+    assert r["intent"] == "distance" and r["gate_id"] == "g5" and "70" in r["reply"]
 
 
 def test_slot_questions_and_booking_actions():

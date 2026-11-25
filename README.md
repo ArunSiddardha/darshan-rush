@@ -2,7 +2,16 @@
 
 **A prototype that lets a pilgrim book a darshan slot by speaking in her own language, and keeps working when the whole crowd arrives at once.**
 
-It starts with temples, and the scope is much wider: the same voice-first, rush-ready layer fits any crowded public place in India, from pilgrimages and festivals to hospitals, stations and events.
+**Darshan Rush is built to be the voice layer for every crowded place in India.** It starts with temples, where the pain is sharpest, and the same rush-ready assistant fits pilgrimages, festivals, hospitals, stations and events. One tap, any language, and it does not fall over when a million people show up on the same morning.
+
+### Why this project stands out
+
+- **A real problem at national scale.** Hundreds of millions of temple visits a year, and the worst crowding lands on a few festival days. People have died in darshan token queues. Nothing here is a toy problem.
+- **It serves the person every other app forgets.** A 68-year-old who speaks only Telugu and has never booked anything online can use it in her first ten seconds. No login, no typing, no English.
+- **It breaks for real, and heals itself for real.** We crash our own service on Kubernetes with a festival rush, and it recovers in front of you: diagnosed by NudgeBee, approved by a volunteer's voice through Sarvam AI, fixed by Flagsmith with no redeploy. From a 3-second booking and a crash to 14 milliseconds under the same rush.
+- **All three sponsor tools carry real weight.** Remove any one of Sarvam AI, Flagsmith or NudgeBee and the product stops working. None of them is a logo on a slide.
+- **Product, not a demo.** Pilgrim app, staff desk, temple page, live map, complaints, 390 automated tests, load tested to 1,000 users, and a business model.
+- **Huge room to grow.** Every new venue is a venue pack and a set of flags, not a new build. Temples first, then every queue in the country.
 
 - **Watch the 2-minute film:** https://drive.google.com/file/d/1iCtl5hU7A-w38qRJBh4k7SwM4Ja9yfyP/view
 - **Try it (no login, simulated crowd):** https://sacrifice-brain-troubleshooting-conference.trycloudflare.com (temporary demo link: it runs from one laptop and may be offline) (open on a phone; tap the big button and talk)

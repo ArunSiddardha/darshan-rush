@@ -1,0 +1,13 @@
+.env
+.venv
+__pycache__
+*.pyc
+shots
+.pytest_cache
+.DS_Store
+_old/
+metrics/*.log
+_tools/
+_tools
+metrics/recovery.csv
+.env.*.local

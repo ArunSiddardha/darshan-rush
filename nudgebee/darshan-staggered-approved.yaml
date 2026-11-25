@@ -1,0 +1,40 @@
+# NudgeBee workflow 2. Schema is BEST EFFORT; import format UNVERIFIED. Fallback: README.md (build by hand).
+# The Flagsmith request below was verified for real with curl on 25 Nov 2026 (single request, publish_immediately).
+# Placeholders: {FLAGSMITH_ADMIN_KEY} {PUBLIC_URL}. Environment id 119864, map_mode feature 303272, slot_mode feature 303273.
+name: darshan-staggered-approved
+description: Volunteer said yes by voice -> approval -> Flagsmith map_mode=lite and slot_mode=staggered -> verify recovery
+timeout: 1200
+trigger:
+  type: webhook          # Admin > Integrations > Webhooks > Automation Webhook, linked to this workflow
+  # our app POSTs {"event_id":"...","approved_by":"Temple volunteer (voice)","transcript":"..."}
+tasks:
+  - id: approval
+    type: core.approval
+    timeout: 900
+    params:
+      approval_type: in_app
+      message: "Volunteer approved by voice: {{ Inputs.webhook_json.transcript }}. Flip map_mode to lite and slot_mode to staggered on Flagsmith."
+  - id: flip_map_mode
+    type: integrations.http
+    depends_on: [approval]
+    timeout: 60
+    params:
+      method: POST
+      url: "https://api.flagsmith.com/api/v1/environments/119864/features/303272/versions/"
+      headers: {Content-Type: application/json}
+      auth_type: api_key
+      api_header_name: Authorization
+      api_key: "Api-Key {FLAGSMITH_ADMIN_KEY}"
+      body: '{"publish_immediately": true, "feature_states_to_update": [{"feature_segment": null, "enabled": true, "feature_state_value": {"type": "unicode", "string_value": "lite"}}]}'
+  - id: flip_slot_mode
+    type: integrations.http
+    depends_on: [flip_map_mode]
+    timeout: 60
+    params:
+      method: POST
+      url: "https://api.flagsmith.com/api/v1/environments/119864/features/303273/versions/"
+      headers: {Content-Type: application/json}
+      auth_type: api_key
+      api_header_name: Authorization
+      api_key: "Api-Key {FLAGSMITH_ADMIN_KEY}"
+      body: '{"publish_immediately": true, "feature_states_to_update": [{"feature_segment": null, "enabled": true, "feature_state_value": {"type": "unicode", "string_value": "staggered"}}]}'

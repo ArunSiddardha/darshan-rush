@@ -1,0 +1,33 @@
+# NudgeBee workflow 1. Schema is BEST EFFORT from docs.nudgebee.com task names; the import format is UNVERIFIED.
+# If import fails, build it by hand with README.md (same tasks, same fields).
+name: darshan-rush-investigate
+description: Pod OOMKilled / CrashLoop in namespace darshan -> AI root cause analysis -> tell the Darshan Rush app
+timeout: 1200          # seconds, above the 5 min default
+trigger:
+  type: event
+  params:
+    on: event.created
+    filters:
+      namespace: darshan
+      type: [OOMKilled, CrashLoopBackOff]
+tasks:
+  - id: rca
+    type: llm.event_investigate
+    timeout: 900
+    params:
+      account_id: "{{ Inputs.event.cloud_account_id }}"
+      event_id: "{{ Inputs.event.id }}"
+  - id: notify_app
+    type: integrations.http
+    depends_on: [rca]
+    timeout: 60
+    params:
+      method: POST
+      url: "{PUBLIC_URL}/api/incident"       # replace {PUBLIC_URL} with the value in repo/metrics/public_url.txt
+      headers:
+        Content-Type: application/json
+        X-Incident-Token: "{INCIDENT_TOKEN}"  # same value as INCIDENT_TOKEN in repo/.env
+      body: |
+        {"source":"nudgebee","namespace":"darshan","event_id":"{{ Inputs.event.id }}",
+         "summary":{{ Tasks['rca'].output.log_summary | tojson }},
+         "rca":{{ Tasks['rca'].output.investigation | tojson }}}

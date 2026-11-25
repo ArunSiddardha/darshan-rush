@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Darshan Rush</title><link rel="stylesheet" href="/static/style.css"></head>
+<body data-variant="voice">
+<div class="wrap">
+<div class="top"><div><h1 id="title">Darshan Rush</h1><p class="sub" id="tag">Book a darshan slot by speaking in your language.</p></div><span class="sim" title="Simulated crowd">SIMULATED</span></div>
+<div class="langs" id="langs" role="group" aria-label="Language"></div>
+<div class="banner" id="banner" role="status"></div>
+<main>
+<section class="voice">
+  <div class="sunrise"><button class="mic" id="mic" aria-label="Speak"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button></div>
+  <p class="hint" id="hint"></p>
+  <div class="lat" id="lat"></div>
+  <form class="say" id="say"><input id="typed" autocomplete="off" aria-label="Type instead" placeholder="Type: how long at gate 3?"><button class="btn" id="go">Send</button></form>
+  <div class="heard" id="heard"></div>
+  <button class="btn big" id="book">Book my darshan slot</button>
+  <div class="slotcard" id="slot" aria-live="polite">
+    <div class="when" id="slotwhen"></div><div class="where" id="slotwhere"></div>
+    <div class="row"><button class="btn ghost" id="play">Play slot</button><button class="btn" id="reached">I reached the gate</button></div>
+    <div class="note" id="slotnote"></div>
+  </div>
+</section>
+<section class="mapsec">
+  <h2 id="gatesh">Gates and waiting time</h2>
+  <div class="strip" id="strip"></div>
+  <div class="mapbox"><svg id="map" viewBox="0 -16 360 266" role="img" aria-label="Route map"></svg><div class="lite-list" id="litelist"></div></div>
+  <div class="note sub" id="staggernote"></div>
+</section>
+</main>
+<footer>
+  <p class="legal">Simulated crowd. Not affiliated with any temple. Not for operational use.</p>
+  <ul>
+    <li><b>Sarvam</b> listens in your language and reads your slot and the queue time back to you.</li>
+    <li><b>Flagsmith</b> picks voice or map directions for you and holds the switches for map and slot mode.</li>
+    <li><b>NudgeBee</b> finds why the booking service failed in a rush and asks a volunteer before it fixes it.</li>
+  </ul>
+  <p id="exp" class="lat"></p>
+</footer>
+</div>
+<audio id="player"></audio>
+<script src="/static/map.js"></script>
+<script src="/static/app.js"></script>
+</body></html>

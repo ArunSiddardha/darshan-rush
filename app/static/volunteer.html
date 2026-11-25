@@ -1,0 +1,94 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Darshan Rush: Volunteer</title>
+<style>
+:root{--bg:#f6f1e7;--ink:#2b2118;--mut:#7a6b5a;--card:#fffdf8;--line:#e4d9c6;--ac:#b4531a;--ok:#2f7d4f;--bad:#a63a32}
+*{box-sizing:border-box}body{margin:0;background:#ddd5c5;font-family:system-ui,-apple-system,"Noto Sans Malayalam","Noto Sans",sans-serif;color:var(--ink)}
+.phone{width:390px;max-width:100%;min-height:100vh;margin:0 auto;background:var(--bg);padding:16px 16px 28px}
+h1{font-size:19px;margin:0 0 2px}h2{font-size:15px;margin:22px 0 8px}.small{font-size:12px;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
+.status{font-size:15px;font-weight:600}.q{font-size:20px;line-height:1.4;margin:0 0 6px}
+.mic{display:block;margin:16px auto 6px;width:104px;height:104px;border-radius:50%;border:0;background:var(--ac);color:#fff;font-size:42px;cursor:pointer;box-shadow:0 4px 14px #b4531a55}
+.mic:disabled{background:#c9bfae;box-shadow:none;cursor:not-allowed}.mic.rec{animation:p 1s infinite;background:var(--bad)}
+@keyframes p{50%{transform:scale(1.07)}}
+.row{display:flex;gap:10px}.row button{flex:1;padding:14px;font-size:17px;border-radius:12px;border:2px solid var(--ink);background:#fff;cursor:pointer}
+.row .y{background:var(--ok);color:#fff;border-color:var(--ok)}.row .n{background:#fff;color:var(--bad);border-color:var(--bad)}
+button:disabled{opacity:.45;cursor:not-allowed}.hear{text-align:center;font-size:13px;min-height:18px;margin-top:4px}
+ul.tl{list-style:none;margin:0;padding:0}ul.tl li{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;color:#a99a85}
+ul.tl li.done{color:var(--ink);font-weight:600}.notice{color:var(--bad);font-size:13px;margin-top:6px}
+label{display:block;font-size:12px;color:var(--mut);margin:10px 0 3px}select,input{width:100%;padding:11px;font-size:16px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.go{width:100%;margin-top:12px;padding:13px;font-size:16px;border:0;border-radius:12px;background:var(--ink);color:#fff;cursor:pointer}
+.reply{margin-top:10px;font-size:15px;line-height:1.4}footer{margin-top:22px;font-size:11px;color:var(--mut);text-align:center}
+</style></head>
+<body><div class="phone">
+<h1>Volunteer desk</h1><div class="small">Spot counter. Simulated crowd, prototype.</div>
+<div class="card"><div class="status" id="status">All quiet.</div>
+<div id="qbox" style="display:none;margin-top:10px"><p class="q" id="qt" lang="ml"></p><div class="small" id="qen"></div><div class="small" id="why"></div></div>
+<button class="mic" id="mic" disabled aria-label="Answer by voice">🎤</button>
+<div class="hear" id="hear"></div>
+<div class="row" style="margin-top:10px"><button class="y" id="yes" disabled>Yes</button><button class="n" id="no" disabled>No</button></div>
+<div class="notice" id="notice"></div></div>
+
+<h2>Timeline</h2><div class="card"><ul class="tl" id="tl"></ul><div class="small" id="lat" style="margin-top:8px"></div></div>
+
+<h2>Crowd report</h2><div class="card">
+<div class="small">Say or type, for example: River Crossing, about two thousand waiting.</div>
+<label for="cr">Report</label><input id="cr" placeholder="River Crossing, about 2000 waiting">
+<div class="row" style="margin-top:10px"><button id="crmic" style="font-size:20px">🎤</button><button id="crsend" style="flex:2">Send report</button></div>
+<div class="reply" id="crout"></div></div>
+
+<h2>Walk-in booking</h2><div class="card">
+<div class="small">For a pilgrim without a phone. You speak for them.</div>
+<label for="wl">Pilgrim's language</label>
+<select id="wl"><option value="ml">Malayalam</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="kn">Kannada</option><option value="hi">Hindi</option><option value="en">English</option></select>
+<label for="wp">People</label><input id="wp" type="number" min="1" max="10" value="1">
+<label for="wt">When</label><select id="wt"><option value="now">Next free slot</option><option value="tomorrow morning">Tomorrow morning</option><option value="tomorrow afternoon">Tomorrow afternoon</option><option value="tomorrow evening">Tomorrow evening</option></select>
+<button class="go" id="wgo">Book walk-in</button>
+<div class="reply" id="wout"></div><div class="small" id="wlat"></div></div>
+<footer>Simulated crowd. Not affiliated with any temple. Not for operational use.</footer>
+<audio id="player"></audio></div>
+<script>
+const $=s=>document.querySelector(s);let S={},playedQ=null,playedC=null,rec=null,chunks=[];
+const fmt=t=>new Date(t*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const MSG={idle:'All quiet. Nothing needs you.',asking:'Please answer: yes or no',declined:'You said no. Nothing was changed.',approved:'Approved. NudgeBee is applying the fix...',recovered:'Slots are staggered and booking works.'};
+function play(u){const p=$('#player');p.src=u;p.play().catch(()=>{$('#hear').textContent='Tap the mic once to enable sound'})}
+async function poll(){
+ try{S=await (await fetch('/api/volunteer/state')).json()}catch(e){return}
+ const asking=S.status==='asking';
+ $('#qbox').style.display=S.question_text?'block':'none';$('#qt').textContent=S.question_text||'';$('#qen').textContent=S.question_en||'';
+ $('#why').textContent=S.summary?('NudgeBee found: '+S.summary):'';
+ $('#mic').disabled=!asking||!S.voice_available;$('#yes').disabled=$('#no').disabled=!asking;
+ $('#status').textContent=(S.status==='approved'&&S.webhook_ok===false)?'Approved, but the NudgeBee webhook is not configured. Nothing was changed.':(MSG[S.status]||S.status);
+ $('#tl').innerHTML=(S.steps||[]).map(s=>{const e=(S.timeline||[]).find(t=>t.step===s);return `<li class="${e?'done':''}"><span>${e?'✓ ':''}${s}</span><span>${e?fmt(e.t):''}</span></li>`}).join('');
+ const L=S.latency||{};$('#lat').textContent=Object.keys(L).length?('Latency: '+Object.entries(L).map(([k,v])=>k.replace('_ms','')+' '+v+' ms').join(' · ')):'';
+ $('#notice').textContent=(S.notes||[]).join(' · ');
+ if(!S.voice_available&&asking)$('#hear').textContent='Voice unavailable (Sarvam). Use Yes / No.';
+ if(asking&&S.has_audio&&playedQ!==S.event_id){playedQ=S.event_id;play('/api/volunteer/audio?kind=question&e='+encodeURIComponent(S.event_id))}
+ if(S.status==='recovered'&&S.has_confirm_audio&&playedC!==S.event_id){playedC=S.event_id;play('/api/volunteer/audio?kind=confirm&e='+encodeURIComponent(S.event_id))}
+}
+async function sendReply(fd){
+ $('#hear').textContent='...';
+ const r=await fetch('/api/volunteer/reply',{method:'POST',body:fd});const j=await r.json();
+ $('#hear').textContent=j.notice||('"'+j.transcript+'" → '+j.decision+(j.decision==='unclear'?' (say yes or no, or tap a button)':''));poll()}
+$('#yes').onclick=()=>{const f=new FormData();f.append('text','yes');sendReply(f)};
+$('#no').onclick=()=>{const f=new FormData();f.append('text','no');sendReply(f)};
+async function record(btn,onblob){
+ if(rec){rec.stop();return}
+ try{const s=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];rec=new MediaRecorder(s);
+  rec.ondataavailable=e=>chunks.push(e.data);
+  rec.onstop=()=>{s.getTracks().forEach(t=>t.stop());const b=new Blob(chunks,{type:rec.mimeType||'audio/webm'});rec=null;btn.classList.remove('rec');onblob(b)};
+  rec.start();btn.classList.add('rec');$('#hear').textContent='Listening... tap again when done';
+ }catch(e){$('#hear').textContent='Microphone not available. Use the buttons.'}}
+$('#mic').onclick=()=>record($('#mic'),b=>{const f=new FormData();f.append('audio',b,'reply.webm');sendReply(f)});
+async function crowd(fd){const r=await fetch('/api/volunteer/crowd-report',{method:'POST',body:fd});const j=await r.json();
+ $('#crout').textContent=j.notice||(j.report.error||('Heard: "'+j.transcript+'". '+(j.report.applied?'Crowd updated for '+j.report.gate+': '+j.report.count:(j.report.note||'Saved')))) }
+$('#crsend').onclick=()=>{const f=new FormData();f.append('text',$('#cr').value);crowd(f)};
+$('#crmic').onclick=()=>record($('#crmic'),b=>{const f=new FormData();f.append('audio',b,'crowd.webm');crowd(f)});
+$('#wgo').onclick=async()=>{
+ const f=new FormData();f.append('walkin','1');f.append('lang',$('#wl').value);f.append('uid','walkin-desk');
+ f.append('text','walk-in booking for '+$('#wp').value+' people, '+$('#wt').value);
+ $('#wout').textContent='...';const r=await fetch('/api/directions',{method:'POST',body:f});const j=await r.json();
+ $('#wout').textContent=j.reply_text;$('#wlat').textContent=(j.notice?j.notice+' · ':'')+(j.latency?('total '+j.latency.total_ms+' ms'):'');
+ if(j.audio_base64)play('data:audio/wav;base64,'+j.audio_base64)};
+poll();setInterval(poll,2000);
+</script></body></html>

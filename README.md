@@ -1,13 +1,25 @@
 # Darshan Rush
 
-[![tests](REPO_URL/actions/workflows/tests.yml/badge.svg)](REPO_URL/actions/workflows/tests.yml)
-
 **A prototype that lets a pilgrim book a darshan slot by speaking in her own language, and keeps working when the whole crowd arrives at once.**
 
 - **Watch the 2-minute film:** https://drive.google.com/file/d/1Q1--7aCu7ZJrTQjNaBVR0S58QlCgF01J/view
 - **Try it (no login, simulated crowd):** https://sacrifice-brain-troubleshooting-conference.trycloudflare.com (temporary demo link: it runs from one laptop and may be offline) (open on a phone; tap the big button and talk)
 
 > Simulated crowd. Not affiliated with any temple. Not for operational use.
+
+**Built in one day at Festive Hacks (25 November 2026) by Team Phoenix:** Arun Siddardha, Adhvik Mani Sai, Devashish Boini, Savarana Datta.
+
+## What we built, at a glance
+
+- **A voice assistant for pilgrims in six languages** (Telugu, Tamil, Malayalam, Kannada, Hindi, English). One tap, then a hands-free conversation: it detects the language from speech, books a darshan slot, and answers ordinary questions (waiting times, the way, how many steps are left, water, toilets, medical help, help for elders) from a swappable venue knowledge pack of 46 entries. Sarvam does the listening, translating, speaking and reasoning.
+- **A simulated site map** with "You are here", live waits per stop, facilities, and steps, distance and walking time for each stretch.
+- **One screen for temple staff**: answer the rush question by voice, book for a pilgrim who has no phone, report the crowd, ask anything, and see help requests routed to the nearest volunteer.
+- **A rush that really breaks it, and a fix a volunteer approves by voice.** On a real Kubernetes cluster a rush kills the booking service (OOMKilled). NudgeBee investigates and explains why. The volunteer is asked in Malayalam and says yes. A duty officer confirms in NudgeBee. NudgeBee itself changes two Flagsmith flags, and booking switches to a light page and staggered slots with no redeploy.
+- **Measured, not claimed.** In the recorded run the service died 36 seconds into the rush; after the flags changed, the same rush ran at about 1,000 requests a second with 0 errors, the slowest 5% at 14 ms, and no restart. Evidence: [metrics/proof](metrics/proof/README.md). Ordinary traffic: about 400 simulated pilgrims at once on one small replica with 0 errors ([metrics/loadtest_normal.md](metrics/loadtest_normal.md)).
+- **All three sponsor tools are load-bearing**: 4 NudgeBee automations (3 run end to end today), 10 Flagsmith flags with segments, remote config, an A/B test and a staged rollout, and Sarvam speech to text, translation, text to speech and chat. Remove any one and the flow stops. A live page, `/sponsors`, shows what each is doing.
+- **Seven screens** (pilgrim, staff, start, for temples, sponsors, presenter, graph), **388 automated tests**, about 7,600 lines of Python, and honest documents on [what is simulated](docs/LIVE_VS_SIMULATED.md) and [what real traffic would need](docs/SCALE.md).
+- **A business model**: the shrine pays about Rs 10 per voice booking, it costs about Rs 3.5, and pilgrims never pay ([business/BUSINESS.md](business/BUSINESS.md); market size is our estimate).
+
 
 ## Links
 
@@ -27,7 +39,7 @@ All open without a login; the live ones run from one laptop through a temporary 
 ## Judge this in 90 seconds
 
 1. Open https://sacrifice-brain-troubleshooting-conference.trycloudflare.com on a phone, tap once, say "I need a slot for tomorrow morning" in Telugu, Tamil, Malayalam, Kannada, Hindi or English. The language is detected from your speech (Sarvam). No form, no language picker.
-2. Open `/judge`. Press "Cause the rush". The booking pod on Kubernetes slows, then is OOMKilled (a real kernel kill of a 160Mi pod, made reproducible on purpose, see [LIVE_VS_SIMULATED](LIVE_VS_SIMULATED.md)).
+2. Open `/judge`. Press "Cause the rush". The booking pod on Kubernetes slows, then is OOMKilled (a real kernel kill of a memory-limited pod, made reproducible on purpose, see [LIVE_VS_SIMULATED](docs/LIVE_VS_SIMULATED.md)).
 3. Open `/volunteer`. NudgeBee's root cause appears, and the app asks the volunteer by voice in Malayalam. A spoken yes (two deliberate presses of Yes if you do not speak Malayalam) starts the NudgeBee approval workflow.
 4. After approval, two Flagsmith flags flip (`map_mode` full to lite, `slot_mode` open to staggered), with no redeploy, and `/graph` shows the recovery. In the run shown in the film: slowest requests about 3 s and the pod OOMKilled 36 s into the rush; after NudgeBee flipped the flags the same rush ran at about 1,000 requests a second with 0 errors, p95 14 ms and zero restarts ([numbers](#how-the-rush-incident-works-step-by-step)).
 5. Open `/sponsors`. It shows what Sarvam, Flagsmith and NudgeBee actually did in this running app, and says "not available" where the app cannot see it.
@@ -265,7 +277,12 @@ This project was built with Claude Code agents directed by the team. The agents 
 
 ## Team
 
-Team Phoenix: Arun Siddardha, Adhvik Mani Sai, Devashish Boini, Savarana Datta.
+Team Phoenix, Festive Hacks 2026 (WeMakeDevs at WeAreDevelopers Conference India, Bengaluru):
+
+- Arun Siddardha
+- Adhvik Mani Sai
+- Devashish Boini
+- Savarana Datta
 
 ## Licence
 

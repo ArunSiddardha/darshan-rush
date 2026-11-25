@@ -31,5 +31,25 @@
 ```
 Facility types: water, toilet, medical, rest, wheelchair, cloak, lost_found, info.
 
-## STATUS
-(sections below are filled in at the end)
+## What was wrong
+- Gate matching (directions.gate_in_text) only looked for Latin words of 4+ letters from the gate name, so any Indian-script or romanised-speech name ("రివర్ క్రాసింగ్", "kraasing", "queue complex lo") was missed. The fallback then picked the first gate (Base Camp) or the shortest wait, so the answer was about the wrong stop.
+- "I reached River Crossing" had no intent at all: nothing remembered where the pilgrim was, and a statement of position was treated as unclear.
+- Sarvam chat (sarvam-105b) returned an EMPTY reply: the hidden reasoning used the whole token budget. Fixed by sending `"reasoning_effort": null` in sarvam.chat (about 0.3 to 1 s per call now). This also fixes the older llm_fill and understand fallbacks.
+
+## What changed
+- app/gatematch.py: aliases for all five stops in six scripts plus romanisations, stem matching on the space-free text (inflections like -ിൽ, -లో work), difflib fuzzy matching for garbled Latin. The stop actually named always wins. directions.gate_in_text now uses it.
+- app/assistant.py: answer(text, lang, uid, session). Rules first (about 20 intents, six languages, no model, 0 ms), then the Sarvam chat model with a facts block for anything else, validated (gate ids must exist, ids stripped from speech, numbers must be in the facts, English answers to a non-English pilgrim replaced by the safe line), then a safe fallback ("I do not have that information, please ask the volunteer at the counter."). Position is stored per uid. Distress ("I lost my son") gives a calm reply and posts "Pilgrim needs help ..." into volunteer notes. Never claims to call police.
+- Wired into addons_live.handle (idle, booked, and also mid-booking: a position or facility question is answered and the open booking question is repeated), into /api/directions (directions.respond_brain) and GET /api/map in main.py. Booking, change, cancel keep the existing flow.
+- Simulated site plan: stops g1..g5, walking minutes 6, 9, 8, 12, facilities per stop, all labelled simulated.
+
+## Verified
+- Tests: 248 pass (app/tests/test_brain.py, model mocked): gate matching in six scripts, position in six languages, waits about the named gate after a position, best gate, next, distance, slot, facilities, elder, fee, carry, about, goodbye, distress and the volunteer note, validation of model output, live flow, /api/directions, /api/map.
+- Deployed image, via /api/live/turn text field: "I reached River Crossing", "what is the wait at Forest Path" in English, Telugu and Malayalam answer about the right stop (g2 position, g3 wait), with audio.
+- REAL Sarvam (about 22 calls in total): chat JSON contract and tone checked on free-form questions in English, Telugu, Malayalam (shoes and cloak room, less crowded stop, tired). TTS for the six deployed checks.
+## Only with mocks
+- Hindi, Tamil, Kannada reply texts and the Indic distress phrases (written by me, not reviewed by a native speaker). Speech-to-text spelling variants are guessed, not tested with real audio.
+## Known limits
+- Model answers are sometimes thin (it said "I do not have that information" for a question about the stop with fewer people when position was unknown) and one Telugu answer mixed a cloak-room guess with a rest suggestion. Facts only cover what is in the block.
+- "Late" or "change my slot" on /api/directions without a time asks for the new time; in live mode the existing booking flow asks.
+- Walking minutes and facilities are simulated constants, not a real plan. Position is in memory per uid (lost on pod restart).
+- Old English "a ... walk" phrasing now reads "9 minutes on foot".

@@ -145,7 +145,8 @@ def chat(system: str, user: str, max_tokens=400) -> TextResult:
     h = _headers()
     h["Authorization"] = "Bearer " + config.SARVAM_API_KEY()
     r, ms = _post("/v1/chat/completions", "chat", headers=h, json={
-        "model": os.environ.get("SARVAM_CHAT_MODEL", "sarvam-105b"), "temperature": 0.1, "max_tokens": max_tokens,
+        "model": os.environ.get("SARVAM_CHAT_MODEL", "sarvam-105b"), "temperature": 0.1, "max_tokens": max_tokens, "reasoning_effort": None,   # null = no hidden reasoning (else it eats all tokens, empty reply)
+        
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]})
     txt = r.json()["choices"][0]["message"]["content"] or ""
     return TextResult(re.sub(r"<think>.*?</think>", "", txt, flags=re.S).strip(), ms)

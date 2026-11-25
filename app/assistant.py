@@ -493,16 +493,16 @@ def rules(text, lang, uid, session=None):
                     gate_id=ORDER[0], show="map")
     if has("bye"):
         return _res("goodbye", T(lang, "goodbye"), lang, uid)
-    if target and not has("wait"):      # a bare stop name: tell its wait
+    if target and not has("wait") and len(low.split()) <= 4:      # a bare stop name: tell its wait
         return _res("wait_gate", T(lang, "wait_gate", gate=gatematch.display(target, lang), wait=_mins(gs[target]["wait_min"], lang), frm=""), lang, uid,
                     gate_id=target, show="map")
     return None
 
 
 # ------------------------------------------------------------------ model
-SYSTEM = ("You are the voice assistant of a prototype crowded-shrine app. Use ONLY the FACTS. Reply in the pilgrim's language ({lang}), one or two short "
+SYSTEM = ("You are the voice assistant of a prototype crowded-shrine app. Use ONLY the FACTS. Reply in this language: {lang}, one or two short "
           "sentences, natural when spoken, no lists, no symbols. If the facts do not cover the question, reply exactly in that language with: "
-          "'I do not have that information, please ask the volunteer at the counter.' Never invent numbers, places or promises. "
+          "'I do not have that information, please ask the volunteer at the counter.' Never say stop ids like g1, say the stop name. Never invent numbers, places or promises. "
           "Return ONLY JSON: {{\"intent\":\"position|wait_gate|wait_best|next|distance|slot_info|facility|book|change|cancel|distress|unknown\","
           "\"gate_id\":\"g1..g5 or null\",\"position_gate_id\":\"g1..g5 or null (only if the pilgrim says where they are)\",\"reply\":\"...\","
           "\"action\":\"none|book|change|cancel|set_position|call_volunteer\"}}\n\nFACTS:\n{facts}")
@@ -515,7 +515,7 @@ def _model(text, lang, uid, hist):
     user = (hl + "\n" if hl else "") + "pilgrim: " + text
     t0 = time.perf_counter()
     try:
-        res = sarvam.chat(SYSTEM.format(lang=directions.LANGS and lang, facts=facts(uid, lang)), user, max_tokens=700)
+        res = sarvam.chat(SYSTEM.format(lang={"en": "English", "hi": "Hindi", "ml": "Malayalam", "ta": "Tamil", "te": "Telugu", "kn": "Kannada"}.get(lang, "English"), facts=facts(uid, lang)), user, max_tokens=400)
     except Exception:
         return None
     m = re.search(r"\{.*\}", res.text, flags=re.S)
@@ -529,13 +529,15 @@ def _model(text, lang, uid, hist):
     return j
 
 
-def validate(j, uid):
+def validate(j, uid, lang="en"):
     """Check the model's JSON against the facts. Returns a cleaned dict or None when it cannot be trusted."""
     if not isinstance(j, dict):
         return None
-    reply = str(j.get("reply") or "").strip()
+    reply = re.sub(r"\bg[1-5]\b\s*", "", str(j.get("reply") or "")).strip()
     if not reply:
         return None
+    if lang != "en" and sum(c.isascii() and c.isalpha() for c in reply) > 0.6 * max(1, sum(c.isalpha() for c in reply)):
+        reply = T(lang, "unknown")      # the model answered in English instead of the pilgrim's language: say the safe line in theirs
     gid, pid = j.get("gate_id"), j.get("position_gate_id")
     gid = gid if gid in ORDER else None
     pid = pid if pid in ORDER else None
@@ -572,7 +574,7 @@ def answer(text, lang, uid="anon", session=None, use_model=True, defer_unknown=F
         if hit and time.time() - hit[0] < CACHE_S:
             r = dict(hit[1])
         else:
-            v = validate(_model(text, lang, uid, hist), uid) if use_model else None
+            v = validate(_model(text, lang, uid, hist), uid, lang) if use_model else None
             if v:
                 if v["position_gate_id"] and v["action"] == "set_position":
                     set_position(uid, v["position_gate_id"])

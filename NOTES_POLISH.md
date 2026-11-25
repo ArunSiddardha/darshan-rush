@@ -44,6 +44,13 @@ Deployed to kind "nb" (healthz: all 10 routers ok, flags from Flagsmith), demo r
 - Staff answers the rush question: 1 tap (Yes) or a spoken yes; "Waiting for the duty officer in NudgeBee" shows next.
 - Staff walk-in: 1 tap "Book for a pilgrim" + speech (+1 tap "Hear again" if needed): at most 3.
 
+## Page weight
+Pilgrim page HTML + JS + CSS about 157 KB uncompressed (no fonts), all self-hosted, no outside hosts; fonts preloaded (Latin) and split by unicode-range.
+
+## Final state (14:53 IST)
+Deployed image with all changes; `reset_demo.sh` run; volunteer state cleared with POST /api/volunteer/reset; public URL: every page 200, /api/state shows map_mode full, slot_mode open, assistant_llm on, venue_pack venue_demo, mode calm, volunteer idle, no care or help requests.
+Note for the lead: every pod restart (deploy or reset_demo) is seen by NudgeBee, which posts a real incident about 1 to 2 minutes later and the staff screen switches to "Heavy rush. Shall I switch...". Before recording a calm frame, POST /api/volunteer/reset with the incident token (no pod restart).
+
 ## Still imperfect
 - Staff "Ask anything" sometimes answers an unrelated FAQ for off-topic questions without the model (QA #9); the weather question still matches opening hours in rules-only mode (QA #6; the model answers it correctly).
 - The first screen cycles examples in six scripts, so all six Anek fonts load (about 2.5 MB on a cold cache); fonts use unicode-range and font-display swap, self-hosted.

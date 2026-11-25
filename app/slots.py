@@ -69,7 +69,9 @@ def _slot(ts, booking):
 
 
 def _parse_time(t):
-    """'HH:MM' (IST) -> epoch of the next occurrence, or None."""
+    """'HH:MM' (IST) -> epoch of the next occurrence, or None. An int or float is already an epoch."""
+    if isinstance(t, (int, float)):
+        return int(t)
     try:
         hh, mm = str(t).split(":")[:2]
         now = datetime.fromtimestamp(NOW(), IST)

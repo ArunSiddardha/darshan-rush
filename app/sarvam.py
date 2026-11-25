@@ -92,11 +92,27 @@ def _post(path, what, **kw):
     return r, ms
 
 
-def stt(audio: bytes, filename="audio.webm", content_type="audio/webm") -> STTResult:
-    """Speech to text with saaras, codemix mode, language auto-detected."""
+def _clean_type(content_type: str) -> str:
+    """Browsers send e.g. 'audio/mp4; codecs=mp4a.40.2' (iPhone) or 'audio/webm;codecs=opus'. Sarvam accepts only the bare type."""
+    t = (content_type or "audio/webm").split(";")[0].strip().lower()
+    return {"audio/x-m4a": "audio/mp4", "audio/m4a": "audio/mp4", "video/mp4": "audio/mp4", "video/webm": "audio/webm", "audio/aac": "audio/aac"}.get(t, t) or "audio/webm"
+
+
+def _clean_name(filename: str, content_type: str) -> str:
+    ext = {"audio/mp4": "m4a", "audio/webm": "webm", "audio/wav": "wav", "audio/x-wav": "wav", "audio/mpeg": "mp3", "audio/ogg": "ogg", "audio/aac": "aac"}.get(_clean_type(content_type))
+    base = (filename or "audio").rsplit(".", 1)[0] or "audio"
+    return f"{base}.{ext}" if ext else (filename or "audio.webm")
+
+
+
+def stt(audio: bytes, filename="audio.webm", content_type="audio/webm", language=None, mode="codemix") -> STTResult:
+    """Speech to text with saaras. Default: codemix mode, language auto-detected.
+    language (short code, e.g. 'ml') forces the language: helps one-word answers that auto-detect mishears."""
+    data = {"model": os.environ.get("SARVAM_STT_MODEL", "saaras:v4"), "mode": mode}
+    if language:
+        data["language_code"] = LANG_CODES.get(language, language)
     r, ms = _post("/speech-to-text", "speech-to-text", headers=_headers(),
-                  files={"file": (filename, audio, content_type)},
-                  data={"model": os.environ.get("SARVAM_STT_MODEL", "saaras:v4"), "mode": "codemix"})
+                  files={"file": (_clean_name(filename, content_type), audio, _clean_type(content_type))}, data=data)
     j = r.json()
     return STTResult(j.get("transcript", "") or "", short_lang(j.get("language_code")), ms)
 

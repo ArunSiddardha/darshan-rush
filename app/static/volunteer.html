@@ -52,7 +52,11 @@ label{display:block;font-size:12px;color:var(--mut);margin:10px 0 3px}select,inp
 const $=s=>document.querySelector(s);let S={},playedQ=null,playedC=null,rec=null,chunks=[];
 const fmt=t=>new Date(t*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 const MSG={idle:'All quiet. Nothing needs you.',asking:'Please answer: yes or no',declined:'You said no. Nothing was changed.',approved:'Waiting for the duty officer to confirm in NudgeBee',recovered:'Booking recovered. Slots are staggered.'};
-function play(u){const p=$('#player');p.src=u;p.play().catch(()=>{$('#hear').textContent='Tap the mic once to enable sound'})}
+function prime(){const p=$('#player');if(p&&!p.dataset.primed){p.dataset.primed=1;p.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';p.play().catch(()=>{})}}
+function extOf(m){return /mp4|aac/.test(m||'')?'m4a':/ogg/.test(m||'')?'ogg':'webm'}
+let pending=null;
+document.addEventListener('pointerdown',()=>{if(pending){const u=pending;pending=null;const p=$('#player');p.src=u;p.play().catch(()=>{})}},true);
+function play(u){const p=$('#player');p.src=u;p.play().then(()=>{pending=null}).catch(()=>{pending=u;$('#hear').textContent='Tap anywhere on the page to hear the question'})}
 async function poll(){
  try{S=await (await fetch('/api/volunteer/state')).json()}catch(e){return}
  const asking=S.status==='asking';
@@ -72,21 +76,21 @@ async function poll(){
 async function sendReply(fd){
  $('#hear').textContent='...';
  const r=await fetch('/api/volunteer/reply',{method:'POST',body:fd});const j=await r.json();
- $('#hear').textContent=j.notice||('"'+j.transcript+'" → '+j.decision+(j.decision==='unclear'?' (say yes or no, or tap a button)':''));poll()}
+ $('#hear').textContent=j.notice||('"'+j.transcript+'" → '+j.decision+(j.decision==='unclear'?' — '+(j.message||'Sorry, please say yes or no.')+' '+(j.message_ml||''):''));poll()}
 $('#yes').onclick=()=>{const f=new FormData();f.append('text','yes');sendReply(f)};
 $('#no').onclick=()=>{const f=new FormData();f.append('text','no');sendReply(f)};
 async function record(btn,onblob){
- if(rec){rec.stop();return}
+ prime();if(rec){rec.stop();return}
  try{const s=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];rec=new MediaRecorder(s);
   rec.ondataavailable=e=>chunks.push(e.data);
   rec.onstop=()=>{s.getTracks().forEach(t=>t.stop());const b=new Blob(chunks,{type:rec.mimeType||'audio/webm'});rec=null;btn.classList.remove('rec');onblob(b)};
   rec.start();btn.classList.add('rec');$('#hear').textContent='Listening... tap again when done';
  }catch(e){$('#hear').textContent='Microphone not available. Use the buttons.'}}
-$('#mic').onclick=()=>record($('#mic'),b=>{const f=new FormData();f.append('audio',b,'reply.webm');sendReply(f)});
+$('#mic').onclick=()=>record($('#mic'),b=>{const f=new FormData();f.append('audio',b,'reply.'+extOf(b.type));sendReply(f)});
 async function crowd(fd){const r=await fetch('/api/volunteer/crowd-report',{method:'POST',body:fd});const j=await r.json();
  $('#crout').textContent=j.notice||(j.report.error||('Heard: "'+j.transcript+'". '+(j.report.applied?'Crowd updated for '+j.report.gate+': '+j.report.count:(j.report.note||'Saved')))) }
 $('#crsend').onclick=()=>{const f=new FormData();f.append('text',$('#cr').value);crowd(f)};
-$('#crmic').onclick=()=>record($('#crmic'),b=>{const f=new FormData();f.append('audio',b,'crowd.webm');crowd(f)});
+$('#crmic').onclick=()=>record($('#crmic'),b=>{const f=new FormData();f.append('audio',b,'crowd.'+extOf(b.type));crowd(f)});
 $('#wgo').onclick=async()=>{
  const f=new FormData();f.append('walkin','1');f.append('lang',$('#wl').value);f.append('uid','walkin-desk');
  f.append('text','walk-in booking for '+$('#wp').value+' people, '+$('#wt').value);

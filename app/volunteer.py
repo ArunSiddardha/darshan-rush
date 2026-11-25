@@ -17,6 +17,7 @@ from fastapi import APIRouter, Header, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
 
 import config
+import os
 import sarvam
 
 router = APIRouter()
@@ -27,22 +28,32 @@ QUESTION_EN = "Heavy rush. Shall I switch to staggered slots? Every pilgrim stil
 QUESTION_ML = "വലിയ തിരക്ക്. സ്ലോട്ടുകൾ ഇടവിട്ട രീതിയിലേക്ക് മാറ്റട്ടെ? എല്ലാ തീർത്ഥാടകർക്കും സ്ലോട്ട് ലഭിക്കും."
 CONFIRM_EN = "Done. Slots are staggered and the map is light. Every pilgrim can still book."
 CONFIRM_ML = "ശരി. സ്ലോട്ടുകൾ ഇടവിട്ട രീതിയിലായി, മാപ്പ് ലഘുവായി. എല്ലാ തീർത്ഥാടകർക്കും ഇപ്പോഴും ബുക്ക് ചെയ്യാം."
+UNCLEAR_EN = "Sorry, please say yes or no."
+UNCLEAR_ML = "ക്ഷമിക്കണം, ശരി എന്നോ വേണ്ട എന്നോ പറയൂ."
 NO_WEBHOOK_NOTE = "NudgeBee webhook not configured"
 APPROVED_BY = "Temple volunteer (voice)"
 
-YES = {"ml": ["ശരി", "ഉവ്വ്", "അതെ", "ആയിക്കോട്ടെ", "സമ്മതം", "ചെയ്യൂ", "ചെയ്തോളൂ", "sari", "shari", "athe", "uvve"],
-       "ta": ["ஆம்", "ஆமா", "சரி", "செய்", "aam", "aama", "seri"],
-       "te": ["అవును", "ఔను", "సరే", "చేయండి", "avunu", "sare"],
-       "kn": ["ಹೌದು", "ಸರಿ", "ಆಯ್ತು", "ಮಾಡಿ", "haudu", "houdu", "aytu"],
-       "hi": ["हाँ", "हां", "हाँजी", "जी", "ठीक", "ओके", "कर", "haan", "han", "theek", "thik", "ji"],
-       "en": ["yes", "yeah", "yep", "ok", "okay", "sure", "go", "do", "please", "approve", "approved"]}
-NO = {"ml": ["വേണ്ട", "ഇല്ല", "വേണ്ടാ", "venda", "illa"],
-      "ta": ["இல்லை", "வேண்டாம்", "வேணாம்", "illai", "vendam"],
-      "te": ["వద్దు", "లేదు", "కాదు", "vaddu", "ledu", "kadu"],
-      "kn": ["ಬೇಡ", "ಇಲ್ಲ", "beda"],
-      "hi": ["नहीं", "नही", "ना", "मत", "nahi", "nahin", "mat"],
-      "en": ["no", "nope", "don't", "dont", "stop", "cancel", "not"]}
+# Strong yes words say yes on their own. Weak ones are verbs ("do it", "kar do") and lose against any no word.
+YES = {"ml": ["ശരി", "സരി", "ശെരി", "സെരി", "ഷെറി", "ഷെരി", "ചെയ്യാം", "ഉവ്വ്", "അതെ", "ആം", "ആണ്", "ആയിക്കോട്ടെ", "സമ്മതം", "sari", "shari", "sheri", "sedi", "seri", "athe", "aam", "uvve", "ok", "okay"],
+       "ta": ["ஆம்", "ஆமா", "ஆமாம்", "சரி", "aam", "aama", "aamaam", "sari", "seri"],
+       "te": ["అవును", "ఔను", "సరే", "అలాగే", "avunu", "sare", "sarey"],
+       "kn": ["ಹೌದು", "ಸರಿ", "ಆಯ್ತು", "ಓಕೆ", "haudu", "houdu", "aytu", "aythu", "sari"],
+       "hi": ["हाँ", "हां", "हाँजी", "जी", "ठीक", "ओके", "सही", "haan", "han", "haa", "theek", "thik", "ji", "sahi"],
+       "en": ["yes", "yeah", "yep", "yup", "ok", "okay", "sure", "approve", "approved", "alright", "fine", "right"]}
+YES_WEAK = {"ml": ["ചെയ്യൂ", "ചെയ്യു", "ചെയ്തോളൂ", "ചെയ്തോ", "മാറ്റിക്കോ", "മാറ്റിക്കോളൂ", "മാറ്റൂ", "മാറ്റ്", "cheyyu", "maattikko", "mattikko"],
+            "ta": ["செய்", "பண்ணு", "பண்ணுங்க", "பண்ணுங்கள்", "செய்யுங்க", "செய்யுங்கள்", "மாத்து", "மாத்துங்க", "pannunga", "panni", "seiyungal"],
+            "te": ["చేయండి", "చెయ్యండి", "చేయి", "చెయ్యి", "చేయు", "మార్చండి", "cheyyandi", "cheyandi"],
+            "kn": ["ಮಾಡಿ", "ಮಾಡು", "ಬದಲಿಸಿ", "maadi", "madi"],
+            "hi": ["कर", "करो", "करिए", "कीजिए", "कीजिये", "बदल", "kar", "karo", "kijiye"],
+            "en": ["go", "please", "proceed", "switch", "change", "ahead"]}
+NO = {"ml": ["വേണ്ട", "വേണ്ടാ", "വേണ്ടേ", "ഇല്ല", "venda", "vendaa", "illa"],
+      "ta": ["இல்லை", "இல்ல", "வேண்டாம்", "வேணாம்", "வேண்டாங்க", "illai", "illa", "vendam", "venam", "vendaam"],
+      "te": ["వద్దు", "వద్దండి", "లేదు", "కాదు", "vaddu", "ledu", "kadu"],
+      "kn": ["ಬೇಡ", "ಬೇಡಾ", "ಇಲ್ಲ", "beda", "illa"],
+      "hi": ["नहीं", "नही", "मत", "रहने", "nahi", "nahin", "nahee", "mat"],
+      "en": ["no", "nope", "don't", "dont", "stop", "cancel", "not", "never"]}
 _YES_ALL = {w for ws in YES.values() for w in ws}
+_YES_WEAK_ALL = {w for ws in YES_WEAK.values() for w in ws}
 _NO_ALL = {w for ws in NO.values() for w in ws}
 
 _lock = threading.RLock()
@@ -112,17 +123,46 @@ def public():
 
 
 # ---------------------------------------------------------------- speaking
+def _cache_path(text, lang):
+    import hashlib
+    d = os.path.join(os.path.dirname(config.STATE_FILE()) or ".", "voice_cache")
+    return os.path.join(d, hashlib.sha1(f"{lang}|{text}".encode()).hexdigest()[:16] + ".wav")
+
+
 def _speak(text, lang="ml"):
-    """Returns (wav or None, ms, note or None)."""
+    """Returns (wav or None, ms, note or None). The fixed demo sentences are cached on disk, so the volunteer
+    question and the confirmation play at once (ms is 0 on a cache hit)."""
+    path = _cache_path(text, lang)
+    # the volume cache first, then the copy shipped in the image (app/voice_seed): audio rendered by real Sarvam bulbul
+    for p in (path, os.path.join(os.path.dirname(os.path.abspath(__file__)), "voice_seed", os.path.basename(path))):
+        try:
+            with open(p, "rb") as f:
+                w = f.read()
+            if len(w) > 1000:
+                return w, 0, None
+        except OSError:
+            pass
     if not sarvam.available():
         return None, 0, "Voice unavailable (no Sarvam key). Type instead."
     try:
         a = sarvam.tts(text, lang)
+        try:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "wb") as f:
+                f.write(a.wav)
+        except OSError:
+            pass
         return a.wav, a.ms, None
     except sarvam.SarvamNoCredits:
         return None, 0, sarvam.NO_CREDITS_MSG
     except sarvam.SarvamError as e:
         return None, 0, f"Voice unavailable ({e}). Type instead."
+
+
+def warm_cache():
+    """Pre-render the fixed Malayalam sentences (question, confirmation, please-say-yes-or-no)."""
+    for t in (QUESTION_ML, CONFIRM_ML, UNCLEAR_ML):
+        _speak(t, "ml")
 
 
 def mark_rush_detected():
@@ -182,7 +222,7 @@ def is_busy():
 
 # ---------------------------------------------------------------- yes / no
 def _tokens(text):
-    return [t for t in re.split(r"[\s,.;:!?।\"'()\[\]\-]+", (text or "").lower().replace("‌", "")) if t]
+    return [t for t in re.split(r"[\s,.;:!?।\"()\[\]\-]+", (text or "").lower().replace("‌", "")) if t]
 
 
 def _match(tok, words):
@@ -194,11 +234,13 @@ def _match(tok, words):
 
 def keyword_decision(text):
     toks = _tokens(text)
-    y = any(_match(t, _YES_ALL) for t in toks)
+    strong = any(_match(t, _YES_ALL) for t in toks)
+    weak = any(_match(t, _YES_WEAK_ALL) for t in toks)
     n = any(_match(t, _NO_ALL) for t in toks)
-    if y == n:
-        return "unclear"
-    return "yes" if y else "no"
+    if n:
+        contradiction = strong or any(t in ("go", "ahead", "proceed") for t in toks)
+        return "unclear" if contradiction else "no"   # "no" with a strong yes is contradictory: never approve
+    return "yes" if (strong or weak) else "unclear"
 
 
 def classify(text):
@@ -374,7 +416,7 @@ def _check_token(tok):
         raise HTTPException(401, "bad incident token")
 
 
-async def _text_or_audio(request: Request):
+async def _text_or_audio(request: Request, reply=False):
     """Returns (text, error_json or None, stt_ms). Accepts multipart (audio/text) or JSON."""
     from starlette.concurrency import run_in_threadpool
     ct = request.headers.get("content-type", "")
@@ -387,8 +429,22 @@ async def _text_or_audio(request: Request):
         return text, None, 0
     data = await up.read()
     try:
-        r = await run_in_threadpool(sarvam.stt, data, up.filename or "reply.webm", up.content_type or "audio/webm")
-        return r.transcript.strip(), None, r.ms
+        fn, ctype = up.filename or "reply.webm", up.content_type or "audio/webm"
+        r = await run_in_threadpool(sarvam.stt, data, fn, ctype)
+        text, ms = r.transcript.strip(), r.ms
+        if reply and text and keyword_decision(text) == "unclear" and len(text.split()) <= 4:
+            # A short answer that auto-detect could not read: listen again as Malayalam (the question language),
+            # then as English. First reading that gives a clear yes or no wins.
+            for lang in ("ml", "en"):
+                try:
+                    r2 = await run_in_threadpool(sarvam.stt, data, fn, ctype, lang, "transcribe")
+                except sarvam.SarvamError:
+                    break
+                ms += r2.ms
+                if keyword_decision(r2.transcript) != "unclear":
+                    text = text + " | " + r2.transcript.strip()
+                    break
+        return text, None, ms
     except sarvam.SarvamNoCredits:
         return "", {"transcript": "", "decision": "unavailable", "notice": sarvam.NO_CREDITS_MSG}, 0
     except sarvam.SarvamError as e:
@@ -478,16 +534,19 @@ def api_audio(kind: str = "question"):
 @router.post("/api/volunteer/reply")
 async def api_reply(request: Request):
     from starlette.concurrency import run_in_threadpool
-    text, err, stt_ms = await _text_or_audio(request)
+    text, err, stt_ms = await _text_or_audio(request, reply=True)
     if err:
         return err
     if not text:
-        return {"transcript": "", "decision": "unclear", "notice": "Nothing heard. Tap Yes or No."}
+        return {"transcript": "", "decision": "unclear", "notice": "Nothing heard. Tap Yes or No.", "message": UNCLEAR_EN, "message_ml": UNCLEAR_ML}
     decision = await run_in_threadpool(handle_reply, text)
     with _lock:
         STATE["latency"]["stt_ms"] = stt_ms
         _save()
-    return {"transcript": text, "decision": decision, "latency": {"stt_ms": stt_ms, **STATE["latency"]}}
+    out = {}
+    if decision == "unclear":
+        out = {"message": UNCLEAR_EN, "message_ml": UNCLEAR_ML}
+    return {**out, "transcript": text, "decision": decision, "latency": {"stt_ms": stt_ms, **STATE["latency"]}}
 
 
 @router.post("/api/volunteer/crowd-report")
@@ -505,5 +564,9 @@ async def api_crowd(request: Request):
 
 try:
     load()
+except Exception:
+    pass
+try:
+    threading.Thread(target=warm_cache, daemon=True).start()
 except Exception:
     pass

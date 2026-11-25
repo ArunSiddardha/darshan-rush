@@ -26,7 +26,10 @@ const gname=id=>{const g=(Q.gates||[]).find(x=>x.id===id);return g?(g.name||g.id
 function langs(){$('#langs').innerHTML=Object.keys(LN).map(k=>`<button class="${k==lang?'on':''}" data-k="${k}" lang="${k}">${LN[k]}</button>`).join('');
  document.querySelectorAll('#langs button').forEach(b=>b.onclick=()=>{lang=b.dataset.k;localStorage.lang=lang;spokenLite=false;langs();text();poll();});}
 function text(){document.documentElement.lang=lang;$('#tag').textContent=t('tag');$('#hint').textContent=rec?t('rec'):t('hint');$('#book').textContent=t('book');$('#reached').textContent=t('reached');$('#play').textContent=t('play');$('#gatesh').textContent=t('gates');$('#go').textContent=t('send');banner();renderQ();renderSlot();}
-function play(b64){if(!b64)return false;const p=$('#player');p.src='data:audio/wav;base64,'+b64;p.play().catch(()=>{});return true}
+const SILENT='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+function prime(){const p=$('#player');if(p&&!p.dataset.primed){p.dataset.primed=1;p.src=SILENT;p.play().catch(()=>{})}}  // a tap on the mic unlocks sound on phones
+function play(b64){if(!b64)return false;const p=$('#player');p.src='data:audio/wav;base64,'+b64;p.play().catch(()=>{const h=$('#hint');if(h)h.textContent='Tap the speaker button to hear the reply'});return true}
+function extOf(m){return /mp4|aac/.test(m||'')?'m4a':/ogg/.test(m||'')?'ogg':'webm'}
 function banner(){const b=$('#banner');if(isLite()){b.innerHTML=t('lite');b.classList.add('show')}else b.classList.remove('show');
  $('#staggernote').textContent=isStag()?t('stag'):'';}
 function renderQ(){
@@ -84,11 +87,11 @@ async function sendVoice(fd){
  if(j.slot){mySlot=slotFrom(j,j.slot.gate);renderSlot();renderQ()}}
 $('#say').onsubmit=e=>{e.preventDefault();const v=$('#typed').value.trim();if(!v)return;const fd=new FormData();fd.append('text',v);sendVoice(fd)};
 $('#mic').onclick=async()=>{
- if(rec){rec.stop();return}
+ prime();if(rec){rec.stop();return}
  try{const s=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];rec=new MediaRecorder(s);
   rec.ondataavailable=e=>chunks.push(e.data);
   rec.onstop=()=>{s.getTracks().forEach(x=>x.stop());const blob=new Blob(chunks,{type:rec.mimeType||'audio/webm'});rec=null;$('#mic').classList.remove('rec');$('#hint').textContent=t('hint');
-   const fd=new FormData();fd.append('audio',blob,'speech.webm');sendVoice(fd)};
+   const fd=new FormData();fd.append('audio',blob,'speech.'+extOf(blob.type));sendVoice(fd)};
   rec.start();$('#mic').classList.add('rec');$('#hint').textContent=t('rec');
  }catch(e){$('#lat').innerHTML='<span class="err">'+t('nomic')+'</span>'}};
 DarshanMap.init($('#map'));langs();text();poll();

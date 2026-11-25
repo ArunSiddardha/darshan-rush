@@ -11,3 +11,5 @@ _tools/
 _tools
 metrics/recovery.csv
 .env.*.local
+voice_tests/audio/
+voice_tests/out/

@@ -8,6 +8,7 @@ Keyword intent works in all six languages without any LLM.
 import base64
 import re
 import time
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
@@ -44,21 +45,32 @@ RELATIVES = ["mother", "father", "mom", "dad", "grandmother", "grandfather", "gr
              "old", "aged", "माँ", "मां", "माता", "पिता", "पिताजी", "दादी", "दादा", "बुजुर्ग",
              "അമ്മ", "അച്ഛൻ", "അച്ഛന്", "അമ്മൂമ്മ", "മുത്തശ്ശി", "അപ്പൂപ്പൻ", "അമ്മയ",
              "அம்மா", "அப்பா", "பாட்டி", "தாத்தா", "అమ్మ", "నాన్న", "అమ్మమ్మ", "తాత", "ಅಮ್ಮ", "ಅಪ್ಪ", "ಅಜ್ಜಿ", "ತಾತ", "ಅಜ್ಜ"]
-TOMORROW = ["tomorrow", "kal", "कल", "നാളെ", "நாளை", "రేపు", "ನಾಳೆ"]
-PARTS = {"morning": ["morning", "सुबह", "രാവിലെ", "காலை", "ఉదయం", "ಬೆಳಿಗ್ಗೆ"],
-         "afternoon": ["afternoon", "दोपहर", "ഉച്ച", "மதியம்", "మధ్యాహ్నం", "ಮಧ್ಯಾಹ್ನ"],
-         "evening": ["evening", "शाम", "വൈകുന്നേരം", "மாலை", "సాయంత్రం", "ಸಂಜೆ"]}
-GATE_ALIASES = {"river": ["river", "crossing", "नदी", "പുഴ", "ആറ്", "നദി", "ஆறு", "நதி", "నది", "ನದಿ"],
+AGE_MARK = ["years", "year old", "age", "aged", "उम्र", "साल", "वर्ष", "வயசு", "வயது", "వయసు", "వయస్సు", "വയസ്സ്", "വയസ്", "വയസ്സായി", "ವಯಸ್ಸು"]
+AGE_WORDS = [  # longest first
+    ("अस्सी", 80), ("पचहत्तर", 75), ("बहत्तर", 72), ("सत्तर", 70), ("पैंसठ", 65), ("साठ", 60),
+    ("எழுபத்தைந்து", 75), ("எழுபது", 70), ("அறுபத்தைந்து", 65), ("அறுபது", 60), ("எண்பது", 80),
+    ("డెబ్బై ఐదు", 75), ("డెబ్భై ఐదు", 75), ("డెబ్భై", 70), ("డెబ్బై", 70), ("అరవై ఐదు", 65), ("అరవై", 60), ("ఎనభై", 80),
+    ("എഴുപത്തഞ്ച്", 75), ("എഴുപത്", 70), ("അറുപത്തഞ്ച്", 65), ("അറുപത്", 60), ("എൺപത്", 80),
+    ("ಎಪ್ಪತ್ತೈದು", 75), ("ಎಪ್ಪತ್ತು", 70), ("ಅರವತ್ತೈದು", 65), ("ಅರವತ್ತು", 60), ("ಎಂಭತ್ತು", 80),
+    ("eighty", 80), ("seventy five", 75), ("seventy-five", 75), ("seventy", 70), ("sixty five", 65), ("sixty-five", 65), ("sixty", 60)]
+TOMORROW = ["tomorrow", "kal ", "naalai", "naale", "nale ", "repu", "naaley", "कल", "നാളെ", "நாளை", "రేపు", "ನಾಳೆ"]
+PARTS = {"morning": ["morning", "subah", "subha", "kaalai", "kalai", "raavile", "ravile", "udayam", "beligge", "सुबह", "രാവിലെ", "காலை", "கலை", "ఉదయం", "ಬೆಳಿಗ್ಗೆ"],
+         "afternoon": ["afternoon", "dopahar", "mathiyam", "uchcha", "madhyahna", "दोपहर", "ഉച്ച", "மதியம்", "మధ్యాహ్నం", "ಮಧ್ಯಾಹ್ನ"],
+         "evening": ["evening", "shaam", "maalai", "vaikunneram", "saayantram", "sanje", "शाम", "വൈകുന്നേരം", "മാലൈ", "மாலை", "సాయంత్రం", "ಸಂಜೆ"]}
+GATE_ALIASES = {"forest": ["forest", "path", "जंगल", "കാട്", "காடு", "అడవి", "ಕಾಡು"],
+                "base": ["base", "camp", "बेस", "ബേസ്", "பேஸ்", "బేస్", "ಬೇಸ್"],
+                "queue": ["queue complex", "complex", "कॉम्प्लेक्स", "കോംപ്ലക്സ്", "காம்ப்ளக்ஸ்"],
+                "river": ["river", "crossing", "नदी", "പുഴ", "ആറ്", "നദി", "ஆறு", "நதி", "నది", "ನದಿ"],
                 "main": ["main", "मुख्य", "പ്രധാന", "முதன்மை", "ప్రధాన", "ಮುಖ್ಯ"],
                 "hill": ["hill", "steps", "climb", "पहाड़", "सीढ़", "മല", "படி", "మెట్లు", "ಮೆಟ್ಟಿಲು"]}
 
 # ---------------------------------------------------------------- replies (six languages)
 T = {
     "en": {
-        "book_ok": "Your slot is booked: {slot}. Please arrive 15 minutes early.",
-        "book_walkin": "Walk-in booked for {party}: {slot}. Please give the pilgrim this time.",
-        "wait": "The wait at {gate} is about {min} minutes (simulated).",
-        "wait_all": "Waits now: {list} (simulated).",
+        "book_ok": "Your slot is booked for {when} at {gate}. Please come fifteen minutes early.",
+        "book_walkin": "Walk-in booked for {party} at {gate}, {when}. Please tell the pilgrim this time.",
+        "wait": "The wait at {gate} is about {min} minutes. This is simulated.",
+        "wait_all": "Waits now: {list}. This is simulated.",
         "age": "Noted. We will keep your route short and give you voice help. Take your time.",
         "verify": ("I cannot confirm any website is real. Book only on the official temple board website, and never pay a "
                    "person at the gate for a slot: slots are not sold by touts. Fake booking sites copy the real look, so "
@@ -70,8 +82,8 @@ T = {
         "stub_queue": "Queue times are not connected yet (stub). Please try again shortly.",
     },
     "hi": {
-        "book_ok": "आपका स्लॉट बुक हो गया: {slot}। कृपया 15 मिनट पहले पहुँचें।",
-        "book_walkin": "{party} के लिए वॉक-इन बुक हुआ: {slot}। यह समय श्रद्धालु को बता दीजिए।",
+        "book_ok": "आपका स्लॉट बुक हो गया है, {when}, {gate} पर। कृपया पंद्रह मिनट पहले आइए।",
+        "book_walkin": "{party} लोगों के लिए वॉक-इन बुक हो गया, {when}, {gate} पर। यह समय श्रद्धालु को बता दीजिए।",
         "wait": "{gate} पर इंतज़ार लगभग {min} मिनट है (सिमुलेटेड)।",
         "wait_all": "अभी इंतज़ार: {list} (सिमुलेटेड)।",
         "age": "ठीक है। हम आपका रास्ता छोटा रखेंगे और आवाज़ से मदद देंगे। आराम से चलिए।",
@@ -85,8 +97,8 @@ T = {
         "stub_queue": "कतार का समय अभी जुड़ा नहीं है (स्टब)। कृपया थोड़ी देर बाद कोशिश करें।",
     },
     "ml": {
-        "book_ok": "നിങ്ങളുടെ സ്ലോട്ട് ബുക്ക് ചെയ്തു: {slot}. 15 മിനിറ്റ് മുൻപ് എത്തുക.",
-        "book_walkin": "{party} പേർക്ക് വാക്ക്-ഇൻ ബുക്ക് ചെയ്തു: {slot}. ഈ സമയം തീർത്ഥാടകനോട് പറയുക.",
+        "book_ok": "നിങ്ങളുടെ സ്ലോട്ട് ബുക്ക് ചെയ്തു, {when}, {gate} ഗേറ്റിൽ. പതിനഞ്ച് മിനിറ്റ് മുൻപ് എത്തണം.",
+        "book_walkin": "{party} പേർക്ക് വാക്ക്-ഇൻ ബുക്ക് ചെയ്തു, {when}, {gate}. ഈ സമയം തീർത്ഥാടകനോട് പറയണം.",
         "wait": "{gate} ൽ ഏകദേശം {min} മിനിറ്റ് കാത്തിരിക്കണം (സിമുലേറ്റഡ്).",
         "wait_all": "ഇപ്പോഴത്തെ കാത്തിരിപ്പ്: {list} (സിമുലേറ്റഡ്).",
         "age": "ശരി. ഞങ്ങൾ നിങ്ങളുടെ വഴി ചെറുതാക്കും, ശബ്ദത്തിൽ സഹായിക്കും. സാവധാനം പോകൂ.",
@@ -100,8 +112,8 @@ T = {
         "stub_queue": "ക്യൂ സമയം ഇതുവരെ ബന്ധിപ്പിച്ചിട്ടില്ല (സ്റ്റബ്). അല്പം കഴിഞ്ഞ് ശ്രമിക്കൂ.",
     },
     "ta": {
-        "book_ok": "உங்கள் ஸ்லாட் பதிவாகிவிட்டது: {slot}. 15 நிமிடம் முன்பே வாருங்கள்.",
-        "book_walkin": "{party} பேருக்கு வாக்-இன் பதிவு: {slot}. இந்த நேரத்தை பக்தரிடம் சொல்லுங்கள்.",
+        "book_ok": "உங்கள் ஸ்லாட் பதிவாகிவிட்டது, {when}, {gate}. பதினைந்து நிமிடம் முன்பே வாருங்கள்.",
+        "book_walkin": "{party} பேருக்கு வாக்-இன் பதிவாகிவிட்டது, {when}, {gate}. இந்த நேரத்தை பக்தரிடம் சொல்லுங்கள்.",
         "wait": "{gate} இல் காத்திருப்பு சுமார் {min} நிமிடம் (சிமுலேட்டட்).",
         "wait_all": "இப்போதைய காத்திருப்பு: {list} (சிமுலேட்டட்).",
         "age": "சரி. உங்கள் வழியை குறுகியதாக வைத்து குரல் உதவி தருவோம். மெதுவாக செல்லுங்கள்.",
@@ -116,8 +128,8 @@ T = {
         "stub_queue": "வரிசை நேரம் இன்னும் இணைக்கப்படவில்லை (ஸ்டப்). சிறிது நேரம் கழித்து முயலுங்கள்.",
     },
     "te": {
-        "book_ok": "మీ స్లాట్ బుక్ అయింది: {slot}. 15 నిమిషాల ముందు రండి.",
-        "book_walkin": "{party} మందికి వాక్-ఇన్ బుక్ అయింది: {slot}. ఈ సమయం భక్తునికి చెప్పండి.",
+        "book_ok": "మీ స్లాట్ బుక్ అయింది, {when}, {gate} వద్ద. పదిహేను నిమిషాల ముందు రండి.",
+        "book_walkin": "{party} మందికి వాక్-ఇన్ బుక్ అయింది, {when}, {gate}. ఈ సమయం భక్తునికి చెప్పండి.",
         "wait": "{gate} వద్ద వేచి ఉండే సమయం సుమారు {min} నిమిషాలు (సిమ్యులేటెడ్).",
         "wait_all": "ఇప్పటి వేచి ఉండే సమయం: {list} (సిమ్యులేటెడ్).",
         "age": "సరే. మీ దారిని చిన్నగా ఉంచి, వాయిస్ సహాయం ఇస్తాం. నెమ్మదిగా వెళ్ళండి.",
@@ -131,8 +143,8 @@ T = {
         "stub_queue": "క్యూ సమయం ఇంకా కనెక్ట్ కాలేదు (స్టబ్). కొంచెం సేపటి తర్వాత ప్రయత్నించండి.",
     },
     "kn": {
-        "book_ok": "ನಿಮ್ಮ ಸ್ಲಾಟ್ ಬುಕ್ ಆಗಿದೆ: {slot}. 15 ನಿಮಿಷ ಮುಂಚೆ ಬನ್ನಿ.",
-        "book_walkin": "{party} ಜನರಿಗೆ ವಾಕ್-ಇನ್ ಬುಕ್ ಆಗಿದೆ: {slot}. ಈ ಸಮಯವನ್ನು ಭಕ್ತರಿಗೆ ತಿಳಿಸಿ.",
+        "book_ok": "ನಿಮ್ಮ ಸ್ಲಾಟ್ ಬುಕ್ ಆಗಿದೆ, {when}, {gate} ನಲ್ಲಿ. ಹದಿನೈದು ನಿಮಿಷ ಮುಂಚೆ ಬನ್ನಿ.",
+        "book_walkin": "{party} ಜನರಿಗೆ ವಾಕ್-ಇನ್ ಬುಕ್ ಆಗಿದೆ, {when}, {gate}. ಈ ಸಮಯವನ್ನು ಭಕ್ತರಿಗೆ ತಿಳಿಸಿ.",
         "wait": "{gate} ನಲ್ಲಿ ಕಾಯುವ ಸಮಯ ಸುಮಾರು {min} ನಿಮಿಷ (ಸಿಮ್ಯುಲೇಟೆಡ್).",
         "wait_all": "ಈಗಿನ ಕಾಯುವ ಸಮಯ: {list} (ಸಿಮ್ಯುಲೇಟೆಡ್).",
         "age": "ಸರಿ. ನಿಮ್ಮ ದಾರಿಯನ್ನು ಚಿಕ್ಕದಾಗಿಡುತ್ತೇವೆ ಮತ್ತು ಧ್ವನಿ ಸಹಾಯ ನೀಡುತ್ತೇವೆ. ನಿಧಾನವಾಗಿ ಹೋಗಿ.",
@@ -166,13 +178,23 @@ def keyword_intent(text):
     low = (text or "").lower().translate(DIGITS)
     out = {"intent": "unknown", "age": None, "party": None, "when": None, "gate_hint": None}
     nums = [int(n) for n in re.findall(r"\d{1,3}", low)]
-    if _has(low, RELATIVES):
-        ages = [n for n in nums if 10 <= n <= 110]
+    if _has(low, RELATIVES) or _has(low, AGE_MARK):
+        ages = [n for n in nums if 40 <= n <= 110] or [n for n in nums if 10 <= n <= 110]
         if ages:
             out["age"] = ages[0]
-    p = re.search(r"(\d{1,2})\s*(?:people|persons|pilgrims|members|log|जन|പേർ|பேர்|మంది|ಜನ)", low)
+        else:
+            for w, v in AGE_WORDS:
+                if w in low:
+                    out["age"] = v
+                    break
+    p = re.search(r"(\d{1,2})\s*(?:people|persons|pilgrims|members|log|जन|പേർ|പേര|பேர்|మంది|ಜನ)", low)
     if p:
         out["party"] = int(p.group(1))
+    else:
+        pw = re.search(r"\b(two|three|four|five)\s+(?:people|persons|pilgrims|members)|(दो|तीन|चार|पाँच)\s+(?:लोग|जन|श्रद्धालु)|(രണ്ടു|രണ്ട്|മൂന്ന്|നാല്)\s*(?:പേർ|പേര)", low)
+        if pw:
+            w = next(g for g in pw.groups() if g)
+            out["party"] = {"two": 2, "three": 3, "four": 4, "five": 5, "दो": 2, "तीन": 3, "चार": 4, "पाँच": 5, "രണ്ടു": 2, "രണ്ട്": 2, "മൂന്ന്": 3, "നാല്": 4}[w]
     if _has(low, TOMORROW):
         out["when"] = "tomorrow"
     for part, ws in PARTS.items():
@@ -222,6 +244,103 @@ def understand(text, use_llm=True):
         return kw, "keywords", 0
 
 
+# ---------------------------------------------------------------- time of day
+IST = timezone(timedelta(hours=5, minutes=30))
+PART_HOUR = {"morning": 6, "afternoon": 13, "evening": 17}
+EN_HOURS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+            "eleven": 11, "twelve": 12}
+EN_MINS = {"fifteen": 15, "thirty": 30, "forty five": 45, "forty-five": 45, "quarter": 15, "half": 30}
+CLOCK_MARK = r"(?:am|pm|a\.m\.?|p\.m\.?|o'?clock|बजे|மணி|గంట|മണി|ಗಂಟೆ|baje|mani\b)"
+
+
+def parse_when(text, now=None):
+    """Spoken time wish -> (epoch seconds in the future or None, label). Handles '10:30', '10 am', 'ten thirty',
+    'tomorrow morning', 'naalaikku kaalai', 'repu udayam', 'kal subah'. No time words at all -> (None, None)."""
+    low = (text or "").lower().translate(DIGITS)
+    now = now or datetime.now(IST)
+    tomorrow = _has(low, TOMORROW)
+    part = next((p for p, ws in PARTS.items() if _has(low, ws)), None)
+    hh = mm = None
+    m = re.search(r"(?<![\d:])(\d{1,2})[:.](\d{2})(?!\d)\s*(am|pm|p\.m|a\.m)?", low)
+    if m and int(m.group(1)) <= 24 and int(m.group(2)) < 60:
+        hh, mm = int(m.group(1)), int(m.group(2))
+        if m.group(3) and m.group(3).startswith("p") and hh < 12:
+            hh += 12
+        elif m.group(3) and m.group(3).startswith("a") and hh == 12:
+            hh = 0
+    else:
+        m = re.search(r"(?<![\d:])(\d{1,2})\s*" + CLOCK_MARK, low) or re.search(r"\bat\s+(\d{1,2})\b(?!\s*(?:people|persons))", low)
+        if m and 1 <= int(m.group(1)) <= 24:
+            hh, mm = int(m.group(1)), 0
+            tail = low[m.end() - len(m.group(0)):m.end() + 4]
+            if "pm" in tail or "p.m" in tail:
+                hh += 12 if hh < 12 else 0
+            elif ("am" in tail or "a.m" in tail) and hh == 12:
+                hh = 0
+        else:
+            wm = re.search(r"\b(" + "|".join(EN_HOURS) + r")(?:\s+(" + "|".join(sorted(EN_MINS, key=len, reverse=True)) + r"))?(?=\W|$)", low)
+            if wm and (re.search(r"\bat\s+" + wm.group(1), low) or wm.group(2) or re.search(wm.group(1) + r"\s*(?:o'?clock|am|pm)", low)):
+                hh, mm = EN_HOURS[wm.group(1)], EN_MINS.get(wm.group(2) or "", 0)
+    if hh is not None:
+        if part in ("afternoon", "evening") and hh < 12:
+            hh += 12
+        elif part == "morning" and hh == 12:
+            hh = 0
+        elif part is None and not re.search(r"am|a\.m|24", low) and 1 <= hh <= 5:
+            hh += 12     # nobody books darshan at 3 in the night
+    elif part:
+        hh, mm = PART_HOUR[part], 0
+    elif tomorrow:
+        hh, mm = PART_HOUR["morning"], 0
+    else:
+        return None, None
+    if hh > 23:
+        hh = 0
+    want = now.replace(hour=hh, minute=mm, second=0, microsecond=0) + timedelta(days=1 if tomorrow else 0)
+    if want <= now:
+        want += timedelta(days=1)
+    return int(want.timestamp()), f"{'tomorrow ' if tomorrow else ''}{hh:02d}:{mm:02d}"
+
+
+DAYPART_WORDS = {
+    "en": {"morning": "in the morning", "afternoon": "in the afternoon", "evening": "in the evening", "night": "at night"},
+    "hi": {"morning": "सुबह", "afternoon": "दोपहर", "evening": "शाम", "night": "रात"},
+    "ml": {"morning": "രാവിലെ", "afternoon": "ഉച്ചയ്ക്ക്", "evening": "വൈകുന്നേരം", "night": "രാത്രി"},
+    "ta": {"morning": "காலை", "afternoon": "மதியம்", "evening": "மாலை", "night": "இரவு"},
+    "te": {"morning": "ఉదయం", "afternoon": "మధ్యాహ్నం", "evening": "సాయంత్రం", "night": "రాత్రి"},
+    "kn": {"morning": "ಬೆಳಿಗ್ಗೆ", "afternoon": "ಮಧ್ಯಾಹ್ನ", "evening": "ಸಂಜೆ", "night": "ರಾತ್ರಿ"},
+}
+TOMORROW_WORD = {"en": "tomorrow", "hi": "कल", "ml": "നാളെ", "ta": "நாளை", "te": "రేపు", "kn": "ನಾಳೆ"}
+TODAY_WORD = {"en": "today", "hi": "आज", "ml": "ഇന്ന്", "ta": "இன்று", "te": "ఈరోజు", "kn": "ಇಂದು"}
+MIN_WORD = {"en": "minutes", "hi": "मिनट", "ml": "മിനിറ്റ്", "ta": "நிமிடம்", "te": "నిమిషాలు", "kn": "ನಿಮಿಷ"}
+EN_NUM = ["twelve", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven"]
+
+
+def say_time(lang, ts, now=None):
+    """The way people say a slot start: 'tomorrow at quarter past six in the morning', 'कल सुबह 6:15 बजे'."""
+    now = now or datetime.now(IST)
+    t = datetime.fromtimestamp(ts, IST)
+    day = TOMORROW_WORD[lang] if t.date() > now.date() else TODAY_WORD[lang]
+    h12 = t.hour % 12 or 12
+    part = "morning" if 4 <= t.hour < 12 else "afternoon" if t.hour < 16 else "evening" if t.hour < 20 else "night"
+    pw = DAYPART_WORDS[lang][part]
+    if lang == "en":
+        mins = {0: f"{EN_NUM[h12 % 12]}" + " o'clock", 15: f"quarter past {EN_NUM[h12 % 12]}", 30: f"half past {EN_NUM[h12 % 12]}",
+                45: f"quarter to {EN_NUM[(h12 + 1) % 12]}"}.get(t.minute, f"{h12}:{t.minute:02d}")
+        return f"{day} at {mins} {pw}"
+    clock = f"{h12}:{t.minute:02d}" if t.minute else f"{h12}"
+    suffix = {"hi": "बजे", "ml": "മണിക്ക്", "ta": "மணிக்கு", "te": "గంటకు", "kn": "ಗಂಟೆಗೆ"}[lang]
+    return f"{day} {pw} {clock} {suffix}"
+
+
+def spoken(text, lang):
+    """Make a reply sound natural when read aloud: no brackets, no symbols."""
+    t = text.replace("(", ", ").replace(")", "").replace(" ,", ",").replace("..", ".")
+    if lang == "en":
+        t = t.replace(".gov.in", " dot gov dot in")
+    return re.sub(r"\s+", " ", t).strip()
+
+
 # ---------------------------------------------------------------- Lane B adapters (lazy)
 def _mod(name):
     try:
@@ -247,6 +366,17 @@ def get_gates(uid="anon", lang="en"):
         return None
 
 
+def gate_in_text(gates, text):
+    """A gate whose own name words ('River', 'Crossing', 'Steps') are spoken in the text, best match first."""
+    low = (text or "").lower()
+    best, score = None, 0
+    for g in gates or []:
+        n = sum(1 for w in re.findall(r"[a-z]{4,}", str(g.get("name", "")).lower()) if w in low)
+        if n > score:
+            best, score = g, n
+    return best
+
+
 def pick_gate(gates, hint):
     if not gates:
         return None
@@ -269,7 +399,7 @@ def book_slot(uid, gate, when, walk_in=False):
         return None
     mode = fl.slot_mode() if fl else "open"
     try:
-        slot, again = sl.book(uid, gate or "g4", None, mode, walk_in=walk_in)
+        slot, again = sl.book(uid, gate or "g4", when, mode, walk_in=walk_in)
     except Exception:
         return None
     return {"slot": slot, "mode": mode, "already_booked": again}
@@ -317,25 +447,30 @@ def respond(text, lang, uid="anon", walkin=False, gates=None):
         if not g:
             extra["stub"] = True
             return _t(lang, "stub_queue"), extra
-        gate = pick_gate(g, info["gate_hint"])
+        gate = gate_in_text(g, text) or pick_gate(g, info["gate_hint"])
         if gate:
             extra["gate"] = gate.get("id")
             return _t(lang, "wait").format(gate=gate.get("name"), min=gate.get("wait_min")), extra
-        lst = ", ".join(f"{x.get('name')} {x.get('wait_min')}" for x in g)
+        mw = MIN_WORD[lang]
+        lst = ". ".join(f"{x.get('name')}, {x.get('wait_min')} {mw}" for x in g)
         return _t(lang, "wait_all").format(list=lst), extra
     if intent in ("book", "walkin"):
         g = get_gates(uid, lang) if gates is None else gates
-        gate = pick_gate(g, info["gate_hint"]) or (g[0] if g else None)
+        gate = gate_in_text(g, text) or pick_gate(g, info["gate_hint"]) or (g[0] if g else None)
         wid = f"walkin-{int(time.time())}" if intent == "walkin" else uid
-        res = book_slot(wid, gate.get("id") if gate else None, info["when"], walk_in=(intent == "walkin"))
+        want, _lbl = parse_when(text)
+        extra["wanted"] = _lbl
+        res = book_slot(wid, gate.get("id") if gate else None, want, walk_in=(intent == "walkin"))
         if res is None:
             extra["stub"] = True
             return _t(lang, "stub_slots"), extra
         extra["booking"] = res
-        slot = _slot_text(res)
+        sd = res["slot"] if isinstance(res.get("slot"), dict) else {}
+        when = say_time(lang, sd["window"]) if sd.get("window") else _slot_text(res)
+        gname = sd.get("gate_name") or (gate or {}).get("name") or ""
         if intent == "walkin":
-            return _t(lang, "book_walkin").format(party=info["party"] or 1, slot=slot), extra
-        return _t(lang, "book_ok").format(slot=slot), extra
+            return _t(lang, "book_walkin").format(party=info["party"] or 1, when=when, gate=gname), extra
+        return _t(lang, "book_ok").format(when=when, gate=gname), extra
     return _t(lang, "unknown"), extra
 
 
@@ -344,7 +479,7 @@ def speak(text, lang):
     if not sarvam.available():
         return None, 0, "Voice unavailable (no Sarvam key). Type instead."
     try:
-        a = sarvam.tts(text, lang)
+        a = sarvam.tts(spoken(text, lang), lang)
         return base64.b64encode(a.wav).decode(), a.ms, None
     except sarvam.SarvamNoCredits:
         return None, 0, sarvam.NO_CREDITS_MSG

@@ -51,7 +51,8 @@ TPL = {
   "late_soon": "You are not late. Your slot is {time} at {gate}, it starts in {m}.",
   "late_now": "Your slot window is open now. Please go to {gate} soon.",
   "late_past": "Your slot time has passed. Say: book a slot, and I will find a new one.",
-  "fac": "{fac}: {stops}.{near}", "near": " Nearest to you: {stop}.",
+  "fac": "{fac}: {stops}.{near}", "near": " Nearest to you: {stop}.", "ask_pos": " Tell me which stop you have reached and I will name the nearest one.",
+  "where_unk": "I do not know where you are yet. Which stop have you reached: {stops}? Say it, or tap it on the map.",
   "elder": "For elders, wheelchair help is at {w} and rest areas are at {r}. A volunteer at the counter can help too.",
   "distress": "Please stay calm. Go to the nearest volunteer or the information counter at {info}. I have left a help note on the volunteer screen.",
   "fee": "There is no fee. Booking is free and no payment is ever asked. Slots are booked only here or at the spot counter. Do not pay anyone.",
@@ -74,7 +75,8 @@ TPL = {
   "late_soon": "आप लेट नहीं हैं। आपका स्लॉट {time} है, {gate} पर, यह {m} में शुरू होगा।",
   "late_now": "आपका स्लॉट अभी खुला है। कृपया जल्दी {gate} जाइए।",
   "late_past": "आपका स्लॉट का समय निकल गया है। कहिए: स्लॉट बुक करो, मैं नया स्लॉट देखता हूँ।",
-  "fac": "{fac}: {stops}।{near}", "near": " आपके सबसे पास: {stop}।",
+  "fac": "{fac}: {stops}।{near}", "near": " आपके सबसे पास: {stop}।", "ask_pos": " बताइए आप किस पड़ाव पर पहुँचे हैं, मैं सबसे पास वाला बता दूँगा।",
+  "where_unk": "मुझे अभी नहीं पता आप कहाँ हैं। आप किस पड़ाव पर पहुँचे हैं: {stops}? बोलिए या नक्शे पर छुइए।",
   "elder": "बुज़ुर्गों के लिए व्हीलचेयर सहायता {w} पर है और विश्राम स्थल {r} पर हैं। काउंटर पर स्वयंसेवक भी मदद करेंगे।",
   "distress": "शांत रहिए। सबसे पास के स्वयंसेवक या {info} के सूचना काउंटर पर जाइए। मैंने स्वयंसेवक की स्क्रीन पर मदद का नोट छोड़ दिया है।",
   "fee": "कोई शुल्क नहीं है। बुकिंग मुफ़्त है और कभी पैसे नहीं माँगे जाते। स्लॉट सिर्फ़ यहाँ या स्पॉट काउंटर पर मिलते हैं। किसी को पैसे न दें।",
@@ -97,7 +99,8 @@ TPL = {
   "late_soon": "നിങ്ങൾ വൈകിയിട്ടില്ല. സ്ലോട്ട് {time}, {gate} ൽ, {m} കഴിഞ്ഞ് തുടങ്ങും.",
   "late_now": "നിങ്ങളുടെ സ്ലോട്ട് ഇപ്പോൾ തുറന്നിട്ടുണ്ട്. വേഗം {gate} ലേക്ക് പോകൂ.",
   "late_past": "നിങ്ങളുടെ സ്ലോട്ട് സമയം കഴിഞ്ഞു. സ്ലോട്ട് ബുക്ക് ചെയ്യൂ എന്ന് പറയൂ, പുതിയത് നോക്കാം.",
-  "fac": "{fac}: {stops}.{near}", "near": " നിങ്ങൾക്ക് ഏറ്റവും അടുത്തത്: {stop}.",
+  "fac": "{fac}: {stops}.{near}", "near": " നിങ്ങൾക്ക് ഏറ്റവും അടുത്തത്: {stop}.", "ask_pos": " നിങ്ങൾ ഏത് സ്ഥലത്ത് എത്തി എന്ന് പറയൂ, ഏറ്റവും അടുത്തത് ഞാൻ പറയാം.",
+  "where_unk": "നിങ്ങൾ എവിടെയാണെന്ന് എനിക്ക് ഇതുവരെ അറിയില്ല. ഏത് സ്ഥലത്താണ് എത്തിയത്: {stops}? പറയൂ, അല്ലെങ്കിൽ മാപ്പിൽ തൊടൂ.",
   "elder": "മുതിർന്നവർക്ക് വീൽചെയർ സഹായം {w} ൽ ഉണ്ട്, വിശ്രമ സ്ഥലങ്ങൾ {r} ൽ. കൗണ്ടറിലെ വോളന്റിയറും സഹായിക്കും.",
   "distress": "ശാന്തമായിരിക്കൂ. അടുത്തുള്ള വോളന്റിയറുടെ അടുത്തോ {info} ലെ ഇൻഫർമേഷൻ കൗണ്ടറിലോ പോകൂ. വോളന്റിയർ സ്ക്രീനിൽ ഞാൻ സഹായ കുറിപ്പ് ഇട്ടിട്ടുണ്ട്.",
   "fee": "ഫീസ് ഇല്ല. ബുക്കിംഗ് സൗജന്യമാണ്, പണം ഒരിക്കലും ചോദിക്കില്ല. സ്ലോട്ട് ഇവിടെയോ സ്പോട്ട് കൗണ്ടറിലോ മാത്രം. ആർക്കും പണം നൽകരുത്.",
@@ -120,7 +123,8 @@ TPL = {
   "late_soon": "நீங்கள் தாமதம் இல்லை. ஸ்லாட் {time}, {gate} இல், {m} இல் தொடங்கும்.",
   "late_now": "உங்கள் ஸ்லாட் இப்போது திறந்துள்ளது. சீக்கிரம் {gate} செல்லுங்கள்.",
   "late_past": "உங்கள் ஸ்லாட் நேரம் கடந்துவிட்டது. ஸ்லாட் புக் செய் என்று சொல்லுங்கள், புதியது பார்க்கிறேன்.",
-  "fac": "{fac}: {stops}.{near}", "near": " உங்களுக்கு அருகில்: {stop}.",
+  "fac": "{fac}: {stops}.{near}", "near": " உங்களுக்கு அருகில்: {stop}.", "ask_pos": " நீங்கள் எந்த இடத்தை அடைந்தீர்கள் என்று சொல்லுங்கள், அருகில் உள்ளதைச் சொல்கிறேன்.",
+  "where_unk": "நீங்கள் எங்கே இருக்கிறீர்கள் என்று இன்னும் தெரியாது. எந்த இடத்தை அடைந்தீர்கள்: {stops}? சொல்லுங்கள், அல்லது வரைபடத்தில் தொடுங்கள்.",
   "elder": "முதியவர்களுக்கு சக்கர நாற்காலி உதவி {w} இல் உள்ளது, ஓய்வு இடங்கள் {r} இல். கவுண்டரில் தன்னார்வலரும் உதவுவார்.",
   "distress": "அமைதியாக இருங்கள். அருகிலுள்ள தன்னார்வலரிடம் அல்லது {info} தகவல் கவுண்டருக்கு செல்லுங்கள். தன்னார்வலர் திரையில் உதவி குறிப்பு வைத்துள்ளேன்.",
   "fee": "கட்டணம் இல்லை. பதிவு இலவசம், பணம் ஒருபோதும் கேட்கப்படாது. ஸ்லாட் இங்கே அல்லது ஸ்பாட் கவுண்டரில் மட்டுமே. யாருக்கும் பணம் கொடுக்காதீர்கள்.",
@@ -143,7 +147,8 @@ TPL = {
   "late_soon": "మీరు ఆలస్యం కాలేదు. స్లాట్ {time}, {gate} దగ్గర, {m} లో మొదలవుతుంది.",
   "late_now": "మీ స్లాట్ ఇప్పుడు తెరిచి ఉంది. త్వరగా {gate} కి వెళ్ళండి.",
   "late_past": "మీ స్లాట్ సమయం దాటిపోయింది. స్లాట్ బుక్ చేయి అని చెప్పండి, కొత్తది చూస్తాను.",
-  "fac": "{fac}: {stops}.{near}", "near": " మీకు దగ్గరలో: {stop}.",
+  "fac": "{fac}: {stops}.{near}", "near": " మీకు దగ్గరలో: {stop}.", "ask_pos": " మీరు ఏ చోటుకు చేరారో చెప్పండి, దగ్గరలో ఉన్నది చెబుతాను.",
+  "where_unk": "మీరు ఎక్కడ ఉన్నారో నాకు ఇంకా తెలియదు. ఏ చోటుకు చేరారు: {stops}? చెప్పండి, లేదా మ్యాప్‌లో తాకండి.",
   "elder": "పెద్దవారికి వీల్‌చైర్ సహాయం {w} దగ్గర ఉంది, విశ్రాంతి స్థలాలు {r} దగ్గర. కౌంటర్ వద్ద వాలంటీర్ కూడా సహాయం చేస్తారు.",
   "distress": "ప్రశాంతంగా ఉండండి. దగ్గరలోని వాలంటీర్ దగ్గరకు లేదా {info} లోని సమాచార కౌంటర్ కి వెళ్ళండి. వాలంటీర్ స్క్రీన్ మీద సహాయ నోట్ ఉంచాను.",
   "fee": "ఫీజు లేదు. బుకింగ్ ఉచితం, డబ్బు ఎప్పుడూ అడగరు. స్లాట్లు ఇక్కడ లేదా స్పాట్ కౌంటర్ వద్ద మాత్రమే. ఎవరికీ డబ్బు ఇవ్వకండి.",
@@ -166,7 +171,8 @@ TPL = {
   "late_soon": "ನೀವು ತಡವಾಗಿಲ್ಲ. ಸ್ಲಾಟ್ {time}, {gate} ನಲ್ಲಿ, {m} ನಲ್ಲಿ ಶುರು.",
   "late_now": "ನಿಮ್ಮ ಸ್ಲಾಟ್ ಈಗ ತೆರೆದಿದೆ. ಬೇಗ {gate} ಗೆ ಹೋಗಿ.",
   "late_past": "ನಿಮ್ಮ ಸ್ಲಾಟ್ ಸಮಯ ಮುಗಿದಿದೆ. ಸ್ಲಾಟ್ ಬುಕ್ ಮಾಡಿ ಎಂದು ಹೇಳಿ, ಹೊಸದನ್ನು ನೋಡುತ್ತೇನೆ.",
-  "fac": "{fac}: {stops}.{near}", "near": " ನಿಮಗೆ ಹತ್ತಿರ: {stop}.",
+  "fac": "{fac}: {stops}.{near}", "near": " ನಿಮಗೆ ಹತ್ತಿರ: {stop}.", "ask_pos": " ನೀವು ಯಾವ ಸ್ಥಳ ತಲುಪಿದ್ದೀರಿ ಎಂದು ಹೇಳಿ, ಹತ್ತಿರದದ್ದನ್ನು ಹೇಳುತ್ತೇನೆ.",
+  "where_unk": "ನೀವು ಎಲ್ಲಿದ್ದೀರಿ ಎಂದು ನನಗೆ ಇನ್ನೂ ಗೊತ್ತಿಲ್ಲ. ಯಾವ ಸ್ಥಳ ತಲುಪಿದ್ದೀರಿ: {stops}? ಹೇಳಿ, ಅಥವಾ ನಕ್ಷೆಯಲ್ಲಿ ತಟ್ಟಿ.",
   "elder": "ಹಿರಿಯರಿಗೆ ವೀಲ್‌ಚೇರ್ ಸಹಾಯ {w} ನಲ್ಲಿ ಇದೆ, ವಿಶ್ರಾಂತಿ ಸ್ಥಳಗಳು {r} ನಲ್ಲಿ. ಕೌಂಟರ್‌ನ ಸ್ವಯಂಸೇವಕರೂ ಸಹಾಯ ಮಾಡುತ್ತಾರೆ.",
   "distress": "ಶಾಂತವಾಗಿರಿ. ಹತ್ತಿರದ ಸ್ವಯಂಸೇವಕರ ಬಳಿ ಅಥವಾ {info} ನ ಮಾಹಿತಿ ಕೌಂಟರ್‌ಗೆ ಹೋಗಿ. ಸ್ವಯಂಸೇವಕರ ಪರದೆಯಲ್ಲಿ ಸಹಾಯ ಟಿಪ್ಪಣಿ ಇಟ್ಟಿದ್ದೇನೆ.",
   "fee": "ಶುಲ್ಕ ಇಲ್ಲ. ಬುಕಿಂಗ್ ಉಚಿತ, ಹಣ ಎಂದಿಗೂ ಕೇಳುವುದಿಲ್ಲ. ಸ್ಲಾಟ್ ಇಲ್ಲಿ ಅಥವಾ ಸ್ಪಾಟ್ ಕೌಂಟರ್‌ನಲ್ಲಿ ಮಾತ್ರ. ಯಾರಿಗೂ ಹಣ ಕೊಡಬೇಡಿ.",
@@ -382,6 +388,14 @@ def _res(intent, reply, lang, uid, gate_id=None, action="none", show="none", via
             "action": action, "via": via, "lang": lang, "llm_ms": 0, **more}
 
 
+WHERE_AM_I = re.compile(r"\b(where am i|where i am|which (step|stop|stage|place|point) (am i|i am)|what (step|stop) am i|my (location|position))\b", re.I)
+
+
+def ask_position(uid, lang):
+    """Position unknown (there is no GPS): ask which stop the pilgrim has reached instead of a dead-end answer."""
+    return _res("position", T(lang, "where_unk", stops=", ".join(gatematch.display(g, lang) for g in ORDER)), lang, uid, show="map")
+
+
 def _pos_reply(uid, lang):
     gs, pos = _gates(), _pos[uid]
     i = ORDER.index(pos)
@@ -591,7 +605,7 @@ def rules(text, lang, uid, session=None):
     if fac and not (has("elderw") and any(r in low for r in directions.RELATIVES)):
         stops = _stops_with(fac, lang)
         n = _nearest(fac, pos)
-        near = T(lang, "near", stop=gatematch.display(n, lang)) if n else ""
+        near = T(lang, "near", stop=gatematch.display(n, lang)) if n else ("" if _pos.get(uid) else T(lang, "ask_pos"))
         return _res("facility", T(lang, "fac", fac=FAC_LABEL[fac].get(lang) or FAC_LABEL[fac]["en"], stops=stops, near=near), lang, uid,
                     gate_id=n, show="map", facility=fac)
     # ---- elders
@@ -678,7 +692,7 @@ def rules(text, lang, uid, session=None):
 # ------------------------------------------------------------------ model
 SYSTEM = ("You are the voice assistant of a prototype crowded-shrine app. Use ONLY the FACTS. Reply in this language: {lang}, one or two short "
           "sentences, natural when spoken, no lists, no symbols. If the facts do not cover the question, reply exactly in that language with: "
-          "'I do not have that information, please ask the volunteer at the counter.' Never say stop ids like g1, say the stop name. Never invent numbers, places or promises. "
+          "'I do not have that information, please ask the volunteer at the counter.' Never say stop ids like g1, say the stop name. Never invent numbers, places or promises. If the pilgrim asks where they are or which stop or step they are at, use intent position (leave position_gate_id null unless they name the stop). "
           "Return ONLY JSON: {{\"intent\":\"position|wait_gate|wait_best|next|distance|slot_info|facility|book|change|cancel|distress|unknown\","
           "\"gate_id\":\"g1..g5 or null\",\"position_gate_id\":\"g1..g5 or null (only if the pilgrim says where they are)\",\"reply\":\"...\","
           "\"action\":\"none|book|change|cancel|set_position|call_volunteer\"}}\n\nFACTS:\n{facts}")
@@ -864,6 +878,12 @@ def answer(text, lang, uid="anon", session=None, use_model=True, defer_unknown=F
     c = _care(text, lang, uid, r)         # complaint or distress: a tracked care request routed to the nearest volunteer
     if c is not None:
         r = c
+    if r is None and WHERE_AM_I.search(text or ""):
+        if _pos.get(uid):
+            _rep, _nx = _pos_reply(uid, lang)
+            r = _res("position", _rep, lang, uid, gate_id=_pos.get(uid), show="map", next_gate_id=_nx)
+        else:
+            r = ask_position(uid, lang)
     if r is None and defer_unknown:
         return None
     if r is None:
@@ -878,6 +898,8 @@ def answer(text, lang, uid="anon", session=None, use_model=True, defer_unknown=F
             if v:
                 if v["position_gate_id"] and v["action"] == "set_position":
                     set_position(uid, v["position_gate_id"])
+                if v["intent"] == "position" and not _pos.get(uid):
+                    v["reply"] = ask_position(uid, lang)["reply"]
                 if v["action"] == "call_volunteer" or v["intent"] == "distress":
                     v["action"] = "call_volunteer"
                     v["reply"] = T(lang, "distress", info=gatematch.display(_nearest("info", _pos.get(uid)) or "g1", lang))

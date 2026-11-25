@@ -476,10 +476,31 @@ def respond(text, lang, uid="anon", walkin=False, gates=None):
 
 def speak(text, lang):
     """Returns (audio_b64 or None, tts_ms, notice or None)."""
+    import os
+    cache = os.environ.get("TTS_CACHE", "1") != "0"
+    path = None
+    if cache:   # same text and language again (Play again, repeated prompts): no new Sarvam call. Credits are limited.
+        import volunteer
+        path = volunteer._cache_path(text, lang)
+        for p in (path, os.path.join(os.path.dirname(os.path.abspath(__file__)), "voice_seed", os.path.basename(path))):
+            try:
+                with open(p, "rb") as f:
+                    w = f.read()
+                if len(w) > 1000:
+                    return base64.b64encode(w).decode(), 0, None
+            except OSError:
+                pass
     if not sarvam.available():
         return None, 0, "Voice unavailable (no Sarvam key). Type instead."
     try:
         a = sarvam.tts(spoken(text, lang), lang)
+        if path:
+            try:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path, "wb") as f:
+                    f.write(a.wav)
+            except OSError:
+                pass
         return base64.b64encode(a.wav).decode(), a.ms, None
     except sarvam.SarvamNoCredits:
         return None, 0, sarvam.NO_CREDITS_MSG

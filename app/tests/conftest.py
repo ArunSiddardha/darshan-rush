@@ -5,6 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.pop("FLAGSMITH_ENV_KEY", None)
 os.environ["HEAVY_MB"] = "1"
+os.environ["TTS_CACHE"] = "0"   # tests never read or write the audio cache
 os.environ["HEAVY_HOLD_S"] = "0"
 os.environ["RUSH_TOKEN"] = "rt"
 os.environ["INCIDENT_TOKEN"] = "it"

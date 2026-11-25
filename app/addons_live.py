@@ -239,7 +239,8 @@ def tts_cached(text, lang):
     import os
     import volunteer
     path = volunteer._cache_path(text, lang)
-    for p in (path, os.path.join(os.path.dirname(os.path.abspath(__file__)), "voice_seed", os.path.basename(path))):
+    for p in ((path, os.path.join(os.path.dirname(os.path.abspath(__file__)), "voice_seed", os.path.basename(path)))
+              if os.environ.get("TTS_CACHE", "1") != "0" else ()):
         try:
             with open(p, "rb") as f:
                 w = f.read()
@@ -256,12 +257,13 @@ def tts_cached(text, lang):
             if len(_audio_cache) > 400:
                 _audio_cache.clear()
             _audio_cache[key] = (b64, ms)
-        try:
-            os.makedirs(os.path.dirname(path), exist_ok=True)
-            with open(path, "wb") as f:
-                f.write(base64.b64decode(b64))
-        except OSError:
-            pass
+        if os.environ.get("TTS_CACHE", "1") != "0":
+            try:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path, "wb") as f:
+                    f.write(base64.b64decode(b64))
+            except OSError:
+                pass
     return b64, ms, notice, False
 
 

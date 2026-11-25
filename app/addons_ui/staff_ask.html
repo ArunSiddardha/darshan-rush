@@ -1,0 +1,34 @@
+<!-- Staff "Ask anything" fragment. Put it on the volunteer/staff screen, include staff_ask.js, then:
+       StaffAsk.init(document.getElementById('staff-ask'), {lang: () => 'ml', staffId: 'v1'})
+     Needs POST /api/staff/ask and GET /api/staff/examples (addons_staff.py). Inherits --ink --ink-2 --bg --surface --line --accent --r --s2..s5. -->
+<section class="sa" id="staff-ask" data-state="idle" aria-label="Ask anything">
+  <button type="button" class="sa-talk" data-sa="talk" aria-live="polite"><span class="sa-dot" aria-hidden="true"></span><span data-sa="talklabel">Ask anything</span></button>
+  <p class="sa-eg" data-sa="eg" aria-live="off"></p>
+  <p class="sa-you" data-sa="you"></p>
+  <p class="sa-reply" data-sa="reply" role="status" aria-live="polite"></p>
+  <div class="sa-confirm" data-sa="confirm" hidden>
+    <button type="button" class="sa-yes" data-sa="yes">Yes, do it</button>
+    <button type="button" class="sa-no" data-sa="no">No</button>
+  </div>
+  <audio data-sa="audio" hidden></audio>
+  <form class="sa-type" data-sa="form"><input data-sa="text" type="text" placeholder="or type a question" aria-label="Type a question"><button type="submit">Ask</button></form>
+  <p class="sa-note" data-sa="note" role="alert"></p>
+  <style>
+    .sa{display:grid;gap:var(--s3,12px);justify-items:center;padding:var(--s4,16px);color:var(--ink,#111);text-align:center}
+    .sa-talk{display:inline-flex;align-items:center;gap:var(--s3,12px);min-height:64px;min-width:240px;padding:0 var(--s5,24px);border:0;border-radius:var(--r,16px);background:var(--accent,#7a3b00);color:#fff;font:inherit;font-size:1.15rem;font-weight:600;cursor:pointer}
+    .sa-dot{width:14px;height:14px;border-radius:50%;background:#fff;opacity:.9}
+    .sa[data-state=recording] .sa-talk{background:#b3261e}.sa[data-state=recording] .sa-dot{animation:sa-pulse 1s infinite}
+    .sa[data-state=thinking] .sa-talk{opacity:.7}
+    .sa-eg{margin:0;min-height:1.4em;font-size:.95rem;color:var(--ink-2,#555);transition:opacity .3s}
+    .sa-you{margin:0;font-size:.95rem;color:var(--ink-2,#555)}.sa-you:not(:empty)::before{content:"You: "}
+    .sa-reply{margin:0;max-width:34ch;font-size:1.2rem;line-height:1.4;font-weight:560}
+    .sa-confirm{display:flex;gap:var(--s3,12px)}.sa-confirm[hidden]{display:none}
+    .sa-confirm button{min-height:52px;min-width:120px;border-radius:var(--r,14px);border:1px solid var(--line,#ccc);font:inherit;font-size:1.05rem;cursor:pointer;background:var(--surface,#fff);color:var(--ink,#111)}
+    .sa-confirm .sa-yes{background:var(--accent,#7a3b00);color:#fff;border-color:transparent}
+    .sa-type{display:flex;gap:var(--s2,8px);width:100%;max-width:420px}.sa-type input{flex:1;min-height:44px;padding:0 12px;border:1px solid var(--line,#ccc);border-radius:var(--r,12px);font:inherit;background:var(--bg,#fff);color:var(--ink,#111)}
+    .sa-type button{min-height:44px;padding:0 16px;border-radius:var(--r,12px);border:1px solid var(--line,#ccc);background:var(--surface,#fff);color:var(--ink,#111);font:inherit;cursor:pointer}
+    .sa-note{margin:0;min-height:1.2em;color:#b3261e;font-size:.9rem}
+    @keyframes sa-pulse{50%{transform:scale(1.5);opacity:.5}}
+    @media (prefers-reduced-motion:reduce){.sa-dot{animation:none!important}}
+  </style>
+</section>

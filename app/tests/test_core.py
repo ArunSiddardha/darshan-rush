@@ -176,7 +176,7 @@ def test_heavy_really_allocates(monkeypatch):
     sizes = []
     real = bytearray
     with mock.patch.object(main, "bytearray", lambda n: (sizes.append(n), real(n))[1], create=True):
-        main.build_live_render("x")
+        main.build_live_render("rush-x")
     assert sizes == [8 * 1024 * 1024] and main._heavy_in_flight == 0
 
 

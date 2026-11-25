@@ -200,6 +200,8 @@ def is_no(low):
 
 
 def is_bye(low):
+    if re.search(r"\b(next|bus|last|which|what|where|how)\b[^.?!]*\bstop\b|\bstop\b\s*(name|number|after|before|is)", low):
+        return False            # "next stop", "which stop", "stop after forest path" are questions, not goodbye
     return _any(low, BYE_LAT) or _any(low, BYE_IND)
 
 

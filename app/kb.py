@@ -91,7 +91,16 @@ def _strength(q, v):
 
 
 def _pack_path():
-    name = os.environ.get("VENUE_PACK", "venue_demo").strip() or "venue_demo"
+    name = ""
+    try:                                   # the Flagsmith flag venue_pack wins (switch packs without a deploy)
+        import flags
+        if flags.using_flagsmith() or os.environ.get("VENUE_PACK_FROM_FLAG"):
+            name = flags.venue_pack() or ""
+            if name and not (KNOWLEDGE_DIR / (name + ".json")).exists():
+                name = ""
+    except Exception:
+        name = ""
+    name = name or os.environ.get("VENUE_PACK", "venue_demo").strip() or "venue_demo"
     p = Path(name)
     if not p.is_absolute():
         p = KNOWLEDGE_DIR / (name if name.endswith(".json") else name + ".json")

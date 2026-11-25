@@ -190,3 +190,13 @@ body{background:
 .pass-top::after{display:none}
 .mic{background:linear-gradient(180deg,#3B43C4 0%,#2B2E8C 100%);box-shadow:0 0 0 10px rgba(249,115,22,.16),0 22px 46px -18px rgba(43,46,140,.65)}
 .mic.is-listening{background:linear-gradient(180deg,#FB8A3C 0%,#F26B1D 100%)}
+
+/* Polish pass (25 Nov, 14:20): soft white veil so the header reads cleanly over the saffron arc */
+.bar,.top,.sp-bar{position:relative;z-index:1}
+.bar::before,.top::before,.sp-bar::before{content:"";position:absolute;inset:-6px -12px;border-radius:16px;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 6px 20px -14px rgba(43,46,140,.35);z-index:-1}
+.wordmark svg{color:var(--accent)}
+.tag{background:#FFF1E6;color:#8A3B00;border:1px solid rgba(242,107,29,.28)}
+.msg-act{margin-left:auto;flex:none;align-self:center;font:inherit;font-weight:600;color:var(--accent);background:#fff;border:1px solid var(--line);border-radius:var(--pill);padding:6px 14px;min-height:36px;cursor:pointer}
+.msg{align-items:center}
+.foot p{max-width:60ch}
+:focus-visible{outline:3px solid rgba(59,67,196,.45);outline-offset:2px}

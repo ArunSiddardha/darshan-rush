@@ -273,4 +273,8 @@ function demo(){if(DEMO==='listening'){document.body.classList.add('live');$('#m
 langs();text();loadFlags();pollQueue();restore();loadCopy();loadVF();demo();initMap();mapTexts();
 if(qs.get('pos')&&SM){SM.setPos(qs.get('pos'),true);SM.state.focus=qs.get('pos');setTimeout(()=>SM.render(),300)}
 setInterval(pollQueue,3000);setInterval(loadFlags,5000);
+/* warm the audio system after load (suspended until the tap resumes it) so the tap shows Listening at once */
+window.addEventListener('load',()=>setTimeout(()=>{try{if(!window.__warmAC)window.__warmAC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}},600));
+/* small handle for sync.js (shared state) */
+window.DR={get uid(){return uid},get lang(){return lang},get SM(){return SM},loadFlags,restore,pollQueue,text};
 })();

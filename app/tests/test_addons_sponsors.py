@@ -153,7 +153,7 @@ def test_nudgebee_block_empty_is_waiting_not_error():
 def test_flagsmith_without_key_is_a_clear_problem_not_a_crash():
     b = sp.flagsmith_block({})
     assert b["state"] == "problem" and all(f["available"] is False for f in b["flags"])
-    assert len(b["flags"]) == 6
+    assert len(b["flags"]) == 9
 
 
 def test_flagsmith_values_reasons_and_proof(monkeypatch):

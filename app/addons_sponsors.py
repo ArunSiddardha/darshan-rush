@@ -32,9 +32,9 @@ log = logging.getLogger("sponsors")
 router = APIRouter()
 UI = Path(__file__).parent / "addons_ui"
 
-FLAG_NAMES = ["map_mode", "slot_mode", "voice_directions", "voice_first", "ui_copy", "voice_agent_v2"]
-FLAG_DEFAULTS = {"map_mode": "full", "slot_mode": "open"}
-AUTOMATIONS = ["darshan-crash-report", "darshan-rush-investigate", "darshan-staggered-approved"]
+FLAG_NAMES = ["map_mode", "slot_mode", "voice_directions", "voice_first", "ui_copy", "voice_agent_v2", "assistant_llm", "venue_pack", "reply_style"]
+FLAG_DEFAULTS = {"map_mode": "full", "slot_mode": "open", "assistant_llm": "on", "venue_pack": "venue_demo", "reply_style": "normal"}
+AUTOMATIONS = ["darshan-crash-report", "darshan-rush-investigate", "darshan-staggered-approved", "darshan-assistant-degraded"]
 ADMIN = "https://api.flagsmith.com/api/v1"
 EDGE = lambda: os.environ.get("FLAGSMITH_API_URL", "https://edge.api.flagsmith.com/api/v1/").rstrip("/")
 PROJECT = lambda: os.environ.get("FLAGSMITH_PROJECT_ID", "55985")
@@ -451,6 +451,13 @@ def flagsmith_block(v):
         elif n == "voice_agent_v2":
             row["reason"] = "percentage rollout" + (": %d%% of pilgrims" % pct if pct is not None else "")
             row["value"] = ("%d%% rollout" % pct) if pct is not None else _fmt(n, sv, son)
+        elif n == "assistant_llm":
+            row["reason"] = ("off: rules and knowledge pack only, no model call (set by the NudgeBee guard)" if _fmt(n, sv, son) == "off"
+                             else "on: the assistant answers with the Sarvam model, grounded in facts")
+        elif n == "venue_pack":
+            row["reason"] = "which knowledge pack the assistant uses; any shrine or venue loads its own pack"
+        elif n == "reply_style":
+            row["reason"] = "brief = one short sentence per reply (rush mode)" if _fmt(n, sv, son) == "brief" else "normal replies; brief in rush mode"
         elif eon is not None and (eon, ev) != (son, sv):
             row["reason"] = "segment elders_65_plus (age 65+ trait): on for them, off for others"
             row["value"] = "off for others, on for 65+"
@@ -532,6 +539,7 @@ def nudgebee_block(v):
         "crash_to_cause_s": round(cause_t - start_t, 1) if cause_t and start_t and cause_t >= start_t else None,
         "yes_to_recovery_s": round(rec_t - yes_t, 1) if rec_t and yes_t and rec_t >= yes_t else None,
         "automations": AUTOMATIONS, "webhooks": {"crash": crash_hook, "approval": appr_hook},
+        "assistant_guard": _safe(lambda: __import__("addons_state").health()),
         "event_id": (v.get("event_id") or "")[:8] or None,
     }
 

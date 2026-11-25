@@ -83,6 +83,33 @@ Virtual-Q books a slot. The Swami chatbot answers questions. Darshan Rush does n
 
 Built with Claude Code agents directed by the team. The agents wrote the code, scripts and this document; the team chose the idea, reviewed the results and ran the demo.
 
+## Ask anything, for pilgrims and staff
+
+The assistant is not only for booking. A pilgrim can ask about timings, the way, water and toilets, medical help, help for elders, what to carry, lost companions, rules and buses, in their own language, and gets a short answer grounded in the venue's facts, or "I do not have that information, please ask the volunteer at the counter" when the facts do not cover it. Staff get one "Ask anything" button on the volunteer screen (busiest stop, bookings so far, who needs help, where the medical post is; actions such as a walk-in booking ask for a yes first).
+
+- **Swappable venue pack:** any shrine or venue loads its own pack (`app/knowledge/<name>.json`, schema in `app/knowledge/pack_schema.json`). The Flagsmith flag `venue_pack` picks the pack at run time, so switching from `venue_demo` to `venue_stadium_demo` changes the answers and place names without a deploy.
+- **Care requests:** a complaint or a call for help ("my mother fainted", "someone is asking money for darshan", "I lost my phone") opens a tracked request (C-1, C-2...) routed to the nearest on-duty volunteer, spoken back with the volunteer's name and an ETA, and shown under "Requests near you" on the staff screen. Routing policy is the Flagsmith remote-config flag `care_policy`.
+- **Flags inside the assistant:** `assistant_llm` (on: Sarvam model grounded in facts; off: rules and knowledge pack only), `reply_style` (brief: one sentence, also used in rush/lite mode), `venue_pack`.
+- **Assistant health guard -> NudgeBee:** a rolling window of model calls; 5 failures or calls over 8 s within a minute posts once (10 minute cool-down) to the `darshan-assistant-degraded` automation, whose approved HTTP task sets `assistant_llm` to off. `POST /api/assistant/simulate-failure?n=6` (token) triggers it without spending credits.
+- **One shared state:** `GET /api/state?uid=&role=pilgrim|staff|judge` returns everything a screen needs; the pilgrim page, staff screen and others poll it every 1.5 s, so a booking, a position change, a help request or a flag flip shows on every open screen within about 2 seconds.
+- **Demo capture mode:** add `?capture=1` (and `uid=`, `lang=`, `state=booked|map|help` on `/`, `state=walk|crowd|qa|overview` on `/volunteer`) to show a chosen real state without cursor or developer details. It never fakes a backend result.
+
+## Business model
+
+Shrines pay; pilgrims never pay. No ads. No data sales. (Source: `business/BUSINESS.md`, `business/pitch_40s.md`; the page `/for-temples` shows the same.)
+
+| | |
+|---|---|
+| Our cost per voice booking | about Rs 3.5 (Sarvam public prices, checked 25 Nov 2026) |
+| The shrine pays | Rs 10 per voice booking, with a minimum. The pilgrim pays Rs 0 |
+| If every big shrine bought it | about Rs 30 crore a year (our estimate: 15 mega shrines and about 300 mid-size) |
+
+Cost to serve, example (estimate): 100,000 pilgrims a day with 15% using voice is about Rs 52,500 a day of Sarvam cost. Any shrine or venue loads its own knowledge pack, so a new site is a data file, not a code change. We start with one festival day, free. The crowd in the demo is simulated and no shrine has adopted it yet.
+
+## What we would do for real traffic
+
+This prototype runs one pod with state in memory and a JSON file, and its "rush" is a load generator inside the pod, so the numbers show graceful degradation, not capacity. For real traffic we would: move slots and bookings to Postgres with a unique constraint on (window, pilgrim) so two replicas cannot double-book; run at least 3 replicas behind an ingress with an HPA; put Sarvam calls behind a queue with per-key rate limits and cache fixed phrases (already done for the volunteer prompts); evaluate Flagsmith flags locally in the SDK so a Flagsmith outage costs nothing; replace the quick tunnel with a real ingress; and run the load from outside the cluster with k6. Voice is the expensive part, so lite mode keeps typed and tap flows free of paid calls.
+
 ## Known limits
 
 - Not affiliated with any temple and not for operational use.

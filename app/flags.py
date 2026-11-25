@@ -10,9 +10,11 @@ import config
 
 log = logging.getLogger("flags")
 
-DEFAULTS = {"map_mode": "full", "slot_mode": "open", "voice_directions": None}
+DEFAULTS = {"map_mode": "full", "slot_mode": "open", "voice_directions": None,
+            "assistant_llm": "on", "venue_pack": "venue_demo", "reply_style": "normal"}
 ALLOWED = {"map_mode": ("full", "lite"), "slot_mode": ("open", "staggered"),
-           "voice_directions": ("voice", "map")}
+           "voice_directions": ("voice", "map"), "assistant_llm": ("on", "off"),
+           "reply_style": ("normal", "brief"), "venue_pack": None}  # None: any safe pack name
 LOCAL = dict(DEFAULTS)
 TTL = 2.0
 
@@ -69,6 +71,9 @@ def _norm(name, v):
     if isinstance(v, dict):
         v = v.get("mode") or v.get("value")
     v = str(v or "").strip().lower().strip('"')
+    if ALLOWED.get(name) is None:      # free-form name (venue_pack): letters, digits, _ and - only
+        import re
+        return v if re.fullmatch(r"[a-z0-9_\-]{1,60}", v) else None
     return v if v in ALLOWED[name] else None
 
 
@@ -102,6 +107,41 @@ def map_mode():
 
 def slot_mode():
     return _env_value("slot_mode")
+
+
+def assistant_llm():
+    """'on': the assistant may call the Sarvam model (grounded in facts); 'off': rules and knowledge pack only."""
+    return _env_value("assistant_llm")
+
+
+def venue_pack():
+    """Which knowledge pack (app/knowledge/<name>.json) the assistant and map use."""
+    return _env_value("venue_pack")
+
+
+def reply_style():
+    """'brief' (or lite map mode, i.e. a rush): one short sentence per reply."""
+    return "brief" if _env_value("reply_style") == "brief" or lite_mode() else "normal"
+
+
+_raw_cache = {}
+
+
+def raw_value(name):
+    """Raw remote-config value (e.g. JSON for care_policy), cached 2 s; None when unavailable."""
+    now = time.time()
+    hit = _raw_cache.get(name)
+    if hit and now - hit[0] < TTL:
+        return hit[1]
+    val = hit[1] if hit else None
+    sdk = _sdk()
+    if sdk:
+        try:
+            val = sdk.get_environment_flags().get_feature_value(name)
+        except Exception as e:
+            log.warning("%s fetch failed: %s", name, e)
+    _raw_cache[name] = (now, val)
+    return val
 
 
 def lite_mode():

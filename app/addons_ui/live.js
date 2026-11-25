@@ -102,9 +102,11 @@
     this._reset(); this.phase = 'starting'; this.metrics = []; this.log = [];
     var AC = window.AudioContext || window.webkitAudioContext;
     // 1) inside the tap: audio context and the single <audio> element, so iPhone allows every later reply
-    this.ctx = new AC(); try { this.ctx.resume(); } catch (e) {}
+    var warm = window.__warmAC; window.__warmAC = null;   // created suspended after page load, so the tap does not pay the audio start-up cost
+    this.ctx = (warm && warm.state !== 'closed') ? warm : new AC(); try { this.ctx.resume(); } catch (e) {}
     this.audio = this.o.audioEl || new Audio(); this.audio.setAttribute('playsinline', ''); this.audio.src = SILENT_WAV;
     try { var pp = this.audio.play(); if (pp && pp.catch) pp.catch(function () {}); } catch (e) {}
+    this._set('listening'); // show Listening at once (inside the tap); the ring buffer starts with the stream a moment later
     // 2) one microphone stream for the whole session
     try {
       if (this.o.testSource) this._testNode = await this.o.testSource(this.ctx); // tests only: audio node in the same context instead of a mic
@@ -303,7 +305,7 @@
     if (j.lang) this.lang = j.lang;
     this._caption('you', j.transcript);
     this._caption('app', j.reply_text);
-    var m = { transcript: j.transcript, reply_text: j.reply_text, intent: j.intent, state: j.state, latency: j.latency, client: client, spoke_at: null };
+    var m = { transcript: j.transcript, reply_text: j.reply_text, intent: j.intent, state: j.state, latency: j.latency, client: client, spoke_at: null, raw: j };
     this.metrics.push(m); this._lastMetric = m; this._emit('turn', m);
     if (j.error) { this._emit('error', { code: 'server', message: j.notice || j.reply_text }); }
     this.endAfter = !!j.end_session;

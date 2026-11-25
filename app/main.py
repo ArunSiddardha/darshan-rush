@@ -66,6 +66,10 @@ def build_live_render(seed=""):
     """Deliberately memory hungry 'live map render'. Allocates HEAVY_MB, touches every page and
     holds it for HEAVY_HOLD_S. Skipped in lite map mode. Under a rush this is what OOM-kills the pod."""
     global _heavy_in_flight
+    # The full render only happens for rush traffic (the in-pod rush, or the external load script's
+    # 'rush*' / 'sim-*' uids). A few real visitors polling the page must never be able to kill the pod.
+    if not (rush_running() or str(seed).startswith(("rush", "sim-", "load-"))):
+        return
     with _heavy_lock:
         _heavy_in_flight += 1
     try:
@@ -366,7 +370,7 @@ def _mount(modname):
 
 volunteer = _mount("volunteer")
 directions = _mount("directions")
-for _m in ("addons_sponsors", "addons_flags", "addons_read", "addons_scam", "addons_live"):
+for _m in ("addons_sponsors", "addons_flags", "addons_read", "addons_scam", "addons_live", "addons_staff", "addons_state", "addons_care"):
     _mount(_m)
 
 

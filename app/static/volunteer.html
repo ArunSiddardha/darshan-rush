@@ -15,12 +15,21 @@
 <link rel="stylesheet" href="/static/style.css">
 <link rel="stylesheet" href="/static/map.css">
 <style>
-.top{display:flex;align-items:center;justify-content:space-between;padding:var(--s5) 0 var(--s4)}
+.top{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:var(--s4) 0 var(--s6)}
 .view{display:none}.view.on{display:block}
 .big{font-size:var(--t-l);font-weight:600;line-height:1.35;letter-spacing:-.01em}
 .stack{display:grid;gap:var(--s4);margin-top:var(--s6)}
 .act{min-height:88px;font-size:var(--t-m);justify-content:flex-start;gap:var(--s4);padding:0 var(--s5)}
 .act svg{width:28px;height:28px}
+#goAsk{min-height:64px}
+.care-near{margin-top:var(--s5);padding:var(--s4) var(--s5);border-radius:var(--r-l,16px);background:var(--surface,#fff);border:1px solid var(--line,#e5e5ea);animation:fadein .3s ease}
+.care-h{font-size:var(--t-s);font-weight:600;margin:0 0 var(--s2)}.care-h .num{display:inline-block;min-width:1.6em;text-align:center;border-radius:99px;background:var(--saffron,#f59e0b);color:#3b1d00;font-size:.85em}
+.care-list{list-style:none;margin:0;padding:0;display:grid;gap:var(--s2)}.care-list li{font-size:var(--t-s);line-height:1.5}
+.pill-note{margin:0 0 var(--s2);font-weight:560}
+.care-list .cid{font-size:.8em;font-weight:600;color:var(--ink-3)}.care-list .who{color:var(--ink-3)}.care-list li.u-emergency{color:#9b1c1c}.care-list li.u-emergency b::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#d93025;margin-right:6px}
+#v-qa .sa{padding:0}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.care-near{animation:none}}
 .q-ml{font-size:var(--t-l);line-height:1.6;font-weight:600}
 .q-ml:lang(en){line-height:1.35}
 .q-en{margin-top:var(--s3);color:var(--ink-2)}
@@ -64,7 +73,9 @@ body.live .talk{animation:breathe 3s ease-in-out infinite}
    <div class="stack">
     <button class="btn btn-primary act" id="goWalk" type="button"><svg aria-hidden="true"><use href="#i-ticket"/></svg><span id="walkT"></span></button>
     <button class="btn btn-secondary act" id="goCrowd" type="button"><svg aria-hidden="true"><use href="#i-people"/></svg><span id="crowdT"></span></button>
+    <button class="btn btn-secondary act" id="goAsk" type="button"><svg aria-hidden="true"><use href="#i-mic"/></svg><span id="askT">Ask anything</span></button>
    </div>
+   <div class="care-near" id="careNear" hidden></div>
    <details class="site-ov exp-card" id="siteOv"><summary id="ovT"></summary><div id="ovMap"></div></details>
   </section>
 
@@ -94,6 +105,42 @@ body.live .talk{animation:breathe 3s ease-in-out infinite}
    <button class="btn btn-quiet back" data-back type="button"></button>
   </section>
 
+  <section class="view" id="v-qa">
+<section class="sa" id="staff-ask" data-state="idle" aria-label="Ask anything">
+  <button type="button" class="sa-talk" data-sa="talk" aria-live="polite"><span class="sa-dot" aria-hidden="true"></span><span data-sa="talklabel">Ask anything</span></button>
+  <p class="sa-eg" data-sa="eg" aria-live="off"></p>
+  <p class="sa-you" data-sa="you"></p>
+  <p class="sa-reply" data-sa="reply" role="status" aria-live="polite"></p>
+  <div class="sa-confirm" data-sa="confirm" hidden>
+    <button type="button" class="sa-yes" data-sa="yes">Yes, do it</button>
+    <button type="button" class="sa-no" data-sa="no">No</button>
+  </div>
+  <audio data-sa="audio" hidden></audio>
+  <form class="sa-type" data-sa="form"><input data-sa="text" type="text" placeholder="or type a question" aria-label="Type a question"><button type="submit">Ask</button></form>
+  <p class="sa-note" data-sa="note" role="alert"></p>
+  <style>
+    .sa{display:grid;gap:var(--s3,12px);justify-items:center;padding:var(--s4,16px);color:var(--ink,#111);text-align:center}
+    .sa-talk{display:inline-flex;align-items:center;gap:var(--s3,12px);min-height:64px;min-width:240px;padding:0 var(--s5,24px);border:0;border-radius:var(--r,16px);background:var(--accent,#7a3b00);color:#fff;font:inherit;font-size:1.15rem;font-weight:600;cursor:pointer}
+    .sa-dot{width:14px;height:14px;border-radius:50%;background:#fff;opacity:.9}
+    .sa[data-state=recording] .sa-talk{background:#b3261e}.sa[data-state=recording] .sa-dot{animation:sa-pulse 1s infinite}
+    .sa[data-state=thinking] .sa-talk{opacity:.7}
+    .sa-eg{margin:0;min-height:1.4em;font-size:.95rem;color:var(--ink-2,#555);transition:opacity .3s}
+    .sa-you{margin:0;font-size:.95rem;color:var(--ink-2,#555)}.sa-you:not(:empty)::before{content:"You: "}
+    .sa-reply{margin:0;max-width:34ch;font-size:1.2rem;line-height:1.4;font-weight:560}
+    .sa-confirm{display:flex;gap:var(--s3,12px)}.sa-confirm[hidden]{display:none}
+    .sa-confirm button{min-height:52px;min-width:120px;border-radius:var(--r,14px);border:1px solid var(--line,#ccc);font:inherit;font-size:1.05rem;cursor:pointer;background:var(--surface,#fff);color:var(--ink,#111)}
+    .sa-confirm .sa-yes{background:var(--accent,#7a3b00);color:#fff;border-color:transparent}
+    .sa-type{display:flex;gap:var(--s2,8px);width:100%;max-width:420px}.sa-type input{flex:1;min-height:44px;padding:0 12px;border:1px solid var(--line,#ccc);border-radius:var(--r,12px);font:inherit;background:var(--bg,#fff);color:var(--ink,#111)}
+    .sa-type button{min-height:44px;padding:0 16px;border-radius:var(--r,12px);border:1px solid var(--line,#ccc);background:var(--surface,#fff);color:var(--ink,#111);font:inherit;cursor:pointer}
+    .sa-note{margin:0;min-height:1.2em;color:#b3261e;font-size:.9rem}
+    @keyframes sa-pulse{50%{transform:scale(1.5);opacity:.5}}
+    @media (prefers-reduced-motion:reduce){.sa-dot{animation:none!important}}
+  </style>
+</section>
+
+   <button class="btn btn-quiet back" data-back type="button"></button>
+  </section>
+
   <div class="msg msg-warn" id="notice" hidden style="margin-top:var(--s4)"></div>
  </main>
 
@@ -114,8 +161,10 @@ body.live .talk{animation:breathe 3s ease-in-out infinite}
  </footer>
 </div>
 <audio id="player"></audio>
+<script src="/static/capture.js"></script>
 <script src="/static/addons_ui/live.js"></script>
 <script src="/static/map.js"></script>
+<script src="/static/addons_ui/staff_ask.js"></script>
 <script>
 /* One screen at a time. API: GET /api/volunteer/state, /audio; POST /api/volunteer/reply, /crowd-report, /api/directions (walkin) */
 const $=s=>document.querySelector(s);let S={},playedQ=null,playedC=null,rec=null,chunks=[],lastOk=Date.now(),armed=0,prevStatus=null,primed=false,AC=null;
@@ -143,7 +192,7 @@ document.querySelectorAll('.tog button').forEach(b=>b.onclick=()=>{L=b.dataset.l
 let manual=null; // 'walk' or 'crowd' while the staff is in one of those flows
 function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===id))}
 function prime(){if(primed)return;primed=true;const p=$('#player');p.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';p.play().catch(()=>{});try{AC=new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}}
-function alertUser(){try{navigator.vibrate&&navigator.vibrate([300,120,300,120,300])}catch(e){}
+function alertUser(){try{navigator.vibrate&&(!navigator.userActivation||navigator.userActivation.hasBeenActive)&&navigator.vibrate([300,120,300,120,300])}catch(e){}
  try{if(!AC)return;[880,660,880].forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+i*.28);o.stop(AC.currentTime+i*.28+.2)})}catch(e){}}
 function cause(j,status){const s=((j&&(j.notice||j.error||j.detail))||'')+'';
  if(status===402||/credit/i.test(s))return t('credits');if(status===429||/rate.?limit|too many/i.test(s))return t('rate');return s?t('rate'):''}
@@ -158,7 +207,7 @@ function render(){
  else if(st==='approved'){manual=null;show('v-wait');if(S.webhook_ok===false){$('#waitT').textContent=t('notSent');$('#waitS').textContent=''}else{$('#waitT').textContent=t('waitT');$('#waitS').textContent=t('waitS')}}
  else if(st==='recovered'){manual=null;show('v-done');$('#doneT').textContent=t('doneT');$('#doneS').textContent=t('doneS')}
  else if(st==='declined'){manual=null;show('v-done');$('#doneT').textContent=t('declT');$('#doneS').textContent=''}
- else if(manual==='walk')show('v-walk');else if(manual==='crowd')show('v-crowd');else show('v-calm');
+ else if(manual==='walk')show('v-walk');else if(manual==='crowd')show('v-crowd');else if(manual==='qa')show('v-qa');else show('v-calm');
  prevStatus=st;
  const f=[['Problem',S.summary],['Cause',S.root_cause],['Proposed fix',S.proposed_fix]].filter(x=>x[1]);
  $('#foundBody').innerHTML=f.map(([k,v])=>`<div><b>${k}</b><span lang="en">${esc(v)}</span></div>`).join('');
@@ -169,8 +218,12 @@ function render(){
  $('#lat').textContent=ks.length?'Voice timing: '+ks.map(k=>k.replace('_ms','').replace('_',' ')+' '+Lt[k]+' ms').join(', '):'';
  if(st==='asking'&&S.has_audio&&playedQ!==S.event_id){playedQ=S.event_id;play('/api/volunteer/audio?kind=question&e='+encodeURIComponent(S.event_id))}
  if(st==='recovered'&&S.has_confirm_audio&&playedC!==S.event_id){playedC=S.event_id;play('/api/volunteer/audio?kind=confirm&e='+encodeURIComponent(S.event_id))}}
+function sync(G){const box=$('#careNear');if(!box)return;const GN={};((G.queue||{}).gates||[]).forEach(g=>GN[g.id]=g.name);const items=[].concat((G.care||[]).map(c=>({k:c.category||'help',u:c.urgency,id:c.id,txt:c.summary_en||c.transcript||'',stop:c.stop_name||c.stop_id||'',who:c.assigned_to&&c.assigned_to.name})),(G.help||[]).map(h=>({k:h.kind||'help',txt:h.text||'',stop:h.stop||''})));
+ const lines=[];if(G.assistant&&G.assistant.fallback_line)lines.push('<p class="small pill-note">'+esc(G.assistant.fallback_line)+'</p>');if(G.rush_line)lines.push('<p class="small pill-note">'+esc(G.rush_line)+'</p>');
+ if(items.length)lines.push('<h3 class="care-h">'+(L==='ml'?'അടുത്തുള്ള സഹായ അഭ്യർത്ഥനകൾ':'Requests near you')+' <span class="num">'+items.length+'</span></h3><ul class="care-list">'+items.slice(-4).reverse().map(i=>'<li class="u-'+(i.u||'normal')+'">'+(i.id?'<span class="cid">'+esc(i.id)+'</span> ':'')+'<b>'+esc(GN[i.stop]||i.stop||'')+'</b> <span>'+esc(i.txt).slice(0,90)+'</span>'+(i.who?' <span class="who">'+esc(i.who)+'</span>':'')+'</li>').join('')+'</ul>');
+ const html=lines.join('');if(box.dataset.h!==html){box.innerHTML=html;box.dataset.h=html;box.hidden=!html}}
 async function poll(){
- try{const r=await fetch('/api/volunteer/state');if(!r.ok)throw r.status;S=await r.json();lastOk=Date.now();if($('#notice').dataset.k==='net'){showNotice(null);$('#notice').dataset.k=''}}
+ try{const r=await fetch('/api/state?role=staff&uid=volunteer-desk&lang='+L);if(!r.ok)throw r.status;const G=await r.json();S=G.volunteer||{};lastOk=Date.now();sync(G);if($('#notice').dataset.k==='net'){showNotice(null);$('#notice').dataset.k=''}}
  catch(e){if(Date.now()-lastOk>8000){showNotice(t('net'),'bad');$('#notice').dataset.k='net'}return}
  render()}
 /* recording: tap to start, ends by itself after silence (or tap again); level meter on the button */
@@ -221,6 +274,8 @@ $('#mic').onclick=async()=>{prime();
 $('#goWalk').onclick=()=>{prime();manual='walk';$('#wres').hidden=true;$('#wout').textContent='';render()};
 $('#goCrowd').onclick=()=>{prime();manual='crowd';$('#cout').textContent='';render()};
 document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>{manual=null;render()});
+$('#goAsk').onclick=()=>{prime();manual='qa';render()};
+if(window.StaffAsk)StaffAsk.init(document.getElementById('staff-ask'),{lang:()=>L,staffId:'volunteer'});
 async function crowd(fd){const o=$('#cout');o.innerHTML='<span class="dots"><i></i><i></i><i></i></span>';
  let r,j={};try{r=await fetch('/api/volunteer/crowd-report',{method:'POST',body:fd});j=await r.json().catch(()=>({}))}catch(e){o.textContent=t('net');return}
  if(j.notice||!r.ok){o.textContent=cause(j,r.status)||t('blip');return}
@@ -245,7 +300,7 @@ function initOv(){if(!window.SiteMap)return;OV=SiteMap.create($('#ovMap'),{uid:'
  onReport:async s=>{const f=new FormData();f.append('text',s.name+', many people waiting');try{await fetch('/api/volunteer/crowd-report',{method:'POST',body:f})}catch(e){}}});
  $('#siteOv').addEventListener('toggle',()=>{if($('#siteOv').open){OV.start(5000)}});ovText()}
 const _text=text;text=function(){_text();if(window.SiteMap){ovText();if(OV)OV.render()}};
-text();initOv();if(new URLSearchParams(location.search).get('ov'))$('#siteOv').open=true;poll();setInterval(poll,2000);
+text();initOv();if(new URLSearchParams(location.search).get('ov'))$('#siteOv').open=true;poll();setInterval(poll,1500);
 </script>
 </body>
 </html>

@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Darshan Rush: recovery graph</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<meta name="description" content="Book a darshan slot by talking, in your own language. It stays fair when everyone arrives at once. A prototype with a simulated crowd.">
+<meta property="og:title" content="Darshan Rush">
+<meta property="og:description" content="Book a darshan slot by talking, in your own language. It stays fair when everyone arrives at once.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preload" href="/static/fonts/AnekLatin-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/fonts.css">
 <link rel="stylesheet" href="/static/style.css">
 <style>
@@ -21,7 +28,7 @@ svg#chart{width:100%;height:auto;display:block;font-family:var(--font)}
 </head>
 <body>
 <div class="g">
- <div class="bar"><span class="wordmark">Darshan Rush</span><span class="tag">SIMULATED</span></div>
+ <div class="bar"><a class="wordmark" href="/judge"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 10.5v3M12 8v8M15.5 10.5v3"/></g></svg>Darshan Rush</a><span class="tag">SIMULATED</span></div>
  <h1>Booking recovery</h1>
  <p class="muted" id="status">Waiting for numbers.</p>
  <div class="legend">
@@ -36,6 +43,7 @@ svg#chart{width:100%;height:auto;display:block;font-family:var(--font)}
   <button class="btn btn-quiet" id="reset" type="button">Clear chart</button>
   <span class="small">Local test cluster, simulated crowd. The dark line marks the moment the flags flipped to the lite map and staggered slots.</span>
  </div>
+ <footer class="foot"><p>Simulated crowd. Not affiliated with any temple. Not for operational use.</p></footer>
 </div>
 <script>
 /* API: GET /api/metrics-lite every 2 s */

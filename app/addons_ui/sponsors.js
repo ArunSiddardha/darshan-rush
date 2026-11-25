@@ -122,6 +122,9 @@
       '<h3>Approval</h3><ul class="sp-steps">' + steps + '</ul>' +
       (n.webhook_error ? '<p class="small" style="color:var(--bad);margin-top:8px">Approval webhook problem: ' + esc(n.webhook_error) + '</p>' : '') +
       '<h3>Automations</h3><p class="sp-code">' + (n.automations || []).map(esc).join('<br>') + '</p>' +
+      (n.assistant_guard ? '<h3>Assistant health guard</h3><p>' + esc(n.assistant_guard.guard.threshold) + ' sends one alert to darshan-assistant-degraded (10 minute cool-down). Last run: ' +
+        esc(n.assistant_guard.guard.last_post ? new Date(n.assistant_guard.guard.last_post * 1000).toLocaleTimeString() + ', ' + (n.assistant_guard.guard.last_result || '') : 'not triggered yet') + '.' +
+        (n.assistant_guard.fallback_line ? ' <b>' + esc(n.assistant_guard.fallback_line) + '</b>' : '') + '</p>' : '') +
       '<h3>Where it is used</h3>' + list([
         'Finding the cause when the booking pod runs out of memory',
         'The approval-gated fix: after the volunteer&rsquo;s yes, a duty officer approves and NudgeBee flips the Flagsmith flags',

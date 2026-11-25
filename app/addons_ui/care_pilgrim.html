@@ -1,0 +1,44 @@
+<!-- Care requests, pilgrim side. Put this on the pilgrim page ('More help') and include care_pilgrim.js, then:
+       CarePilgrim.init(document.getElementById('care-pilgrim'), {uid: () => uid, lang: () => 'te', stop: () => currentStopId || null})
+     Needs the router in addons_care.py (POST /api/care, GET /api/care/mine). Inherits --ink --ink-2 --bg --surface --line --accent --r --s2..s5. -->
+<section class="cp" id="care-pilgrim" data-state="closed" aria-label="I need help">
+  <button type="button" class="cp-open" data-cp="open" aria-expanded="false"><span data-cp="openlabel">I need help</span></button>
+  <div class="cp-panel" data-cp="panel" hidden>
+    <button type="button" class="cp-talk" data-cp="talk" aria-live="polite"><span class="cp-dot" aria-hidden="true"></span><span data-cp="talklabel">Speak</span></button>
+    <div class="cp-choices">
+      <button type="button" class="cp-ch" data-choice="medical"><span class="cp-ic" aria-hidden="true">&#10010;</span><span data-cp="c-medical">Medical</span></button>
+      <button type="button" class="cp-ch" data-choice="lost_person"><span class="cp-ic" aria-hidden="true">&#128101;</span><span data-cp="c-lost_person">Lost person</span></button>
+      <button type="button" class="cp-ch" data-choice="tout_payment"><span class="cp-ic" aria-hidden="true">&#8377;</span><span data-cp="c-tout_payment">Someone asks for money</span></button>
+      <button type="button" class="cp-ch" data-choice="other"><span class="cp-ic" aria-hidden="true">&#8943;</span><span data-cp="c-other">Other</span></button>
+    </div>
+    <form class="cp-type" data-cp="form"><input data-cp="text" type="text" placeholder="or type here" aria-label="Type your request"><button type="submit">Send</button></form>
+    <div class="cp-stops" data-cp="stops" hidden></div>
+    <p class="cp-note" data-cp="note" role="alert"></p>
+  </div>
+  <div class="cp-card" data-cp="card" hidden role="status" aria-live="polite">
+    <div class="cp-num" data-cp="num"></div>
+    <div class="cp-text" data-cp="status"></div>
+    <div class="cp-meta" data-cp="meta"></div>
+  </div>
+  <audio data-cp="audio" hidden></audio>
+  <style>
+    .cp{display:grid;gap:var(--s3,12px);color:var(--ink,#111)}
+    .cp-open{min-height:48px;padding:0 var(--s4,16px);border:1px solid var(--line,#ccc);border-radius:var(--r,14px);background:var(--surface,#fff);color:var(--ink-2,#444);font:inherit;font-size:1rem;cursor:pointer;text-align:left}
+    .cp-panel{display:grid;gap:var(--s3,12px)}.cp-panel[hidden],.cp-card[hidden],.cp-stops[hidden]{display:none}
+    .cp-talk{display:inline-flex;align-items:center;justify-content:center;gap:var(--s3,12px);min-height:64px;border:0;border-radius:var(--r,16px);background:var(--accent,#7a3b00);color:#fff;font:inherit;font-size:1.15rem;font-weight:600;cursor:pointer}
+    .cp-dot{width:14px;height:14px;border-radius:50%;background:#fff}.cp[data-state=recording] .cp-talk{background:#b3261e}.cp[data-state=recording] .cp-dot{animation:cp-p 1s infinite}
+    .cp[data-state=sending] .cp-talk{opacity:.7}
+    .cp-choices{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3,12px)}
+    .cp-ch{display:grid;justify-items:center;align-content:center;gap:6px;min-height:92px;padding:var(--s3,12px);border:1px solid var(--line,#ccc);border-radius:var(--r,16px);background:var(--surface,#fff);color:var(--ink,#111);font:inherit;font-size:1.05rem;cursor:pointer;text-align:center}
+    .cp-ic{font-size:1.8rem;line-height:1}
+    .cp-type{display:flex;gap:var(--s2,8px)}.cp-type input{flex:1;min-height:44px;padding:0 12px;border:1px solid var(--line,#ccc);border-radius:var(--r,12px);font:inherit;background:var(--bg,#fff);color:var(--ink,#111)}
+    .cp-type button{min-height:44px;padding:0 16px;border-radius:var(--r,12px);border:1px solid var(--line,#ccc);background:var(--surface,#fff);color:var(--ink,#111);font:inherit;cursor:pointer}
+    .cp-stops{display:flex;flex-wrap:wrap;gap:var(--s2,8px)}.cp-stops button{min-height:44px;padding:0 14px;border-radius:var(--r,12px);border:1px solid var(--line,#ccc);background:var(--surface,#fff);color:var(--ink,#111);font:inherit;cursor:pointer}
+    .cp-note{margin:0;min-height:1.2em;color:#b3261e;font-size:.9rem}
+    .cp-card{padding:var(--s4,16px);border:1px solid var(--line,#ccc);border-radius:var(--r,16px);background:var(--surface,#fff);display:grid;gap:var(--s2,8px);text-align:center}
+    .cp-card[data-urg=emergency]{border-color:#b3261e}
+    .cp-num{font-size:2.6rem;font-weight:700;letter-spacing:.02em;line-height:1.1}
+    .cp-text{font-size:1.2rem;line-height:1.4;font-weight:560}.cp-meta{font-size:.9rem;color:var(--ink-2,#555)}
+    @keyframes cp-p{50%{opacity:.35}}
+  </style>
+</section>

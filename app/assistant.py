@@ -9,15 +9,17 @@ import json
 import re
 import threading
 import time
+import unicodedata
 
 import directions
 import gatematch
 import queue_sim
+import route_facts
 import sarvam
 
 LANGS = directions.LANGS
 ORDER = [g["id"] for g in queue_sim.GATES]
-WALK = {("g1", "g2"): 6, ("g2", "g3"): 9, ("g3", "g4"): 8, ("g4", "g5"): 12}   # simulated minutes between stops
+WALK = {(a, b): route_facts.minutes(a, b) for a, b in zip(route_facts.STOPS[:4], route_facts.STOPS[1:5])}   # simulated minutes between stops (route_facts is the source)
 XY = {"g1": (12, 86), "g2": (30, 66), "g3": (52, 74), "g4": (70, 48), "g5": (86, 18)}
 FACILITIES = {"g1": ["water", "toilet", "cloak", "info", "lost_found", "wheelchair"], "g2": ["water", "toilet", "rest"],
               "g3": ["rest", "medical", "water"], "g4": ["toilet", "info", "wheelchair", "lost_found", "medical"],
@@ -327,6 +329,10 @@ def facts(uid, lang="en"):
         nxt = f", walk to next stop {WALK[(gid, ORDER[i + 1])]} min" if i < len(ORDER) - 1 else ", last stop"
         lines.append(f"{i + 1}. {gid} {g['name']}: wait {g['wait_min']} min, load {int(g['load'] * 100)} percent{nxt}; "
                      f"facilities: {', '.join(FACILITIES[gid])}")
+    lines += route_facts.facts_lines()
+    if pos:
+        rem = route_facts.remaining_from(pos, (_slot(uid)[0] or {}).get("gate"))
+        lines.append(f"Still ahead from {queue_sim.BY_ID[pos]['name']}: {rem['steps']} steps, {rem['distance_m']} m, {rem['minutes']} min, {rem['climb_m']} m climb.")
     lines.append("Facility types: water, toilet, medical post, rest area, wheelchair help, cloak room, lost_found, info counter (information counter).")
     mode = "rush, slots are staggered" if _rush() else "normal"
     lines.append(f"Mode: {mode}.")
@@ -385,9 +391,144 @@ def _pos_reply(uid, lang):
              wait=_mins(gs[nx]["wait_min"], lang), slot=sl), nx
 
 
+# ------------------------------------------------------------------ effort questions (steps, distance, climb, ramp)
+_EFF_TPL = {
+ "en": {"ramp_no": "There is no wheelchair route from {pos} to {b}; volunteers offer carrying help.", "from": "From {pos} to the shrine: about {steps} steps, {dist}, and {mins} of walking.",
+        "unk": "I do not know where you are, so counting from {pos}: about {steps} steps, {dist}, and {mins} of walking to the shrine.",
+        "hard": " The steepest part is between {a} and {b}: {hs} steps. Rest shelters: {rest}.", "flat": " There is no steep part ahead.",
+        "ramp_all": "Yes, a wheelchair route exists from {pos} all the way to the shrine.",
+        "ramp_part": "A wheelchair route exists from {pos} up to {a}, but not between {a} and {b}, where volunteers offer carrying help.",
+        "km": "km", "m": "metres", "shrine": "the shrine"},
+ "hi": {"ramp_no": "{pos} से {b} तक व्हीलचेयर का रास्ता नहीं है; स्वयंसेवक उठाकर ले जाने में मदद करते हैं।", "from": "{pos} से दर्शन स्थल तक लगभग {steps} सीढ़ियाँ, {dist} और {mins} पैदल चलना है।",
+        "unk": "मुझे नहीं पता आप कहाँ हैं, इसलिए {pos} से गिनती: लगभग {steps} सीढ़ियाँ, {dist} और {mins} पैदल।",
+        "hard": " सबसे खड़ी चढ़ाई {a} और {b} के बीच है: {hs} सीढ़ियाँ। विश्राम स्थल: {rest}।", "flat": " आगे कोई खड़ी चढ़ाई नहीं है।",
+        "ramp_all": "हाँ, {pos} से दर्शन स्थल तक व्हीलचेयर का रास्ता है।",
+        "ramp_part": "{pos} से {a} तक व्हीलचेयर का रास्ता है, पर {a} और {b} के बीच नहीं; वहाँ स्वयंसेवक उठाकर ले जाने में मदद करते हैं।",
+        "km": "किमी", "m": "मीटर", "shrine": "दर्शन स्थल"},
+ "ml": {"ramp_no": "{pos} മുതൽ {b} വരെ വീൽചെയർ വഴിയില്ല; സന്നദ്ധപ്രവർത്തകർ ചുമന്ന് സഹായിക്കും.", "from": "{pos} മുതൽ ദർശന സ്ഥലം വരെ ഏകദേശം {steps} പടികൾ, {dist}, {mins} നടക്കണം.",
+        "unk": "നിങ്ങൾ എവിടെയാണെന്ന് അറിയില്ല, അതിനാൽ {pos} മുതൽ കണക്കാക്കുന്നു: ഏകദേശം {steps} പടികൾ, {dist}, {mins} നടത്തം.",
+        "hard": " ഏറ്റവും കുത്തനെയുള്ളത് {a}നും {b}നും ഇടയിലാണ്: {hs} പടികൾ. വിശ്രമ സ്ഥലങ്ങൾ: {rest}.", "flat": " മുന്നിൽ കുത്തനെയുള്ള ഭാഗമില്ല.",
+        "ramp_all": "ഉണ്ട്, {pos} മുതൽ ദർശന സ്ഥലം വരെ വീൽചെയർ വഴിയുണ്ട്.",
+        "ramp_part": "{pos} മുതൽ {a} വരെ വീൽചെയർ വഴിയുണ്ട്, {a}നും {b}നും ഇടയിൽ ഇല്ല; അവിടെ സന്നദ്ധപ്രവർത്തകർ ചുമന്ന് സഹായിക്കും.",
+        "km": "കിലോമീറ്റർ", "m": "മീറ്റർ", "shrine": "ദർശന സ്ഥലം"},
+ "ta": {"ramp_no": "{pos} இலிருந்து {b} வரை சக்கர நாற்காலி பாதை இல்லை; தன்னார்வலர்கள் தூக்கிச் செல்ல உதவுவார்கள்.", "from": "{pos} இலிருந்து தரிசன இடம் வரை சுமார் {steps} படிகள், {dist}, {mins} நடக்க வேண்டும்.",
+        "unk": "நீங்கள் எங்கே இருக்கிறீர்கள் என்று தெரியாது, அதனால் {pos} இலிருந்து கணக்கிடுகிறேன்: சுமார் {steps} படிகள், {dist}, {mins} நடை.",
+        "hard": " மிகச் செங்குத்தானது {a} மற்றும் {b} இடையே: {hs} படிகள். ஓய்வு இடங்கள்: {rest}.", "flat": " முன்னால் செங்குத்தான பகுதி இல்லை.",
+        "ramp_all": "ஆம், {pos} இலிருந்து தரிசன இடம் வரை சக்கர நாற்காலி பாதை உள்ளது.",
+        "ramp_part": "{pos} முதல் {a} வரை சக்கர நாற்காலி பாதை உள்ளது, {a} மற்றும் {b} இடையே இல்லை; அங்கு தன்னார்வலர்கள் தூக்கிச் செல்ல உதவுவார்கள்.",
+        "km": "கிலோமீட்டர்", "m": "மீட்டர்", "shrine": "தரிசன இடம்"},
+ "te": {"ramp_no": "{pos} నుండి {b} వరకు వీల్‌చైర్ దారి లేదు; వాలంటీర్లు మోసుకెళ్ళి సహాయం చేస్తారు.", "from": "{pos} నుండి దర్శన స్థలం వరకు సుమారు {steps} మెట్లు, {dist}, {mins} నడక.",
+        "unk": "మీరు ఎక్కడ ఉన్నారో తెలియదు, అందుకే {pos} నుండి లెక్కిస్తున్నాను: సుమారు {steps} మెట్లు, {dist}, {mins} నడక.",
+        "hard": " అత్యంత నిటారుగా ఉండేది {a}, {b} మధ్య: {hs} మెట్లు. విశ్రాంతి స్థలాలు: {rest}.", "flat": " ముందు నిటారు భాగం లేదు.",
+        "ramp_all": "అవును, {pos} నుండి దర్శన స్థలం వరకు వీల్‌చైర్ దారి ఉంది.",
+        "ramp_part": "{pos} నుండి {a} వరకు వీల్‌చైర్ దారి ఉంది, {a}, {b} మధ్య లేదు; అక్కడ వాలంటీర్లు మోసుకెళ్ళి సహాయం చేస్తారు.",
+        "km": "కిలోమీటర్లు", "m": "మీటర్లు", "shrine": "దర్శన స్థలం"},
+ "kn": {"ramp_no": "{pos} ನಿಂದ {b} ವರೆಗೆ ಗಾಲಿಕುರ್ಚಿ ದಾರಿ ಇಲ್ಲ; ಸ್ವಯಂಸೇವಕರು ಹೊತ್ತುಕೊಂಡು ಸಹಾಯ ಮಾಡುತ್ತಾರೆ.", "from": "{pos} ನಿಂದ ದರ್ಶನ ಸ್ಥಳದವರೆಗೆ ಸುಮಾರು {steps} ಮೆಟ್ಟಿಲುಗಳು, {dist}, {mins} ನಡಿಗೆ.",
+        "unk": "ನೀವು ಎಲ್ಲಿದ್ದೀರಿ ಎಂದು ಗೊತ್ತಿಲ್ಲ, ಆದ್ದರಿಂದ {pos} ನಿಂದ ಎಣಿಸುತ್ತೇನೆ: ಸುಮಾರು {steps} ಮೆಟ್ಟಿಲುಗಳು, {dist}, {mins} ನಡಿಗೆ.",
+        "hard": " ಅತಿ ಕಡಿದಾದದ್ದು {a} ಮತ್ತು {b} ನಡುವೆ: {hs} ಮೆಟ್ಟಿಲುಗಳು. ವಿಶ್ರಾಂತಿ ಸ್ಥಳಗಳು: {rest}.", "flat": " ಮುಂದೆ ಕಡಿದಾದ ಭಾಗವಿಲ್ಲ.",
+        "ramp_all": "ಹೌದು, {pos} ನಿಂದ ದರ್ಶನ ಸ್ಥಳದವರೆಗೆ ಗಾಲಿಕುರ್ಚಿ ದಾರಿ ಇದೆ.",
+        "ramp_part": "{pos} ನಿಂದ {a} ವರೆಗೆ ಗಾಲಿಕುರ್ಚಿ ದಾರಿ ಇದೆ, {a} ಮತ್ತು {b} ನಡುವೆ ಇಲ್ಲ; ಅಲ್ಲಿ ಸ್ವಯಂಸೇವಕರು ಹೊತ್ತುಕೊಂಡು ಸಹಾಯ ಮಾಡುತ್ತಾರೆ.",
+        "km": "ಕಿಲೋಮೀಟರ್", "m": "ಮೀಟರ್", "shrine": "ದರ್ಶನ ಸ್ಥಳ"},
+}
+
+
+def _nfd(s):
+    return unicodedata.normalize("NFD", s)
+
+
+_STEP_STEMS = [_nfd(x) for x in (
+    "steps", "stairs", "staircase", "mettlu", "metlu", "mettu", "mettulu", "mettilu", "padi", "padikal", "padigal", "padikkal", "sidhi", "seedhi", "sidhiyan",
+    "మెట్ల", "మెట్టు", "படி", "பட", "പടി", "ಮೆಟ್ಟಿಲ", "ಮೆಟ್ಟು", "सीढ़", "सीढ", "कदम")]
+_QTY = [_nfd(x) for x in ("how many", "how much", "how far", "how long", "kitni", "kitne", "kitna", "enni", "ethra", "etra", "ethanai", "entha", "eshtu",
+                         "कितन", "ఎన్ని", "ఎంత", "எத்தனை", "எவ்வளவு", "എത്ര", "ಎಷ್ಟು")]
+_CLIMB = [_nfd(x) for x in ("climb", "uphill", "chadh", "ekka", "ērra", "yera", "kayara", "hatta", "चढ़", "चढ", "ఎక్క", "ஏற", "കയറ", "ಹತ್ತ", "ಏರ")]
+_WALKW = [_nfd(x) for x in ("walk", "trek", "नडक", "पैदल", "चलना", "चलने", "నడ", "நட", "നട", "ನಡ")]
+_DISTW = [_nfd(x) for x in ("distance", "dooram", "dhooram", "duram", "thooram", "door", "दूर", "దూరం", "தூரம்", "ദൂരം", "ದೂರ")]
+_FARW = [_nfd(x) for x in ("how far", "kitni door", "कितनी दूर", "कितना दूर", "ఎంత దూరం", "எவ்வளவு தூரம்", "എത്ര ദൂരം", "ಎಷ್ಟು ದೂರ", "dooram", "duram")]
+_EFF_RE = re.compile(
+    r"how many (steps|stairs|km|kilometres|kilometers|metres|meters|minutes)|(steps|stairs) (are |do i )?(left|remain|remaining|to go|ahead|more|to climb|have)|"
+    r"how much (climb|climbing|walking|walk|uphill|more)|how (long|many hours?|many minutes) .{0,25}(walk|climb|trek|reach|get to|take to)|walking time|"
+    r"how (high|steep)|\bsteep\b|\bsteepness\b|is it (a )?(hard|tough|difficult|tiring|long|easy) (climb|walk|trek)|(hard|tough|difficult|tiring) (to )?(climb|walk)|"
+    r"(can|will|could) (my|our|an|the|a) [a-z ]{0,25}(manage|climb|cope|walk|do it)|too much (climb|climbing|walking)|(steps|stairs) left|steps to climb|"
+    r"\bsteps\b.{0,25}\b(climb|left|ahead|shrine|top)\b|\b(climb|walk)\b.{0,20}\bsteps\b|how far")
+_RAMP_RE = re.compile(r"\bramp\b|wheelchair (route|path|access|way|possible|friendly)|wheel chair (route|path|access|way)|wheelchair.{0,25}(go up|reach|climb|manage|possible)")
+_RAMP_L = [_nfd(x) for x in ("रैंप", "रेंप", "व्हीलचेयर का रास्ता", "व्हील चेयर का रास्ता", "റാമ്പ്", "വീൽചെയർ വഴി", "வீல்சேர் பாதை", "சாய்தளம்", "ரேம்ப்",
+                             "சக்கர நாற்காலி பாதை", "ర్యాంప్", "వీల్‌చైర్ దారి", "వీల్ చైర్ దారి", "వీల్‌చైర్ మార్గం", "ರ್ಯಾಂಪ್", "ಗಾಲಿಕುರ್ಚಿ ದಾರಿ", "ವೀಲ್‌ಚೇರ್ ದಾರಿ")]
+_STEEP_L = [_nfd(x) for x in ("खड़ी चढ़", "चढ़ाई", "నిటారు", "செங்குத்து", "കുത്തനെ", "കയറ്റം", "ಕಡಿದಾದ")]
+_MAINSTEPS = re.compile(r"main\s*steps?|mainstep|mensteps|मेन\s*स्टेप|मुख्य\s*सीढ़|മെയിൻ\s*സ്റ്റെപ്|மெயின்\s*ஸ்டெப்|మెయిన్\s*స్టెప్|ಮೇನ್\s*ಸ್ಟೆಪ್")
+
+
+def _has_any(e, words):
+    return any(w in e for w in words)
+
+
+def _effort_kind(low):
+    """'ramp', 'far' (a bare distance question), 'main' or None. Works on the normalised text of any of the six languages."""
+    low = _MAINSTEPS.sub(" mainstop ", low)      # the stop's own name is not a question about steps
+    e = _nfd(low)
+    if _RAMP_RE.search(low) or _has_any(e, _RAMP_L):
+        return "ramp"
+    if _EFF_RE.search(low):
+        return "far" if "how far" in low and not re.search(r"steps|stairs|climb|walk|steep", low) else "main"
+    q = _has_any(e, _QTY)
+    if q and _has_any(e, _FARW) and not _has_any(e, _STEP_STEMS + _CLIMB):
+        return "far"
+    if q and _has_any(e, _STEP_STEMS + _CLIMB + _WALKW + _DISTW):
+        return "main"
+    if _has_any(e, _STEEP_L) or re.search(r"\b(ethra|etra|enni|kitni|kitne)\b.{0,12}\b(mettlu|metlu|mettu|padi|padikal|padigal|sidhi|seedhi|kadam)", low):
+        return "main"
+    return None
+
+
+def _strip_steps(text):
+    """Drop the word for 'steps' so it is never read as the stop called Main Steps (unless the stop name itself is said)."""
+    if _MAINSTEPS.search(gatematch.norm(text)):
+        return text
+    stems = [x for x in _STEP_STEMS if x not in ("padi", "பட")] + ["steps", "stairs"]
+    keep = [t for t in text.split() if not any(s in _nfd(t.lower()) for s in stems)]
+    return " ".join(keep)
+
+
+def _dist_say(m, lang):
+    t = _EFF_TPL.get(lang) or _EFF_TPL["en"]
+    return f"{m / 1000:.1f} {t['km']}" if m >= 1000 else f"{m} {t['m']}"
+
+
+def _effort_reply(kind, lang, uid):
+    import route_facts as rf
+    t = _EFF_TPL.get(lang) or _EFF_TPL["en"]
+    pos = _pos.get(uid)
+    slot, _sm = _slot(uid)
+    rem = rf.remaining_from(pos, slot["gate"] if slot else None)
+    here = gatematch.display(rem["from"], lang)
+    disp = lambda sid: gatematch.display(sid, lang) if sid in ORDER else t["shrine"]   # noqa: E731
+    if kind == "ramp":
+        i = rf.STOPS.index(rem["from"])
+        blocked = next((s for s in rf.STRETCHES[i:] if not s["wheelchair"]), None)
+        if not blocked:
+            return t["ramp_all"].format(pos=here)
+        if blocked["from"] == rem["from"]:
+            return t["ramp_no"].format(pos=here, b=disp(blocked["to"]))
+        return t["ramp_part"].format(pos=here, a=disp(blocked["from"]), b=disp(blocked["to"]))
+    out = (t["from"] if rem["known_position"] else t["unk"]).format(pos=here, steps=rem["steps"], dist=_dist_say(rem["distance_m"], lang), mins=_mins(rem["minutes"], lang))
+    h = rem["hardest"]
+    if h and h["difficulty"] == "hard":
+        rest = ", ".join(gatematch.display(g, lang) for g in rem["shelter_stops"]) or "-"
+        out += t["hard"].format(a=disp(h["from"]), b=disp(h["to"]), hs=h["steps"], rest=rest)
+    else:
+        out += t["flat"]
+    return out
+
+
 def rules(text, lang, uid, session=None):
     """Returns a result dict, or None when the rules cannot classify the text (then the model gets a chance)."""
     low = gatematch.norm(text).strip()
+    eff = _effort_kind(low)
+    if eff == "far" and any(_w(low, K[f]) for f in ("water", "toilet", "medical", "rest", "cloak", "lost_found", "info")):
+        eff = None
+    if eff:      # 'how many steps' must not become the stop called Main Steps
+        text = _strip_steps(text)
+        low = gatematch.norm(text).strip()
     found = gatematch.find_gates(text)
     gs = _gates()
     pos_before = _pos.get(uid)
@@ -408,6 +549,8 @@ def rules(text, lang, uid, session=None):
     pos = _pos.get(uid)
     from_here = _w(low, FROM_HERE)
     has = lambda k: _w(low, K[k])   # noqa: E731
+    if eff and not (eff == "far" and target):       # steps, distance, climb, ramp: answered from route_facts
+        return _res("effort", _effort_reply(eff, lang, uid), lang, uid, show="map")
     # ---- facilities (a stop name does not turn a facility question into a wait question)
     fac_order = ["lost_found", "wheelchair", "cloak", "medical", "toilet", "water", "rest", "info"]
     fac = next((f for f in fac_order if has(f)), None)
@@ -508,15 +651,121 @@ SYSTEM = ("You are the voice assistant of a prototype crowded-shrine app. Use ON
           "\"action\":\"none|book|change|cancel|set_position|call_volunteer\"}}\n\nFACTS:\n{facts}")
 
 
+def _kb_block(text, lang, uid):
+    try:
+        import kb
+        return kb.facts_for(text, lang, _pos.get(uid))
+    except Exception:
+        return None
+
+
+def _kb_answer(text, lang, uid):
+    """Rules-only answer from the venue pack (no model call): the top entry's short answer, in the pilgrim's language when we can."""
+    try:
+        import kb
+        hits = kb.search(text, lang, k=1, position_stop_id=_pos.get(uid))
+    except Exception:
+        return None
+    if not hits or hits[0]["score"] < kb.THRESHOLD:
+        return None
+    ans = re.sub(r"\s*\(g[1-5]\)", "", hits[0]["answer"])          # never read stop ids aloud
+    parts = re.split(r"(?<=[.!?])\s", ans)
+    ans = " ".join(parts[:1 if _brief() else 2])                      # short when spoken
+    if lang != "en":
+        tr = _translate(ans, lang)
+        if not tr:
+            return None              # never answer a pilgrim in English they may not read: the safe line instead
+        ans = tr
+    return ans
+
+
+_tr_cache = {}
+
+
+def _translate(text, lang):
+    key = (text, lang)
+    if key in _tr_cache:
+        return _tr_cache[key]
+    out = None
+    try:
+        if sarvam.available():
+            out = sarvam.translate(text, lang) if hasattr(sarvam, "translate") else None
+            out = getattr(out, "text", out)
+    except Exception:
+        out = None
+    if out:
+        _tr_cache[key] = out
+    return out
+
+
+CARE_STRONG = ("medical", "lost_person", "lost_item", "safety_crowd", "harassment_theft", "tout_payment", "staff_behaviour")
+CARE_OVERRIDES = (None, "fee", "unknown", "distress", "position", "wait_gate", "goodbye")
+
+
+def _care(text, lang, uid, r):
+    """Open a tracked care request when the words are a real complaint or distress (rules only, no model call).
+    Ordinary questions ('where is water', 'my slot') stay with the normal answers."""
+    try:
+        import addons_care
+        cat, urg, _why, conf = addons_care.classify_rules(text)
+    except Exception:
+        return None
+    intent = r["intent"] if r else None
+    if not conf or cat not in CARE_STRONG or (urg != "emergency" and intent not in CARE_OVERRIDES):
+        return None
+    try:
+        c = addons_care.from_assistant(text, uid, lang, _pos.get(uid))
+    except Exception:
+        return None
+    if not c or not c.get("reply_text"):
+        return None
+    distress = intent == "distress" or urg == "emergency" or cat in ("lost_person", "medical", "safety_crowd")
+    return _res("distress" if distress else "care", c["reply_text"], lang, uid, action="call_volunteer" if distress else "none",
+                show="none", via="care", care_id=c.get("id"), care_urgency=c.get("urgency"), care_category=c.get("category"))
+
+
+def _health(ok, ms, err=None):
+    try:
+        import addons_state
+        addons_state.record(ok, ms, err)
+    except Exception:
+        pass
+
+
+def _llm_on():
+    try:
+        import flags
+        return flags.assistant_llm() != "off"
+    except Exception:
+        return True
+
+
+def _brief():
+    try:
+        import flags
+        return flags.reply_style() == "brief"
+    except Exception:
+        return False
+
+
 def _model(text, lang, uid, hist):
-    if not sarvam.available():
+    if not sarvam.available() or not _llm_on():
         return None
     hl = "\n".join(f"{r}: {t}" for r, t in hist[-6:])
     user = (hl + "\n" if hl else "") + "pilgrim: " + text
     t0 = time.perf_counter()
     try:
-        res = sarvam.chat(SYSTEM.format(lang={"en": "English", "hi": "Hindi", "ml": "Malayalam", "ta": "Tamil", "te": "Telugu", "kn": "Kannada"}.get(lang, "English"), facts=facts(uid, lang)), user, max_tokens=400)
-    except Exception:
+        fx = facts(uid, lang)
+        kbf = _kb_block(text, lang, uid)
+        if kbf:
+            fx += "\n" + kbf
+        sysmsg = SYSTEM.format(lang={"en": "English", "hi": "Hindi", "ml": "Malayalam", "ta": "Tamil", "te": "Telugu", "kn": "Kannada"}.get(lang, "English"), facts=fx)
+        if _brief():
+            sysmsg = "RUSH MODE: reply in ONE short sentence only.\n" + sysmsg
+        res = sarvam.chat(sysmsg, user, max_tokens=400)
+        _health(True, (time.perf_counter() - t0) * 1000)
+    except Exception as e:
+        _health(False, (time.perf_counter() - t0) * 1000, e.__class__.__name__)
         return None
     m = re.search(r"\{.*\}", res.text, flags=re.S)
     if not m:
@@ -560,12 +809,22 @@ def _digest(uid):
 
 
 # ------------------------------------------------------------------ public
+def strip_ids(reply):
+    """Internal stop ids (g1..g5, '(g2)') never reach a pilgrim: removed here for every reply (rules, knowledge pack, model)."""
+    s = re.sub(r"\s*[\(\[]\s*g[1-5]\s*[\)\]]", "", str(reply or ""))
+    s = re.sub(r"\bg[1-5]\b\s*", "", s)
+    return re.sub(r"[ \t]{2,}", " ", s).strip()
+
+
 def answer(text, lang, uid="anon", session=None, use_model=True, defer_unknown=False):
     """Understand text and answer from the live state. Always returns a dict with a non-empty reply unless the action is book/change/cancel
     (then reply is '' and the caller runs the existing booking flow)."""
     lang = lang if lang in LANGS else "en"
     hist = session.setdefault("hist", []) if isinstance(session, dict) else _hist.setdefault(uid, [])
     r = rules(text, lang, uid, session)
+    c = _care(text, lang, uid, r)         # complaint or distress: a tracked care request routed to the nearest volunteer
+    if c is not None:
+        r = c
     if r is None and defer_unknown:
         return None
     if r is None:
@@ -586,7 +845,12 @@ def answer(text, lang, uid="anon", session=None, use_model=True, defer_unknown=F
                          via="llm")
                 _cache[key] = (time.time(), dict(r))
             else:
-                r = _res("unknown", T(lang, "unknown"), lang, uid, via="rules_fallback")
+                kba = _kb_answer(text, lang, uid)
+                if kba:
+                    r = _res("info", kba, lang, uid, via="knowledge_pack")
+                else:
+                    r = _res("unknown", T(lang, "unknown"), lang, uid, via="rules_fallback")
+    r["reply"] = strip_ids(r.get("reply"))
     if r["action"] == "call_volunteer":
         _raise_flag(uid, text, lang)
     hist.append(("pilgrim", text))
@@ -623,12 +887,15 @@ def map_data(uid="anon", lang="en"):
                       "load": gs[gid]["load"], "facilities": FACILITIES[gid], "walk_to_next_min": WALK[(gid, nxt)] if nxt else None,
                       "state": prog[gid], "is_slot_gate": bool(slot and slot["gate"] == gid)})
         if nxt:
-            paths.append({"from": gid, "to": nxt, "walk_min": WALK[(gid, nxt)]})
+            sf = route_facts.BY_PAIR[(gid, nxt)]
+            paths.append({"from": gid, "to": nxt, "walk_min": WALK[(gid, nxt)], "steps": sf["steps"], "distance_m": sf["distance_m"], "climb_m": sf["climb_m"],
+                          "difficulty": sf["difficulty"], "wheelchair": sf["wheelchair"], "surface": sf["surface"], "shelters": sf["shelters"]})
         for k, ft in enumerate(FACILITIES[gid]):
             dx, dy = FAC_OFFSET[k % len(FAC_OFFSET)]
             facs.append({"type": ft, "stop": gid, "x": x + dx, "y": y + dy, "label": FAC_LABEL[ft].get(lang) or FAC_LABEL[ft]["en"]})
     return {"simulated": True, "label": "SIMULATED", "rush": _rush(), "canvas": {"w": 100, "h": 100}, "stops": stops, "paths": paths,
-            "facilities": facs, "position": pos,
+            "facilities": facs, "position": pos, "totals": route_facts.totals(),
+            "remaining": route_facts.remaining_from(pos, slot["gate"] if slot else None),
             "slot": {"label": slot["label"], "gate": slot["gate"], "gate_name": slot["gate_name"]} if slot else None}
 
 

@@ -1,0 +1,29 @@
+<!-- Care requests, staff side ('Requests near you'). Third state of the staff screen, and a badge/list on the site-overview map. Include care_staff.js, then:
+       CareStaff.init(document.getElementById('care-staff'), {volunteer: 'Meera', stop: 'g3', lang: () => 'ml', onMapItems: (items) => {...}})
+     Needs the router in addons_care.py. Inherits --ink --ink-2 --bg --surface --line --accent --r --s2..s5. -->
+<section class="cs" id="care-staff" aria-label="Requests near you">
+  <div class="cs-strip" data-cs="strip" role="status"><span><b data-cs="s-open">0</b> <i data-cs="l-open">open</i></span><span class="cs-em"><b data-cs="s-em">0</b> <i data-cs="l-em">emergencies</i></span><span><b data-cs="s-med">-</b> <i data-cs="l-med">median response</i></span></div>
+  <form class="cs-in" data-cs="checkin"><input data-cs="name" placeholder="Your name" aria-label="Your name"><select data-cs="stopsel" aria-label="Your stop"></select><button type="submit" data-cs="cibtn">Check in here</button></form>
+  <p class="cs-note" data-cs="note" role="status"></p>
+  <ul class="cs-list" data-cs="list"></ul>
+  <audio data-cs="audio" hidden></audio>
+  <style>
+    .cs{display:grid;gap:var(--s3,12px);color:var(--ink,#111)}
+    .cs-strip{display:flex;gap:var(--s4,16px);justify-content:space-between;padding:var(--s3,12px) var(--s4,16px);border:1px solid var(--line,#ccc);border-radius:var(--r,14px);background:var(--surface,#fff);font-size:.95rem}
+    .cs-strip b{font-size:1.3rem}.cs-strip i{font-style:normal;color:var(--ink-2,#555)}.cs-em b{color:#b3261e}
+    .cs-in{display:flex;flex-wrap:wrap;gap:var(--s2,8px)}.cs-in input,.cs-in select,.cs-in button{min-height:44px;padding:0 12px;border:1px solid var(--line,#ccc);border-radius:var(--r,12px);font:inherit;background:var(--bg,#fff);color:var(--ink,#111)}
+    .cs-in input{flex:1;min-width:120px}.cs-in button{background:var(--surface,#fff);cursor:pointer}
+    .cs-note{margin:0;font-size:.9rem;color:var(--ink-2,#555);min-height:1.2em}
+    .cs-list{list-style:none;margin:0;padding:0;display:grid;gap:var(--s3,12px)}
+    .cs-item{padding:var(--s4,16px);border:1px solid var(--line,#ccc);border-radius:var(--r,16px);background:var(--surface,#fff);display:grid;gap:var(--s2,8px)}
+    .cs-item[data-urg=emergency]{border:2px solid #b3261e}.cs-item[data-urg=urgent]{border-left:6px solid #c77700}
+    .cs-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.cs-id{font-size:1.4rem;font-weight:700}
+    .cs-tag{font-size:.8rem;padding:2px 8px;border-radius:99px;border:1px solid var(--line,#ccc);color:var(--ink-2,#555)}.cs-item[data-urg=emergency] .cs-tag{background:#b3261e;color:#fff;border-color:#b3261e}
+    .cs-sum{margin:0;font-size:1.1rem;line-height:1.35;font-weight:560}.cs-en,.cs-words,.cs-meta{margin:0;font-size:.9rem;color:var(--ink-2,#555)}
+    .cs-words{font-style:italic}
+    .cs-btns{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:var(--s2,8px)}
+    .cs-btns button{min-height:56px;border-radius:var(--r,14px);border:1px solid var(--line,#ccc);background:var(--surface,#fff);color:var(--ink,#111);font:inherit;font-size:1.05rem;cursor:pointer}
+    .cs-btns .cs-go{background:var(--accent,#7a3b00);color:#fff;border-color:transparent}.cs-play{justify-self:start;min-height:40px;padding:0 14px;border-radius:var(--r,12px);border:1px solid var(--line,#ccc);background:var(--surface,#fff);color:var(--ink,#111);font:inherit;cursor:pointer}
+    .cs-empty{padding:var(--s4,16px);text-align:center;color:var(--ink-2,#555)}
+  </style>
+</section>

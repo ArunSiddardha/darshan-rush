@@ -1,0 +1,200 @@
+{
+ "venue": "Demo Arena",
+ "id": "venue_stadium_demo",
+ "kind": "stadium on match day",
+ "simulated": true,
+ "disclaimer": "Simulated venue for pack demonstration.",
+ "languages": [
+  "en",
+  "hi"
+ ],
+ "stops": [
+  {
+   "id": "gate_a",
+   "name": "Gate A"
+  },
+  {
+   "id": "gate_b",
+   "name": "Gate B"
+  }
+ ],
+ "entries": [
+  {
+   "id": "gates",
+   "topic": "Gates and entry",
+   "tags": [
+    "gates and entry"
+   ],
+   "triggers": [
+    "gate",
+    "gates",
+    "entry",
+    "enter",
+    "which",
+    "gate",
+    "north",
+    "south",
+    "east",
+    "west",
+    "seat",
+    "stand",
+    "block"
+   ],
+   "answer": "Demo Arena (simulated). Gates A to D open 3 hours before kickoff. Your gate letter is printed on the ticket; follow the colour of your stand.",
+   "where": "gate_a",
+   "example_questions": [],
+   "simulated": true
+  },
+  {
+   "id": "bag_policy",
+   "topic": "Bag policy",
+   "tags": [
+    "bag policy"
+   ],
+   "triggers": [
+    "bag",
+    "bags",
+    "backpack",
+    "allowed",
+    "banned",
+    "prohibited",
+    "carry",
+    "bottle",
+    "outside",
+    "food"
+   ],
+   "answer": "Only bags up to A4 size are allowed. No outside food, glass or cans. Sealed water bottles up to 500 ml are allowed.",
+   "where": "all",
+   "example_questions": [],
+   "simulated": true
+  },
+  {
+   "id": "food",
+   "topic": "Food and drink",
+   "tags": [
+    "food and drink"
+   ],
+   "triggers": [
+    "food",
+    "drink",
+    "eat",
+    "hungry",
+    "water",
+    "stall",
+    "kiosk",
+    "vegetarian",
+    "halal",
+    "queue"
+   ],
+   "answer": "Food stalls are on every concourse. Water refill points are at each gate. Vegetarian and halal options are marked.",
+   "where": "all",
+   "example_questions": [],
+   "simulated": true
+  },
+  {
+   "id": "toilets",
+   "topic": "Toilets",
+   "tags": [
+    "toilets"
+   ],
+   "triggers": [
+    "toilet",
+    "toilets",
+    "restroom",
+    "washroom",
+    "accessible",
+    "ladies",
+    "gents"
+   ],
+   "answer": "Toilets are on every concourse behind each stand, with accessible cubicles near gates A and C.",
+   "where": "all",
+   "example_questions": [],
+   "simulated": true
+  },
+  {
+   "id": "medical",
+   "topic": "First aid",
+   "tags": [
+    "first aid"
+   ],
+   "triggers": [
+    "first",
+    "aid",
+    "medical",
+    "doctor",
+    "ambulance",
+    "injury",
+    "unwell",
+    "faint"
+   ],
+   "answer": "First-aid rooms are at gates B and D, staffed throughout the match. Tell any steward and they will take you there.",
+   "where": "all",
+   "example_questions": [],
+   "simulated": true
+  },
+  {
+   "id": "lost_child",
+   "topic": "Lost child or companion",
+   "tags": [
+    "lost child or companion"
+   ],
+   "triggers": [
+    "lost",
+    "child",
+    "missing",
+    "separated",
+    "family",
+    "kid"
+   ],
+   "answer": "Go to the nearest steward or the information desk at gate A. They will alert all gates. Stay where you are until a steward confirms.",
+   "where": "all",
+   "example_questions": [],
+   "simulated": true
+  },
+  {
+   "id": "exit",
+   "topic": "Exit and transport",
+   "tags": [
+    "exit and transport"
+   ],
+   "triggers": [
+    "exit",
+    "leave",
+    "after",
+    "match",
+    "metro",
+    "bus",
+    "parking",
+    "cab",
+    "crowd",
+    "leaving"
+   ],
+   "answer": "Leave by the gate on your ticket. Metro and buses run for 90 minutes after the final whistle. Wait in your seat for 10 minutes to avoid the crush.",
+   "where": "all",
+   "example_questions": [],
+   "simulated": true
+  },
+  {
+   "id": "accessibility",
+   "topic": "Accessibility",
+   "tags": [
+    "accessibility"
+   ],
+   "triggers": [
+    "wheelchair",
+    "disabled",
+    "accessible",
+    "lift",
+    "ramp",
+    "seating",
+    "visually",
+    "impaired",
+    "hearing"
+   ],
+   "answer": "Wheelchair bays and lifts are at gates A and C. Ask a steward for assistance. Commentary headsets are available at the information desk.",
+   "where": "all",
+   "example_questions": [],
+   "simulated": true
+  }
+ ]
+}

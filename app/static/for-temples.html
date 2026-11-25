@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Darshan Rush for temples</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<meta name="description" content="Book a darshan slot by talking, in your own language. It stays fair when everyone arrives at once. A prototype with a simulated crowd.">
+<meta property="og:title" content="Darshan Rush">
+<meta property="og:description" content="Book a darshan slot by talking, in your own language. It stays fair when everyone arrives at once.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preload" href="/static/fonts/AnekLatin-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/fonts.css">
+<link rel="stylesheet" href="/static/style.css">
+<style>.pg{max-width:880px;margin:0 auto;padding:var(--s5) var(--s5) var(--s7)}
+.pg h1{font-size:clamp(28px,4.4vw,44px);font-weight:640;line-height:1.15;letter-spacing:-.015em;margin-top:var(--s6)}
+.lead{font-size:var(--t-m);line-height:1.5;color:var(--ink-2);margin-top:var(--s3);max-width:46ch}
+
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s4);margin-top:var(--s6)}
+.cards .card{padding:var(--s5)}
+.cards h2{font-size:var(--t-s);font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+.big3{font-size:clamp(32px,4vw,44px);font-weight:680;font-stretch:115%;line-height:1.1;margin-top:var(--s2);color:var(--accent)}
+.cards p{margin-top:var(--s2);color:var(--ink-2);line-height:1.5}
+.sec{margin-top:var(--s7)}.sec h2{font-size:var(--t-m);font-weight:620}
+.sec ul{margin:var(--s3) 0 0;padding-left:1.2em;line-height:1.7;color:var(--ink-2)}
+.promise{margin-top:var(--s6);padding:var(--s5);border-radius:var(--r-l,18px);background:var(--accent);color:#fff;font-size:var(--t-m);font-weight:600;text-align:center}
+.cta{margin-top:var(--s6);display:flex;gap:var(--s3);flex-wrap:wrap;align-items:center}
+.est{font-size:var(--t-s);color:var(--ink-3);margin-top:var(--s3)}
+@media (max-width:720px){.cards{grid-template-columns:1fr}}
+</style></head><body><div class="pg"><header class="bar"><a class="wordmark" href="/start"><svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 10.5v3M12 8v8M15.5 10.5v3"/></g></svg>Darshan Rush</a><span class="tag">SIMULATED</span></header>
+<h1>A voice booking layer that keeps working when the whole festival arrives</h1>
+<p class="lead">For shrines, temple boards and large venues with festival-day rushes: pilgrims book a fair slot by talking in their own language, and one volunteer approves the rush switch by voice.</p>
+<div class="cards">
+ <section class="card"><h2>Our cost</h2><p class="big3">Rs 3.5</p><p>per voice booking, from Sarvam public prices (checked 25 Nov 2026).</p></section>
+ <section class="card"><h2>The shrine pays</h2><p class="big3">Rs 10</p><p>per voice booking, with a minimum. <b>The pilgrim pays Rs 0.</b></p></section>
+ <section class="card"><h2>If every big shrine bought it</h2><p class="big3">~Rs 30 cr</p><p>a year. Our estimate: 15 mega shrines and about 300 mid-size.</p></section>
+</div>
+<p class="promise">Pilgrims never pay. No ads. No data sales.</p>
+<section class="sec"><h2>What a shrine gets</h2><ul>
+ <li>Booking by voice in Telugu, Tamil, Malayalam, Kannada, Hindi and English, with the slot read back.</li>
+ <li>An assistant that answers pilgrims and volunteers about timings, the way, water, medical help and help for elders, from the shrine's own facts.</li>
+ <li>A swappable venue pack: any shrine or venue loads its own pack, with no code change.</li>
+ <li>Rush protection: NudgeBee finds the cause, a volunteer says yes, Flagsmith switches to staggered slots and a lighter page.</li>
+ <li>A walk-in counter where a volunteer books for pilgrims without a phone.</li>
+</ul></section>
+<section class="sec"><h2>Cost to serve</h2><ul>
+ <li>About Rs 3.5 per voice booking: speech-to-text, text-to-speech, translation, the language model and retries.</li>
+ <li>Example: 100,000 pilgrims a day with 15% using voice is about Rs 52,500 a day of Sarvam cost (estimate).</li>
+</ul><p class="est">Estimates use public prices and our own assumptions; see business/BUSINESS.md in the repository. The crowd in the demo is simulated and no shrine has adopted it yet.</p></section>
+<div class="cta"><a class="btn btn-primary" href="/start">Start with one festival day, free</a><a class="btn btn-secondary" href="/sponsors">How it works under the hood</a></div>
+<footer class="foot"><p>Simulated crowd. Not affiliated with any temple. Not for operational use.</p></footer></div></body></html>

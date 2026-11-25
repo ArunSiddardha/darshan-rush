@@ -118,3 +118,20 @@ body.live .state::before{content:"";width:10px;height:10px;border-radius:50%;bac
 /* quiet Map link under the talk button */
 .map-link{color:var(--ink-2);text-decoration:underline;text-underline-offset:4px;margin-top:var(--s1)}
 body.live .map-link{display:none}
+
+/* quiet "you can ask about" line, rush line, I need help */
+.canask{margin:var(--s2) auto 0;max-width:34ch;font-size:var(--t-s);line-height:1.6;color:var(--ink-2);text-align:center;opacity:0;transition:opacity .3s ease;min-height:1.6em}
+.canask.in{opacity:1}
+.rushline{margin:var(--s3) auto 0;display:inline-block;padding:4px 12px;border-radius:99px;background:var(--saffron-soft,#fff3e0);color:#7a3e00;font-size:var(--t-s);font-weight:560}
+.needhelp{margin-top:var(--s2);min-height:44px;font-weight:500;color:var(--ink-2);text-decoration:underline;text-underline-offset:4px}
+body.live .needhelp{display:none}
+@media (min-width:700px){.hero{padding-top:calc(var(--s7) + 12px)}}
+.helpdone{margin-top:var(--s2);text-align:center;font-weight:560}
+@media (prefers-reduced-motion:reduce){.canask{transition:none;opacity:1}}
+
+/* Arun, 25 Nov: the map must be seen without hunting for it. The talk button keeps the top of the first screen; the map starts right below it. */
+.hero{min-height:min(58svh,520px);padding-top:var(--s6);padding-bottom:var(--s4)}
+.hero .mic{--size:148px}
+body.elder .hero{min-height:min(66svh,600px)}
+
+body.live .canask,body.live .rushline,body.live .helpdone{display:none}

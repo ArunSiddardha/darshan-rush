@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Darshan Rush: judges</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<meta name="description" content="Book a darshan slot by talking, in your own language. It stays fair when everyone arrives at once. A prototype with a simulated crowd.">
+<meta property="og:title" content="Darshan Rush">
+<meta property="og:description" content="Book a darshan slot by talking, in your own language. It stays fair when everyone arrives at once.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preload" href="/static/fonts/AnekLatin-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/fonts.css">
 <link rel="stylesheet" href="/static/style.css">
 <style>
@@ -36,6 +43,13 @@ table.ba{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .ba td{font-size:var(--t-m);font-weight:620;font-stretch:112%}
 .ba td.after{color:var(--ok)}
 .ba tr:last-child th,.ba tr:last-child td{border-bottom:0}
+.j .bar{flex-wrap:wrap}
+.pv{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin-left:auto;margin-right:var(--s3)}
+.pv-l{font-size:var(--t-s);color:var(--ink-3);margin-right:var(--s1)}
+.pv a{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 12px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:var(--t-s);font-weight:560}
+.pv a:hover{border-color:var(--accent);color:var(--accent)}
+.pv kbd{font:inherit;font-size:.8em;min-width:18px;height:18px;display:inline-grid;place-items:center;border-radius:5px;background:var(--accent-soft);color:var(--accent)}
+@media (max-width:760px){.pv-l,.pv kbd{display:none}.pv{order:3;width:100%;margin:var(--s3) 0 0}}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4)}
 .kv{display:flex;justify-content:space-between;gap:var(--s3);padding:var(--s2) 0;border-bottom:1px solid var(--line)}
 .kv:last-child{border-bottom:0}
@@ -62,11 +76,13 @@ table.ba{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
- <symbol id="i-mark" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20v-6l6-4 6 4v6"/><path d="M12 10V4"/><path d="M10 20v-3h4v3"/></g></symbol>
+ <symbol id="i-mark" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 10.5v3M12 8v8M15.5 10.5v3"/></g></symbol>
  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L5 13h6l-1 8 8-10h-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
 </defs></svg>
 <div class="j">
- <div class="bar"><span class="wordmark"><svg aria-hidden="true"><use href="#i-mark"/></svg>Darshan Rush</span><span class="tag">SIMULATED</span></div>
+ <div class="bar"><span class="wordmark"><svg aria-hidden="true"><use href="#i-mark"/></svg>Darshan Rush</span>
+  <nav class="pv" aria-label="Presenter view"><span class="pv-l">Presenter view</span><a href="/" target="pv-pilgrim"><kbd>1</kbd>Pilgrim</a><a href="/volunteer" target="pv-staff"><kbd>2</kbd>Staff</a><a href="/sponsors" target="pv-sponsors"><kbd>3</kbd>Sponsors</a><a href="/graph" target="pv-graph"><kbd>4</kbd>Graph</a><a href="/for-temples" target="pv-temples"><kbd>5</kbd>For temples</a></nav>
+  <span class="tag">SIMULATED</span></div>
  <h1>Scan to book. Then we cause a rush.</h1>
 
  <div class="grid">
@@ -108,6 +124,7 @@ table.ba{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
    <div class="tools">
     <a class="btn btn-secondary" href="/static/graph.html">Open the recovery graph</a>
     <a class="btn btn-secondary" href="/sponsors">Sponsors</a>
+    <a class="btn btn-secondary" href="/for-temples">For temples</a>
     <button class="btn btn-quiet" id="stop" type="button">Stop rush</button>
     <button class="btn btn-quiet" id="reset" type="button">Reset numbers</button>
    </div>
@@ -174,6 +191,10 @@ async function abTick(){try{const r=await fetch('/api/experiment');if(!r.ok)thro
   `<p class="small" style="margin-top:var(--s3)">Metric: ${esc(X.metric||'reached_gate')}. ${X.source==='flagsmith'?'Variants assigned by Flagsmith.':'Flagsmith not reachable: local counts.'}</p>`}
  catch(e){$('#ab').innerHTML='<p class="small">Experiment not reachable right now.</p>'}}
 flagsTick();abTick();setInterval(flagsTick,4000);setInterval(abTick,4000);
+</script>
+<script>
+/* projector shortcuts: 1-5 open the presenter screens */
+document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea')||e.metaKey||e.ctrlKey||e.altKey)return;const a=document.querySelectorAll('.pv a')[+e.key-1];if(a){e.preventDefault();window.open(a.href,a.target)}});
 </script>
 </body>
 </html>

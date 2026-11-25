@@ -116,6 +116,8 @@ Lakshmamma is 68, speaks only Telugu and has never booked anything online. On 8 
 - "Is this booking site real?": a calm warning for a pasted link or an offer. It never says a site is genuine.
 - Elders (traits from Flagsmith) get a larger voice-first layout.
 
+**Emergencies are understood in all six languages.** If a pilgrim says "my mother fell", "my child is lost", "people are pushing" or "someone is asking me for money" in Telugu, Tamil, Malayalam, Kannada, Hindi or English, the app opens a tracked request, names the nearest volunteer and the minutes away, and shows it on the staff screen. No model call is needed for this, so it works even when the language model is slow or off.
+
 ## What temple staff can do
 
 - Walk-in booking: the volunteer speaks for a pilgrim without a phone, and the slot is read back in the pilgrim's language.

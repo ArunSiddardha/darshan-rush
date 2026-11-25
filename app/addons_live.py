@@ -9,6 +9,7 @@ Reuses directions.py (keyword intent, understand() with the Sarvam chat fallback
 book_slot, set_age_trait, wait answers) and sarvam.py (stt, tts). Nothing in those files is edited.
 Mount:  from addons_live import router as live_router ; app.include_router(live_router)
 """
+import collections
 import os
 import re
 import threading
@@ -632,6 +633,33 @@ def _noise(t):
     return False
 
 
+# ---- cross-phone echo guard: several phones side by side hear each other's spoken replies. A transcript that is
+# almost word for word a reply the app itself spoke in the last few seconds (on any phone) is not a question.
+_spoken = collections.deque(maxlen=200)     # (heard_until_ts, set of words)
+_WORD = re.compile(r"[^\W\d_]+", re.UNICODE)
+
+
+def _words(t):
+    return [w.lower() for w in _WORD.findall(t or "")]
+
+
+def note_spoken(reply):
+    w = _words(reply)
+    if len(w) >= 4:
+        _spoken.append((time.time() + len(w) / 2.2 + 6.0, set(w)))
+
+
+def is_echo(transcript):
+    w = _words(transcript)
+    if len(w) < 4:
+        return False
+    now = time.time()
+    for until, ws in list(_spoken):
+        if until >= now and sum(1 for x in w if x in ws) / len(w) >= 0.8:
+            return True
+    return False
+
+
 @router.post("/api/live/turn")
 async def live_turn(audio: UploadFile = File(None), uid: str = Form("anon"), lang: str = Form("en"),
                     session_id: str = Form(""), text: str = Form(""), auto: str = Form("")):
@@ -670,15 +698,22 @@ async def live_turn(audio: UploadFile = File(None), uid: str = Form("anon"), lan
     if notice:
         lat["total_ms"] = int((time.perf_counter() - t0) * 1000)
         return {**base, "reply_text": notice, "audio_base64": None, "ignored": False, "error": True, "latency": lat}
-    if _noise(transcript):
-        # nothing intelligible: stay silent (the page does not speak when ignored is true)
+    if _noise(transcript) or (audio is not None and not (text or "").strip() and is_echo(transcript)):
+        # another phone's spoken reply, or nothing intelligible: stay silent (the page does not speak when ignored is true)
         lat["total_ms"] = int((time.perf_counter() - t0) * 1000)
         return {**base, "reply_text": "", "audio_base64": None, "ignored": True, "latency": lat}
     reply, extra, end = await run_in_threadpool(handle, transcript, uid, sid, lang, s)
     lat["llm_ms"] = extra.get("llm_ms", 0)
+    if (audio is not None and not (text or "").strip() and len(_words(transcript)) <= 2 and s["state"] == "idle"
+            and extra.get("intent") in (None, "unknown") and not end):
+        # a stray word from the room ("No.", "Okay") that is not an answer to anything: stay silent instead of a dead-end line
+        lat["total_ms"] = int((time.perf_counter() - t0) * 1000)
+        return {**base, "reply_text": "", "audio_base64": None, "ignored": True, "latency": lat}
     out_lang = s["lang"]
     b64, lat["tts_ms"], tnotice, hit = await run_in_threadpool(tts_cached, reply, out_lang)
     lat["tts_cached"] = hit
+    if b64:
+        note_spoken(reply)
     lat["total_ms"] = int((time.perf_counter() - t0) * 1000)
     warm_lang = out_lang
     _pool.submit(warm, warm_lang)

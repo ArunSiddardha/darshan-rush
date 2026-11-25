@@ -549,6 +549,33 @@ async def api_reply(request: Request):
     return {**out, "transcript": text, "decision": decision, "latency": {"stt_ms": stt_ms, **STATE["latency"]}}
 
 
+ACK = {"yes": {"ml": "ശരി. NudgeBee-ൽ ഉറപ്പിക്കാൻ അയച്ചു.", "en": "Done. Sent to NudgeBee for confirmation."},
+       "no": {"ml": "ശരി, ഒന്നും മാറ്റുന്നില്ല.", "en": "Okay, nothing will be changed."},
+       "unclear": {"ml": UNCLEAR_ML, "en": UNCLEAR_EN}}
+
+
+@router.post("/api/volunteer/live-turn")
+async def api_live_turn(request: Request):
+    """Hands-free yes or no for the volunteer. Same reply shape as /api/live/turn so addons_ui/live.js can drive it."""
+    import base64
+    from starlette.concurrency import run_in_threadpool
+    form = await request.form()
+    lang = "ml" if str(form.get("lang") or "").lower().startswith("ml") else "en"
+    text, err, stt_ms = await _text_or_audio(request, reply=True)
+    base = {"transcript": text, "lang": lang, "state": "asking", "end_session": False, "ignored": False}
+    if err:
+        return {**base, "reply_text": err["notice"], "audio_base64": None, "error": True, "notice": err["notice"], "latency": {"stt_ms": 0}}
+    if not text or len(re.sub(r"[\W_]+", "", text, flags=re.U)) < 2:
+        return {**base, "ignored": True, "reply_text": "", "audio_base64": None, "latency": {"stt_ms": stt_ms}}
+    decision = await run_in_threadpool(handle_reply, text)
+    if decision == "ignored":
+        return {**base, "ignored": True, "end_session": True, "reply_text": "", "audio_base64": None, "latency": {"stt_ms": stt_ms}}
+    line = ACK[decision][lang]
+    wav, ms, note_ = await run_in_threadpool(_speak, line, lang)
+    return {**base, "decision": decision, "reply_text": line, "audio_base64": base64.b64encode(wav).decode() if wav else None,
+            "end_session": decision in ("yes", "no"), "notice": note_, "latency": {"stt_ms": stt_ms, "tts_ms": ms}}
+
+
 @router.post("/api/volunteer/crowd-report")
 async def api_crowd(request: Request):
     from starlette.concurrency import run_in_threadpool

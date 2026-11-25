@@ -1,0 +1,23 @@
+<!-- Read a photo. Place anywhere; include read_photo.js after it. Collapsed by default. Needs CSS vars (optional): --ink --bg --card --accent --line.
+     Language comes from window.DARSHAN_LANG (string such as "ml") if set, else the select inside the fragment. -->
+<details class="ad-card" id="ad-read" style="margin:8px 0;border:1px solid var(--line,#ccc);border-radius:12px;background:var(--card,#fff);color:var(--ink,#111)">
+  <summary style="min-height:48px;display:flex;align-items:center;padding:0 14px;font-size:1.05rem;cursor:pointer">Read a ticket or signboard from a photo</summary>
+  <div style="padding:8px 14px 14px;display:grid;gap:10px">
+    <label style="display:grid;gap:4px">Language
+      <select data-ad="lang" style="min-height:48px;font-size:1rem">
+        <option value="ml">Malayalam</option><option value="te">Telugu</option><option value="ta">Tamil</option>
+        <option value="kn">Kannada</option><option value="hi">Hindi</option><option value="en">English</option>
+      </select></label>
+    <label style="display:flex;align-items:center;justify-content:center;min-height:56px;border-radius:12px;background:var(--accent,#7a3b00);color:#fff;font-size:1.1rem;cursor:pointer">
+      Take or choose a photo
+      <input data-ad="file" type="file" accept="image/*" capture="environment" style="position:absolute;opacity:0;width:1px;height:1px">
+    </label>
+    <div data-ad="status" role="status" aria-live="polite" style="min-height:1.4em"></div>
+    <div data-ad="out" hidden style="display:grid;gap:8px">
+      <div><strong>Translated</strong><div data-ad="translated" style="font-size:1.2rem;white-space:pre-wrap"></div></div>
+      <button type="button" data-ad="play" style="min-height:48px;font-size:1rem">Play again</button>
+      <details><summary style="min-height:44px;display:flex;align-items:center">Text in the photo</summary><div data-ad="text" style="white-space:pre-wrap"></div></details>
+      <small data-ad="lat" style="opacity:.7"></small>
+    </div>
+  </div>
+</details>

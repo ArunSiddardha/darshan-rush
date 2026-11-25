@@ -1,101 +1,236 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Darshan Rush: Volunteer</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F3F1EC">
+<title>Darshan Rush: volunteer desk</title>
+<link rel="stylesheet" href="/static/fonts.css">
+<link rel="stylesheet" href="/static/style.css">
 <style>
-:root{--bg:#f6f1e7;--ink:#2b2118;--mut:#7a6b5a;--card:#fffdf8;--line:#e4d9c6;--ac:#b4531a;--ok:#2f7d4f;--bad:#a63a32}
-*{box-sizing:border-box}body{margin:0;background:#ddd5c5;font-family:system-ui,-apple-system,"Noto Sans Malayalam","Noto Sans",sans-serif;color:var(--ink)}
-.phone{width:390px;max-width:100%;min-height:100vh;margin:0 auto;background:var(--bg);padding:16px 16px 28px}
-h1{font-size:19px;margin:0 0 2px}h2{font-size:15px;margin:22px 0 8px}.small{font-size:12px;color:var(--mut)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
-.status{font-size:15px;font-weight:600}.q{font-size:20px;line-height:1.4;margin:0 0 6px}
-.mic{display:block;margin:16px auto 6px;width:104px;height:104px;border-radius:50%;border:0;background:var(--ac);color:#fff;font-size:42px;cursor:pointer;box-shadow:0 4px 14px #b4531a55}
-.mic:disabled{background:#c9bfae;box-shadow:none;cursor:not-allowed}.mic.rec{animation:p 1s infinite;background:var(--bad)}
-@keyframes p{50%{transform:scale(1.07)}}
-.row{display:flex;gap:10px}.row button{flex:1;padding:14px;font-size:17px;border-radius:12px;border:2px solid var(--ink);background:#fff;cursor:pointer}
-.row .y{background:var(--ok);color:#fff;border-color:var(--ok)}.row .n{background:#fff;color:var(--bad);border-color:var(--bad)}
-button:disabled{opacity:.45;cursor:not-allowed}.hear{text-align:center;font-size:13px;min-height:18px;margin-top:4px}
-ul.tl{list-style:none;margin:0;padding:0}ul.tl li{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;color:#a99a85}
-ul.tl li.done{color:var(--ink);font-weight:600}.notice{color:var(--bad);font-size:13px;margin-top:6px}
-label{display:block;font-size:12px;color:var(--mut);margin:10px 0 3px}select,input{width:100%;padding:11px;font-size:16px;border:1px solid var(--line);border-radius:10px;background:#fff}
-.go{width:100%;margin-top:12px;padding:13px;font-size:16px;border:0;border-radius:12px;background:var(--ink);color:#fff;cursor:pointer}
-.reply{margin-top:10px;font-size:15px;line-height:1.4}footer{margin-top:22px;font-size:11px;color:var(--mut);text-align:center}
-</style></head>
-<body><div class="phone">
-<h1>Volunteer desk</h1><div class="small">Spot counter. Simulated crowd, prototype.</div>
-<div class="card"><div class="status" id="status">All quiet.</div>
-<div id="qbox" style="display:none;margin-top:10px"><p class="q" id="qt" lang="ml"></p><div class="small" id="qen"></div><div class="small" id="why"></div>
-<details id="found" style="display:none;margin-top:8px"><summary class="small" style="cursor:pointer">What NudgeBee found</summary><pre id="rc" class="small" style="white-space:pre-wrap;word-break:break-word;margin:6px 0 0;font-family:inherit"></pre></details></div>
-<button class="mic" id="mic" disabled aria-label="Answer by voice">🎤</button>
-<div class="hear" id="hear"></div>
-<div class="row" style="margin-top:10px"><button class="y" id="yes" disabled>Yes</button><button class="n" id="no" disabled>No</button></div>
-<div class="notice" id="notice"></div></div>
+.top{display:flex;align-items:center;justify-content:space-between;padding:var(--s5) 0 var(--s4)}
+.view{display:none}.view.on{display:block}
+.big{font-size:var(--t-l);font-weight:600;line-height:1.35;letter-spacing:-.01em}
+.stack{display:grid;gap:var(--s4);margin-top:var(--s6)}
+.act{min-height:88px;font-size:var(--t-m);justify-content:flex-start;gap:var(--s4);padding:0 var(--s5)}
+.act svg{width:28px;height:28px}
+.q-ml{font-size:var(--t-l);line-height:1.6;font-weight:600}
+.q-ml:lang(en){line-height:1.35}
+.q-en{margin-top:var(--s3);color:var(--ink-2)}
+.talk{--size:132px;margin:var(--s6) auto var(--s3)}
+.heard{text-align:center;min-height:1.6em;color:var(--ink-2);font-size:var(--t-s)}
+.yn{margin-top:var(--s4)}.yn .btn{min-height:68px;font-size:var(--t-m)}
+.btn-yes.armed{outline:4px solid var(--ok-soft,#cfe8d8)}
+.slotbig{font-size:var(--t-xl);font-weight:650;font-stretch:115%;line-height:1.1;margin:var(--s4) 0 var(--s2)}
+.row{display:flex;gap:var(--s3);align-items:center}
+.back{margin-top:var(--s5)}
+.tog{display:inline-flex;gap:0;border:1px solid var(--line);border-radius:var(--pill);overflow:hidden}
+.tog button{min-height:44px;padding:0 16px;background:transparent;border:0;font-size:var(--t-s);color:var(--ink-2);cursor:pointer}
+.tog button[aria-pressed=true]{background:var(--ink);color:#fff}
+.stepper{margin-top:var(--s3)}
+.plan{display:flex;gap:var(--s3);border:1px dashed var(--line);border-radius:var(--r);padding:var(--s4);color:var(--ink-2);margin-top:var(--s5);font-size:var(--t-s)}
+.plan svg{width:22px;height:22px;flex:none}
+.mic.is-listening{box-shadow:0 0 0 calc(6px + 26px*var(--lvl,0)) var(--accent-soft)}
+body.live .talk{animation:breathe 3s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.04)}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+ <symbol id="i-mark" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20v-6l6-4 6 4v6"/><path d="M12 10V4"/><path d="M10 20v-3h4v3"/></g></symbol>
+ <symbol id="i-mic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/></g></symbol>
+ <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></symbol>
+ <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></g></symbol>
+ <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></g></symbol>
+ <symbol id="i-people" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16 14c2.3 0 4 1.5 4.5 4"/></g></symbol>
+ <symbol id="i-ticket" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 7h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4z"/><path d="M14 7v10" stroke-dasharray="2 2"/></g></symbol>
+ <symbol id="i-phone" viewBox="0 0 24 24"><path d="M6.5 4h3l1.5 4-2 1.5a10 10 0 0 0 5.5 5.5l1.5-2 4 1.5v3a2 2 0 0 1-2 2A15 15 0 0 1 4.5 6a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+ <symbol id="i-list" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></g></symbol>
+</defs></svg>
+<div class="page">
+ <header class="top"><span class="wordmark"><svg aria-hidden="true"><use href="#i-mark"/></svg>Darshan Rush</span><span class="tag">SIMULATED</span></header>
+ <main aria-live="polite">
 
-<h2>Timeline</h2><div class="card"><ul class="tl" id="tl"></ul><div class="small" id="lat" style="margin-top:8px"></div></div>
+  <section class="view on" id="v-calm">
+   <p class="big" id="calmT"></p>
+   <div class="stack">
+    <button class="btn btn-primary act" id="goWalk" type="button"><svg aria-hidden="true"><use href="#i-ticket"/></svg><span id="walkT"></span></button>
+    <button class="btn btn-secondary act" id="goCrowd" type="button"><svg aria-hidden="true"><use href="#i-people"/></svg><span id="crowdT"></span></button>
+   </div>
+  </section>
 
-<h2>Crowd report</h2><div class="card">
-<div class="small">Say or type, for example: River Crossing, about two thousand waiting.</div>
-<label for="cr">Report</label><input id="cr" placeholder="River Crossing, about 2000 waiting">
-<div class="row" style="margin-top:10px"><button id="crmic" style="font-size:20px">🎤</button><button id="crsend" style="flex:2">Send report</button></div>
-<div class="reply" id="crout"></div></div>
+  <section class="view" id="v-ask">
+   <p class="q-ml" id="qBig"></p><p class="q-en small" id="qSmall"></p>
+   <button class="mic talk" id="mic" type="button"><svg aria-hidden="true"><use href="#i-mic"/></svg></button>
+   <p class="heard" id="hear"></p>
+   <div class="row2 yn"><button class="btn btn-yes" id="yes" type="button"></button><button class="btn btn-no" id="no" type="button"></button></div>
+  </section>
 
-<h2>Walk-in booking</h2><div class="card">
-<div class="small">For a pilgrim without a phone. You speak for them.</div>
-<label for="wl">Pilgrim's language</label>
-<select id="wl"><option value="ml">Malayalam</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="kn">Kannada</option><option value="hi">Hindi</option><option value="en">English</option></select>
-<label for="wp">People</label><input id="wp" type="number" min="1" max="10" value="1">
-<label for="wt">When</label><select id="wt"><option value="now">Next free slot</option><option value="tomorrow morning">Tomorrow morning</option><option value="tomorrow afternoon">Tomorrow afternoon</option><option value="tomorrow evening">Tomorrow evening</option></select>
-<button class="go" id="wgo">Book walk-in</button>
-<div class="reply" id="wout"></div><div class="small" id="wlat"></div></div>
-<footer>Simulated crowd. Not affiliated with any temple. Not for operational use.</footer>
-<audio id="player"></audio></div>
+  <section class="view" id="v-wait"><p class="big" id="waitT"></p><p class="small" id="waitS" style="margin-top:var(--s3)"></p></section>
+  <section class="view" id="v-done"><p class="big" id="doneT"></p><p class="small" id="doneS" style="margin-top:var(--s3)"></p></section>
+
+  <section class="view" id="v-walk">
+   <p class="big" id="walkH"></p>
+   <button class="mic talk" id="wmic" type="button"><svg aria-hidden="true"><use href="#i-mic"/></svg></button>
+   <p class="heard" id="wout"></p>
+   <div id="wres" hidden class="card" style="padding:var(--s5);margin-top:var(--s4)"><p class="small" id="wgate"></p><p class="slotbig num" id="wtime"></p><p class="reply-text" id="wsay"></p><button class="btn btn-secondary" id="wplay" type="button"></button></div>
+   <button class="btn btn-quiet back" data-back type="button"></button>
+  </section>
+
+  <section class="view" id="v-crowd">
+   <p class="big" id="crowdH"></p>
+   <button class="mic talk" id="cmic" type="button"><svg aria-hidden="true"><use href="#i-mic"/></svg></button>
+   <p class="heard" id="cout"></p>
+   <form class="inline-form" id="cform"><input class="input" id="cr" autocomplete="off"><button class="btn btn-secondary" type="submit" id="csend"></button></form>
+   <button class="btn btn-quiet back" data-back type="button"></button>
+  </section>
+
+  <div class="msg msg-warn" id="notice" hidden style="margin-top:var(--s4)"></div>
+ </main>
+
+ <section class="v-sec" style="margin-top:var(--s7)">
+  <details class="exp-card"><summary class="exp" style="list-style:none;min-height:56px;display:flex;align-items:center;cursor:pointer;font-weight:560" id="detT"></summary>
+   <div style="padding-bottom:var(--s5)">
+    <div class="deflist" id="foundBody"></div>
+    <ol class="stepper" id="tl"></ol>
+    <p class="small" id="lat"></p>
+   </div>
+  </details>
+  <div class="plan"><svg aria-hidden="true"><use href="#i-phone"/></svg><div id="planT"></div></div>
+ </section>
+
+ <footer class="foot">
+  <div class="tog" role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">EN</button><button type="button" data-l="ml" lang="ml" aria-pressed="false">മലയാളം</button></div>
+  <p lang="en">Simulated crowd. Not affiliated with any temple. Not for operational use.</p>
+ </footer>
+</div>
+<audio id="player"></audio>
+<script src="/static/addons_ui/live.js"></script>
 <script>
-const $=s=>document.querySelector(s);let S={},playedQ=null,playedC=null,rec=null,chunks=[];
-const fmt=t=>new Date(t*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-const MSG={idle:'All quiet. Nothing needs you.',asking:'Please answer: yes or no',declined:'You said no. Nothing was changed.',approved:'Waiting for the duty officer to confirm in NudgeBee',recovered:'Booking recovered. Slots are staggered.'};
-function prime(){const p=$('#player');if(p&&!p.dataset.primed){p.dataset.primed=1;p.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';p.play().catch(()=>{})}}
-function extOf(m){return /mp4|aac/.test(m||'')?'m4a':/ogg/.test(m||'')?'ogg':'webm'}
-let pending=null;
-document.addEventListener('pointerdown',()=>{if(pending){const u=pending;pending=null;const p=$('#player');p.src=u;p.play().catch(()=>{})}},true);
-function play(u){const p=$('#player');p.src=u;p.play().then(()=>{pending=null}).catch(()=>{pending=u;$('#hear').textContent='Tap anywhere on the page to hear the question'})}
+/* One screen at a time. API: GET /api/volunteer/state, /audio; POST /api/volunteer/reply, /crowd-report, /api/directions (walkin) */
+const $=s=>document.querySelector(s);let S={},playedQ=null,playedC=null,rec=null,chunks=[],lastOk=Date.now(),armed=0,prevStatus=null,primed=false,AC=null;
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=t=>new Date(t*1000).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false});
+const ICON=n=>`<svg aria-hidden="true"><use href="#i-${n}"/></svg>`;
+let L=localStorage.vlang||((navigator.language||'').toLowerCase().startsWith('ml')?'ml':'en');
+const T={en:{calm:'All calm',walk:'Book for a pilgrim',crowd:'Report crowd',yes:'Yes',no:'No',yes2:'Tap again to confirm',walkH:'Let the pilgrim speak, or speak for them.',crowdH:'Say the gate and how many are waiting.',crowdPh:'River Crossing, about 2000 waiting',send:'Send',
+  back:'Back',waitT:'Waiting for the duty officer in NudgeBee',waitS:'You said yes. A second person confirms before anything changes.',doneT:'Booking recovered',doneS:'Slots are staggered and the pilgrim page is lighter. Every pilgrim can still book.',
+  declT:'You said no. Nothing was changed.',notSent:'Not sent to NudgeBee. Nothing was changed.',details:'Details',plan:'No smartphone? A phone line is planned (not built yet).',
+  listen:'Listening. Just speak.',tapTalk:'Tap once to talk',heard:'Heard',slot:'Slot',play:'Hear again',credits:'Voice is paused (no credits). Use Yes or No.',rate:'Voice is busy. Use Yes or No.',net:'No connection. Retrying.',blip:'I did not catch that. Tap and try again.',nomic:'No microphone. Use the buttons or type.',blocked:'Microphone is blocked in this browser.',said:'Answer',unclear:'Please say yes or no.',gate:'Gate',updated:'Crowd updated',waiting:'waiting'},
+ ml:{calm:'എല്ലാം ശാന്തം',walk:'തീർത്ഥാടകന് ബുക്ക് ചെയ്യുക',crowd:'തിരക്ക് അറിയിക്കുക',yes:'ശരി',no:'വേണ്ട',yes2:'ഉറപ്പിക്കാൻ വീണ്ടും അമർത്തൂ',walkH:'തീർത്ഥാടകൻ സംസാരിക്കട്ടെ, അല്ലെങ്കിൽ നിങ്ങൾ പറയൂ.',crowdH:'ഗേറ്റും എത്ര പേർ കാത്തുനിൽക്കുന്നു എന്നും പറയൂ.',crowdPh:'River Crossing, ഏകദേശം 2000 പേർ',send:'അയയ്ക്കുക',
+  back:'തിരികെ',waitT:'NudgeBee-യിൽ ഡ്യൂട്ടി ഓഫീസറെ കാത്തിരിക്കുന്നു',waitS:'നിങ്ങൾ ശരി പറഞ്ഞു. മാറ്റം വരുത്തുംമുമ്പ് രണ്ടാമതൊരാൾ ഉറപ്പിക്കും.',doneT:'ബുക്കിംഗ് സാധാരണ നിലയിലായി',doneS:'സ്ലോട്ടുകൾ ഇടവിട്ടാക്കി, പേജ് ലളിതമായി. എല്ലാവർക്കും ബുക്ക് ചെയ്യാം.',
+  declT:'നിങ്ങൾ വേണ്ട എന്ന് പറഞ്ഞു. ഒന്നും മാറ്റിയില്ല.',notSent:'NudgeBee-യിലേക്ക് അയച്ചില്ല. ഒന്നും മാറ്റിയില്ല.',details:'വിശദാംശങ്ങൾ',plan:'സ്മാർട്ട്ഫോൺ ഇല്ലേ? ഫോൺ ലൈൻ ആലോചനയിലാണ് (ഇതുവരെ ഇല്ല).',
+  listen:'കേൾക്കുന്നു. സംസാരിക്കൂ.',tapTalk:'ഒരു തവണ അമർത്തി സംസാരിക്കൂ',heard:'കേട്ടത്',slot:'സ്ലോട്ട്',play:'വീണ്ടും കേൾക്കുക',credits:'ശബ്ദ സേവനം ഇപ്പോൾ ഇല്ല. ശരി / വേണ്ട ബട്ടൺ ഉപയോഗിക്കൂ.',rate:'ശബ്ദ സേവനം തിരക്കിലാണ്. ബട്ടൺ ഉപയോഗിക്കൂ.',net:'കണക്ഷൻ ഇല്ല. വീണ്ടും ശ്രമിക്കുന്നു.',blip:'മനസ്സിലായില്ല. വീണ്ടും അമർത്തി പറയൂ.',nomic:'മൈക്ക് ഇല്ല. ബട്ടൺ ഉപയോഗിക്കൂ.',blocked:'ബ്രൗസറിൽ മൈക്ക് തടഞ്ഞിരിക്കുന്നു.',said:'ഉത്തരം',unclear:'ശരി എന്നോ വേണ്ട എന്നോ പറയൂ.',gate:'ഗേറ്റ്',updated:'തിരക്ക് പുതുക്കി',waiting:'പേർ'}};
+const t=k=>(T[L]&&T[L][k])||T.en[k];
+function text(){document.documentElement.lang=L;
+ const set=(id,k)=>{const e=$(id);if(e)e.textContent=t(k)};
+ set('#calmT','calm');set('#walkT','walk');set('#crowdT','crowd');set('#yes','yes');set('#no','no');set('#walkH','walkH');set('#crowdH','crowdH');set('#csend','send');set('#detT','details');set('#planT','plan');set('#wplay','play');
+ document.querySelectorAll('[data-back]').forEach(b=>b.textContent=t('back'));$('#cr').placeholder=t('crowdPh');
+ document.querySelectorAll('.tog button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.l===L)));
+ [['#mic','tapTalk'],['#wmic','tapTalk'],['#cmic','tapTalk']].forEach(([i,k])=>$(i).setAttribute('aria-label',t(k)));
+ if(S.status)render()}
+document.querySelectorAll('.tog button').forEach(b=>b.onclick=()=>{L=b.dataset.l;localStorage.vlang=L;text()});
+let manual=null; // 'walk' or 'crowd' while the staff is in one of those flows
+function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id===id))}
+function prime(){if(primed)return;primed=true;const p=$('#player');p.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';p.play().catch(()=>{});try{AC=new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}}
+function alertUser(){try{navigator.vibrate&&navigator.vibrate([300,120,300,120,300])}catch(e){}
+ try{if(!AC)return;[880,660,880].forEach((f,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+i*.28);o.stop(AC.currentTime+i*.28+.2)})}catch(e){}}
+function cause(j,status){const s=((j&&(j.notice||j.error||j.detail))||'')+'';
+ if(status===402||/credit/i.test(s))return t('credits');if(status===429||/rate.?limit|too many/i.test(s))return t('rate');return s?t('rate'):''}
+function showNotice(m,k){const n=$('#notice');if(!m){n.hidden=true;return}n.className='msg msg-'+(k||'warn');n.innerHTML=ICON('info')+'<span>'+esc(m)+'</span>';n.hidden=false}
+function play(u){const p=$('#player');p.src=u;p.play().catch(()=>{})}
+function render(){
+ const st=S.status||'idle';
+ if(st==='asking'){manual=null;show('v-ask');const ml=S.question_text||'',en=S.question_en||'';
+  $('#qBig').textContent=L==='ml'?ml:en;$('#qBig').lang=L;$('#qSmall').textContent=L==='ml'?en:ml;$('#qSmall').lang=L==='ml'?'en':'ml';
+  $('#mic').disabled=!S.voice_available;if(!S.voice_available&&!rec)$('#hear').textContent=t('credits');
+  if(prevStatus!=='asking')alertUser()}
+ else if(st==='approved'){manual=null;show('v-wait');if(S.webhook_ok===false){$('#waitT').textContent=t('notSent');$('#waitS').textContent=''}else{$('#waitT').textContent=t('waitT');$('#waitS').textContent=t('waitS')}}
+ else if(st==='recovered'){manual=null;show('v-done');$('#doneT').textContent=t('doneT');$('#doneS').textContent=t('doneS')}
+ else if(st==='declined'){manual=null;show('v-done');$('#doneT').textContent=t('declT');$('#doneS').textContent=''}
+ else if(manual==='walk')show('v-walk');else if(manual==='crowd')show('v-crowd');else show('v-calm');
+ prevStatus=st;
+ const f=[['Problem',S.summary],['Cause',S.root_cause],['Proposed fix',S.proposed_fix]].filter(x=>x[1]);
+ $('#foundBody').innerHTML=f.map(([k,v])=>`<div><b>${k}</b><span lang="en">${esc(v)}</span></div>`).join('');
+ const tl=S.timeline||[],steps=S.steps||[];const done=s=>tl.find(x=>x.step===s);
+ let lastDone=-1;steps.forEach((s,i)=>{if(done(s))lastDone=i});const active=st!=='idle'&&st!=='declined';
+ $('#tl').innerHTML=steps.map((s,i)=>{const e=done(s);return `<li class="${e?'done':(active&&i===lastDone+1?'now':'')}"><span class="st" lang="en">${esc(s)}</span>${e?`<time>${fmt(e.t)}</time>`:''}</li>`}).join('');
+ const Lt=S.latency||{};const ks=Object.keys(Lt).filter(k=>Lt[k]);
+ $('#lat').textContent=ks.length?'Voice timing: '+ks.map(k=>k.replace('_ms','').replace('_',' ')+' '+Lt[k]+' ms').join(', '):'';
+ if(st==='asking'&&S.has_audio&&playedQ!==S.event_id){playedQ=S.event_id;play('/api/volunteer/audio?kind=question&e='+encodeURIComponent(S.event_id))}
+ if(st==='recovered'&&S.has_confirm_audio&&playedC!==S.event_id){playedC=S.event_id;play('/api/volunteer/audio?kind=confirm&e='+encodeURIComponent(S.event_id))}}
 async function poll(){
- try{S=await (await fetch('/api/volunteer/state')).json()}catch(e){return}
- const asking=S.status==='asking';
- $('#qbox').style.display=S.question_text?'block':'none';$('#qt').textContent=S.question_text||'';$('#qen').textContent=S.question_en||'';
- $('#why').textContent=S.summary||'';
- $('#found').style.display=S.root_cause?'block':'none';$('#rc').textContent=S.root_cause||'';
- $('#mic').disabled=!asking||!S.voice_available;$('#yes').disabled=$('#no').disabled=!asking;
- $('#status').textContent=(S.status==='approved'&&S.webhook_ok===false)?'Approved, but the NudgeBee webhook is not configured. Nothing was changed.':(MSG[S.status]||S.status);
- $('#status').title=S.status==='approved'?'The approval in NudgeBee is an in-app button: a second person confirms (two-person rule).':'';
- $('#tl').innerHTML=(S.steps||[]).map(s=>{const e=(S.timeline||[]).find(t=>t.step===s);return `<li class="${e?'done':''}"><span>${e?'✓ ':''}${s}</span><span>${e?fmt(e.t):''}</span></li>`}).join('');
- const L=S.latency||{};$('#lat').textContent=Object.keys(L).length?('Latency: '+Object.entries(L).map(([k,v])=>k.replace('_ms','')+' '+v+' ms').join(' · ')):'';
- $('#notice').textContent=(S.notes||[]).join(' · ');
- if(!S.voice_available&&asking)$('#hear').textContent='Voice unavailable (Sarvam). Use Yes / No.';
- if(asking&&S.has_audio&&playedQ!==S.event_id){playedQ=S.event_id;play('/api/volunteer/audio?kind=question&e='+encodeURIComponent(S.event_id))}
- if(S.status==='recovered'&&S.has_confirm_audio&&playedC!==S.event_id){playedC=S.event_id;play('/api/volunteer/audio?kind=confirm&e='+encodeURIComponent(S.event_id))}
-}
+ try{const r=await fetch('/api/volunteer/state');if(!r.ok)throw r.status;S=await r.json();lastOk=Date.now();if($('#notice').dataset.k==='net'){showNotice(null);$('#notice').dataset.k=''}}
+ catch(e){if(Date.now()-lastOk>8000){showNotice(t('net'),'bad');$('#notice').dataset.k='net'}return}
+ render()}
+/* recording: tap to start, ends by itself after silence (or tap again); level meter on the button */
+async function record(btn,out,onblob){prime();
+ if(rec){rec.stop();return}
+ if(!navigator.mediaDevices||!window.MediaRecorder){out.textContent=t('nomic');return}
+ let s;try{s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}})}catch(e){out.textContent=(e&&e.name==='NotAllowedError')?t('blocked'):t('nomic');return}
+ const mt=['audio/webm;codecs=opus','audio/mp4','audio/webm'].find(x=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(x));
+ chunks=[];rec=mt?new MediaRecorder(s,{mimeType:mt}):new MediaRecorder(s);
+ let spoke=false,lv=0,t0=Date.now(),raf=0,an=null;const buf=new Uint8Array(512);
+ try{const c=AC||new (window.AudioContext||window.webkitAudioContext)();an=c.createAnalyser();an.fftSize=512;c.createMediaStreamSource(s).connect(an)}catch(e){an=null}
+ const tick=()=>{if(!rec)return;let v=0;if(an){an.getByteTimeDomainData(buf);let q=0;for(const x of buf){const d=(x-128)/128;q+=d*d}v=Math.sqrt(q/buf.length)}
+  btn.style.setProperty('--lvl',Math.min(1,v*6).toFixed(2));const n=Date.now();if(v>.03){spoke=true;lv=n}
+  if(an&&((spoke&&n-lv>1500)||n-t0>12000||(!spoke&&n-t0>6000))){rec.stop();return}raf=requestAnimationFrame(tick)};
+ rec.ondataavailable=e=>chunks.push(e.data);
+ rec.onstop=()=>{cancelAnimationFrame(raf);s.getTracks().forEach(x=>x.stop());const type=(rec&&rec.mimeType)||mt||'audio/webm';const b=new Blob(chunks,{type});rec=null;btn.classList.remove('is-listening');btn.innerHTML=ICON('mic');btn.style.removeProperty('--lvl');
+  if(an&&!spoke){out.textContent=t('blip');return}onblob(b,/mp4|aac/.test(type)?'m4a':'webm')};
+ rec.start();btn.classList.add('is-listening');btn.innerHTML=ICON('stop');out.textContent=t('listen');if(an)raf=requestAnimationFrame(tick)}
 async function sendReply(fd){
- $('#hear').textContent='...';
- const r=await fetch('/api/volunteer/reply',{method:'POST',body:fd});const j=await r.json();
- $('#hear').textContent=j.notice||('"'+j.transcript+'" → '+j.decision+(j.decision==='unclear'?' — '+(j.message||'Sorry, please say yes or no.')+' '+(j.message_ml||''):''));poll()}
-$('#yes').onclick=()=>{const f=new FormData();f.append('text','yes');sendReply(f)};
-$('#no').onclick=()=>{const f=new FormData();f.append('text','no');sendReply(f)};
-async function record(btn,onblob){
- prime();if(rec){rec.stop();return}
- try{const s=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];rec=new MediaRecorder(s);
-  rec.ondataavailable=e=>chunks.push(e.data);
-  rec.onstop=()=>{s.getTracks().forEach(t=>t.stop());const b=new Blob(chunks,{type:rec.mimeType||'audio/webm'});rec=null;btn.classList.remove('rec');onblob(b)};
-  rec.start();btn.classList.add('rec');$('#hear').textContent='Listening... tap again when done';
- }catch(e){$('#hear').textContent='Microphone not available. Use the buttons.'}}
-$('#mic').onclick=()=>record($('#mic'),b=>{const f=new FormData();f.append('audio',b,'reply.'+extOf(b.type));sendReply(f)});
-async function crowd(fd){const r=await fetch('/api/volunteer/crowd-report',{method:'POST',body:fd});const j=await r.json();
- $('#crout').textContent=j.notice||(j.report.error||('Heard: "'+j.transcript+'". '+(j.report.applied?'Crowd updated for '+j.report.gate+': '+j.report.count:(j.report.note||'Saved')))) }
-$('#crsend').onclick=()=>{const f=new FormData();f.append('text',$('#cr').value);crowd(f)};
-$('#crmic').onclick=()=>record($('#crmic'),b=>{const f=new FormData();f.append('audio',b,'crowd.'+extOf(b.type));crowd(f)});
-$('#wgo').onclick=async()=>{
- const f=new FormData();f.append('walkin','1');f.append('lang',$('#wl').value);f.append('uid','walkin-desk');
- f.append('text','walk-in booking for '+$('#wp').value+' people, '+$('#wt').value);
- $('#wout').textContent='...';const r=await fetch('/api/directions',{method:'POST',body:f});const j=await r.json();
- $('#wout').textContent=j.reply_text;$('#wlat').textContent=(j.notice?j.notice+' · ':'')+(j.latency?('total '+j.latency.total_ms+' ms'):'');
- if(j.audio_base64)play('data:audio/wav;base64,'+j.audio_base64)};
-poll();setInterval(poll,2000);
-</script></body></html>
+ $('#hear').innerHTML='<span class="dots"><i></i><i></i><i></i></span>';$('#yes').disabled=$('#no').disabled=true;
+ let r,j={};try{r=await fetch('/api/volunteer/reply',{method:'POST',body:fd});j=await r.json().catch(()=>({}))}catch(e){$('#hear').textContent=t('net');$('#yes').disabled=$('#no').disabled=false;return}
+ $('#yes').disabled=$('#no').disabled=false;
+ if(!r.ok||j.notice){$('#hear').textContent=cause(j,r.status)||t('blip');poll();return}
+ const said=j.transcript?t('heard')+': "'+j.transcript+'". ':'';
+ $('#hear').textContent=j.decision==='unclear'?said+t('unclear'):said;poll()}
+/* Yes needs a deliberate second press; No is one press */
+$('#yes').onclick=()=>{prime();const b=$('#yes');if(!armed){armed=Date.now();b.textContent=t('yes2');b.classList.add('armed');setTimeout(()=>{armed=0;b.textContent=t('yes');b.classList.remove('armed')},4000);return}
+ armed=0;b.classList.remove('armed');b.textContent=t('yes');const f=new FormData();f.append('text','yes');sendReply(f)};
+$('#no').onclick=()=>{prime();const f=new FormData();f.append('text','no');sendReply(f)};
+/* hands-free yes / no: one tap, then it listens, answers aloud, and stops once the answer is clear */
+let vLive=null;
+async function startLive(){
+ const m=$('#mic'),h=$('#hear');
+ const sess=new LiveSession({endpoint:'/api/volunteer/live-turn',uid:'volunteer',lang:L,greeting:false,nudgeAfterMs:9e5,endAfterMs:90000,audioEl:$('#player')});
+ sess.on('state',st=>{m.classList.toggle('is-listening',st==='listening'||st==='hearing');h.textContent=st==='listening'||st==='hearing'?t('listen'):h.textContent});
+ sess.on('level',v=>m.style.setProperty('--lvl',(+v).toFixed(2)));
+ sess.on('caption',c=>{if(c.who==='you')h.textContent=t('heard')+': "'+c.text+'"'});
+ sess.on('turn',()=>poll());
+ sess.on('error',e=>{if(e&&e.code==='denied')h.textContent=t('blocked');else if(e&&e.code==='nomic')h.textContent=t('nomic')});
+ sess.on('end',()=>{vLive=null;document.body.classList.remove('live');m.classList.remove('is-listening');m.style.removeProperty('--lvl');m.innerHTML=ICON('mic');poll()});
+ vLive=sess;document.body.classList.add('live');await sess.start();
+ if(sess.phase==='off'){vLive=null;document.body.classList.remove('live');return false}
+ m.innerHTML=ICON('stop');return true}
+$('#mic').onclick=async()=>{prime();
+ if(vLive){vLive.stop();return}
+ if(!rec&&window.LiveSession&&(window.AudioContext||window.webkitAudioContext)&&localStorage.noLive!=='1'){try{if(await startLive())return}catch(e){}}
+ record($('#mic'),$('#hear'),(b,ext)=>{const f=new FormData();f.append('audio',b,'reply.'+ext);sendReply(f)})};
+$('#goWalk').onclick=()=>{prime();manual='walk';$('#wres').hidden=true;$('#wout').textContent='';render()};
+$('#goCrowd').onclick=()=>{prime();manual='crowd';$('#cout').textContent='';render()};
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>{manual=null;render()});
+async function crowd(fd){const o=$('#cout');o.innerHTML='<span class="dots"><i></i><i></i><i></i></span>';
+ let r,j={};try{r=await fetch('/api/volunteer/crowd-report',{method:'POST',body:fd});j=await r.json().catch(()=>({}))}catch(e){o.textContent=t('net');return}
+ if(j.notice||!r.ok){o.textContent=cause(j,r.status)||t('blip');return}
+ const rp=j.report||{};o.textContent=rp.error?rp.error:(rp.applied?t('updated')+': '+rp.gate+', '+rp.count+' '+t('waiting'):(rp.note||t('blip')))}
+$('#cform').onsubmit=e=>{e.preventDefault();const v=$('#cr').value.trim();if(!v)return;const f=new FormData();f.append('text',v);crowd(f)};
+$('#cmic').onclick=()=>record($('#cmic'),$('#cout'),(b,ext)=>{const f=new FormData();f.append('audio',b,'crowd.'+ext);crowd(f)});
+/* walk-in: the pilgrim (or the volunteer for them) speaks; language detected from the speech; slot read back in that language */
+let wAudio=null;
+$('#wmic').onclick=()=>record($('#wmic'),$('#wout'),async(b,ext)=>{
+ const f=new FormData();f.append('walkin','1');f.append('lang','auto');f.append('uid','walkin-desk');f.append('audio',b,'walkin.'+ext);
+ const o=$('#wout');o.innerHTML='<span class="dots"><i></i><i></i><i></i></span>';
+ let r,j={};try{r=await fetch('/api/directions',{method:'POST',body:f});j=await r.json().catch(()=>({}))}catch(e){o.textContent=t('net');return}
+ if(!r.ok||(j.notice&&!j.transcript)){o.textContent=cause(j,r.status)||t('blip');return}
+ if(!j.transcript){o.textContent=t('blip');return}
+ o.textContent=t('heard')+': "'+j.transcript+'"';
+ $('#wres').hidden=false;const sl=j.slot||{};$('#wgate').textContent=sl.gate?t('gate')+': '+sl.gate:'';$('#wtime').textContent=sl.label||'';$('#wsay').textContent=j.reply_text||'';$('#wsay').lang=j.lang||'en';
+ wAudio=j.audio_base64?'data:audio/wav;base64,'+j.audio_base64:null;$('#wplay').hidden=!wAudio;if(wAudio)play(wAudio)});
+$('#wplay').onclick=()=>wAudio&&play(wAudio);
+text();poll();setInterval(poll,2000);
+</script>
+</body>
+</html>

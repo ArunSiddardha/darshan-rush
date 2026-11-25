@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live conversation demo</title><link rel="stylesheet" href="live.css">
+<style>body{font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:8px;background:#fffdf8;color:#111}
+select{font-size:1.1rem;min-height:48px}#log{font:12px/1.4 ui-monospace,monospace;white-space:pre-wrap;border-top:1px solid #ccc;margin-top:12px;padding-top:8px;max-height:200px;overflow:auto}</style></head>
+<body>
+<label>Language <select id="lang"><option value="en">English</option><option value="te">Telugu</option><option value="ml">Malayalam</option><option value="ta">Tamil</option><option value="kn">Kannada</option><option value="hi">Hindi</option></select></label>
+<div id="mount"></div>
+<div id="log" aria-hidden="true"></div>
+<script src="live.js"></script>
+<script>
+  // Standalone page. Served by the throwaway test app next to /api/live/*. Query: ?lang=te&uid=x
+  var qs = new URLSearchParams(location.search), lang = document.getElementById('lang');
+  lang.value = qs.get('lang') || 'en';
+  fetch('live.html').then(function (r) { return r.text(); }).then(function (h) {
+    document.getElementById('mount').innerHTML = h;
+    window.demo = AddonsLive.init(document.getElementById('ad-live'), {
+      uid: qs.get('uid') || 'demo-user', lang: function () { return lang.value; },
+      onSession: function (s) {
+        window.liveSession = s; var L = document.getElementById('log');
+        ['state', 'turn', 'end', 'error'].forEach(function (n) { s.on(n, function (d) { L.textContent += n + ' ' + JSON.stringify(d).slice(0, 220) + '\n'; L.scrollTop = 1e9; }); });
+      } });
+  });
+</script></body></html>

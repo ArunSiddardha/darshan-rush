@@ -47,8 +47,24 @@ def load():
         return len(_by_uid)
 
 
+def _remote(name):
+    """Caps and window from the Flagsmith remote config (ui_copy), so they change without a deploy."""
+    try:
+        import os
+        if os.environ.get("UI_COPY_LIVE", "1") == "0":
+            return None
+        import addons_flags
+        return addons_flags.remote_number(name)
+    except Exception:
+        return None
+
+
+def _cap():
+    return _remote("slot_cap") or config.SLOT_CAP()
+
+
 def _window_s():
-    return config.SLOT_WINDOW_MIN() * 60
+    return (_remote("slot_window_min") or config.SLOT_WINDOW_MIN()) * 60
 
 
 def _first_window():
@@ -86,7 +102,7 @@ def _parse_time(t):
 def _choose_staggered(start):
     """Spread arrivals: in each block of LOOKAHEAD windows take the least loaded one.
     If the whole block is at cap, move on to the next block. Always terminates with a slot."""
-    w, cap, block = _window_s(), config.SLOT_CAP(), 0
+    w, cap, block = _window_s(), _cap(), 0
     while True:
         base = start + block * LOOKAHEAD * w
         cands = [(_counts.get(base + i * w, 0), i) for i in range(LOOKAHEAD)]
@@ -143,7 +159,7 @@ def get(uid):
 
 def listing(uid=None, n=8):
     """Next n windows with counts, plus this pilgrim's slot."""
-    start, w, cap = _first_window(), _window_s(), config.SLOT_CAP()
+    start, w, cap = _first_window(), _window_s(), _cap()
     with _lock:
         wins = [{"start": _fmt(start + i * w), "count": _counts.get(start + i * w, 0), "cap": cap}
                 for i in range(n)]

@@ -1,77 +1,124 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Darshan Rush: judge page</title><link rel="stylesheet" href="/static/style.css"></head>
-<body class="judge"><div class="wrap">
-<div class="top"><div><h1>Scan, then book together</h1><p class="sub">Everyone opens the pilgrim page and books a slot at the same time.</p></div><span class="sim">SIMULATED</span></div>
-<canvas id="qr" width="400" height="400" aria-label="QR code for the pilgrim page"></canvas>
-<div class="url" id="url">Waiting for the public address...</div>
-<p class="sub" id="cfgnote" style="text-align:center"></p>
-<button class="btn rushbtn" id="rush">Cause the rush</button>
-<p class="sub" id="rushmsg" style="text-align:center;min-height:26px"></p>
-<ol class="chain" id="chain" aria-label="Incident chain"></ol>
-<div class="nums">
- <div><div class="v" id="n-phones">-</div><div class="k">phones connected</div></div>
- <div><div class="v" id="n-mode">-</div><div class="k">map mode now</div></div>
- <div><div class="v" id="n-rps">-</div><div class="k">requests per second</div></div>
- <div><div class="v" id="n-restarts">-</div><div class="k">pod restarts</div></div>
-</div>
-<h2>Before and after the flags flipped</h2>
-<table class="ba"><thead><tr><th></th><th>Before (full map)</th><th>After (lite map)</th></tr></thead><tbody>
-<tr><th>Slowest 5% (p95 ms)</th><td id="b-p95">-</td><td id="a-p95">-</td></tr>
-<tr><th>Errors</th><td id="b-err">-</td><td id="a-err">-</td></tr>
-<tr><th>Pod restarts</th><td id="b-rs">-</td><td id="a-rs">-</td></tr>
-<tr><th>Peak requests/s</th><td id="b-rps">-</td><td id="a-rps">-</td></tr>
-</tbody></table>
-<p class="sub" id="bamsg">Waiting for a rush. Numbers come from a local test cluster with a simulated crowd.</p>
-<p><a href="/static/graph.html">Open the recovery graph</a> &nbsp; <button class="btn ghost" id="stop">Stop rush</button> <button class="btn ghost" id="reset">Reset numbers</button></p>
-<footer><p class="legal">Simulated crowd. Not affiliated with any temple. Not for operational use.</p></footer>
-</div>
-<script>
-/* Minimal QR encoder: byte mode, error correction M, versions 1-10 (up to 213 bytes). No external requests. */
-function makeQR(text){
- const bytes=Array.from(new TextEncoder().encode(text));
- const ECC=[10,16,26,18,24,16,18,22,22,26],NB=[1,1,1,2,2,4,4,4,5,5];
- const raw=v=>{let r=(16*v+128)*v+64;if(v>=2){const a=Math.floor(v/7)+2;r-=(25*a-10)*a-55;if(v>=7)r-=36}return r};
- let ver=0;for(let v=1;v<=10;v++){const cap=Math.floor(raw(v)/8)-ECC[v-1]*NB[v-1];if(4+(v<10?8:16)+8*bytes.length<=cap*8){ver=v;break}}
- if(!ver)throw new Error('URL too long');
- const size=ver*4+17,nEcc=ECC[ver-1],nBlk=NB[ver-1],rawCw=Math.floor(raw(ver)/8),dataCw=rawCw-nEcc*nBlk;
- let bits=[];const put=(x,n)=>{for(let i=n-1;i>=0;i--)bits.push((x>>>i)&1)};
- put(4,4);put(bytes.length,ver<10?8:16);bytes.forEach(b=>put(b,8));
- put(0,Math.min(4,dataCw*8-bits.length));while(bits.length%8)bits.push(0);
- const data=[];for(let i=0;i<bits.length;i+=8){let b=0;for(let j=0;j<8;j++)b=b*2+bits[i+j];data.push(b)}
- for(let p=0xEC;data.length<dataCw;p^=0xEC^0x11)data.push(p);
- const mul=(x,y)=>{let z=0;for(let i=7;i>=0;i--){z=(z<<1)^((z>>>7)*0x11D);z^=((y>>>i)&1)*x}return z&255};
- const div=[];for(let i=0;i<nEcc;i++)div.push(0);div[nEcc-1]=1;
- for(let r=1,i=0;i<nEcc;i++){for(let j=0;j<nEcc;j++){div[j]=mul(div[j],r);if(j+1<nEcc)div[j]^=div[j+1]}r=mul(r,2)}
- const rs=d=>{const res=new Array(nEcc).fill(0);for(const b of d){const f=b^res.shift();res.push(0);for(let i=0;i<nEcc;i++)res[i]^=mul(div[i],f)}return res};
- const nShort=nBlk-rawCw%nBlk,shortLen=Math.floor(rawCw/nBlk),blocks=[];
- for(let i=0,k=0;i<nBlk;i++){const d=data.slice(k,k+shortLen-nEcc+(i<nShort?0:1));k+=d.length;const e=rs(d);if(i<nShort)d.push(0);blocks.push(d.concat(e))}
- const all=[];for(let i=0;i<blocks[0].length;i++)blocks.forEach((b,j)=>{if(i!==shortLen-nEcc||j>=nShort)all.push(b[i])});
- const M=[],fn=[];for(let i=0;i<size;i++){M.push(new Array(size).fill(false));fn.push(new Array(size).fill(false))}
- const set=(x,y,d)=>{M[y][x]=!!d;fn[y][x]=true};
- for(let i=0;i<size;i++){set(6,i,i%2==0);set(i,6,i%2==0)}
- const finder=(cx,cy)=>{for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const x=cx+dx,y=cy+dy;if(x>=0&&x<size&&y>=0&&y<size){const d=Math.max(Math.abs(dx),Math.abs(dy));set(x,y,d!=2&&d!=4)}}};
- finder(3,3);finder(size-4,3);finder(3,size-4);
- const ap=[];if(ver>1){const n=Math.floor(ver/7)+2,step=Math.ceil((ver*4+4)/(n*2-2))*2;ap.push(6);for(let p=size-7;ap.length<n;p-=step)ap.splice(1,0,p)}
- ap.forEach((cx,i)=>ap.forEach((cy,j)=>{if((i==0&&j==0)||(i==0&&j==ap.length-1)||(i==ap.length-1&&j==0))return;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)set(cx+dx,cy+dy,Math.max(Math.abs(dx),Math.abs(dy))!=1)}));
- const fmt=mask=>{const d=mask;let r=d;for(let i=0;i<10;i++)r=(r<<1)^((r>>>9)*0x537);const b=((d<<10)|r)^0x5412,g=i=>(b>>>i)&1;
-  for(let i=0;i<=5;i++)set(8,i,g(i));set(8,7,g(6));set(8,8,g(7));set(7,8,g(8));for(let i=9;i<15;i++)set(14-i,8,g(i));
-  for(let i=0;i<8;i++)set(size-1-i,8,g(i));for(let i=8;i<15;i++)set(8,size-15+i,g(i));set(8,size-8,true)};
- fmt(0);
- if(ver>=7){let r=ver;for(let i=0;i<12;i++)r=(r<<1)^((r>>>11)*0x1F25);const b=(ver<<12)|r;for(let i=0;i<18;i++){const a=size-11+i%3,c=Math.floor(i/3),d=(b>>>i)&1;set(a,c,d);set(c,a,d)}}
- let k=0;for(let right=size-1;right>=1;right-=2){if(right==6)right=5;for(let v=0;v<size;v++)for(let j=0;j<2;j++){const x=right-j,up=((right+1)&2)==0,y=up?size-1-v:v;if(!fn[y][x]&&k<all.length*8){M[y][x]=((all[k>>>3]>>>(7-(k&7)))&1)==1;k++}}}
- const maskFn=[(x,y)=>(x+y)%2==0,(x,y)=>y%2==0,(x,y)=>x%3==0,(x,y)=>(x+y)%3==0,(x,y)=>(Math.floor(x/3)+Math.floor(y/2))%2==0,(x,y)=>x*y%2+x*y%3==0,(x,y)=>(x*y%2+x*y%3)%2==0,(x,y)=>((x+y)%2+x*y%3)%2==0];
- const applyMask=m=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(!fn[y][x]&&maskFn[m](x,y))M[y][x]=!M[y][x]};
- const penalty=()=>{let p=0;for(let a=0;a<2;a++)for(let i=0;i<size;i++){let run=1;for(let j=1;j<=size;j++){const cur=j<size?(a?M[j][i]:M[i][j]):null,prev=a?M[j-1][i]:M[i][j-1];if(j<size&&cur===prev)run++;else{if(run>=5)p+=run-2;run=1}}}
-  for(let y=0;y<size-1;y++)for(let x=0;x<size-1;x++)if(M[y][x]==M[y][x+1]&&M[y][x]==M[y+1][x]&&M[y][x]==M[y+1][x+1])p+=3;
-  let dark=0;M.forEach(r=>r.forEach(c=>{if(c)dark++}));p+=Math.floor(Math.abs(dark*20-size*size*10)/(size*size))*10;return p};
- let best=0,bp=1e9;for(let m=0;m<8;m++){applyMask(m);const pn=penalty();if(pn<bp){bp=pn;best=m}applyMask(m)}
- applyMask(best);fmt(best);return M;
+<title>Darshan Rush: judges</title>
+<link rel="stylesheet" href="/static/fonts.css">
+<link rel="stylesheet" href="/static/style.css">
+<style>
+.j{max-width:1320px;margin:0 auto;padding:var(--s5) var(--s5) var(--s7)}
+.j h1{font-size:var(--t-l);font-weight:600;line-height:var(--lh-tight);letter-spacing:-.01em;margin-top:var(--s5)}
+.grid{display:grid;gap:var(--s5);margin-top:var(--s5)}
+.scan{text-align:center}
+.scan canvas{width:100%;max-width:340px;aspect-ratio:1;border-radius:var(--r);display:block;margin:0 auto}
+.url{font-size:var(--t-s);font-weight:560;overflow-wrap:anywhere;margin-top:var(--s3)}
+.rush{margin-top:var(--s5);min-height:60px;font-size:var(--t-m)}
+.rushmsg{min-height:1.5em;margin-top:var(--s3)}
+.chain{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,1fr);gap:0}
+.chain li{position:relative;padding-top:28px;font-size:var(--t-b);font-weight:540;color:var(--ink-3);line-height:1.25;padding-right:6px}
+.chain li::before{content:"";position:absolute;top:2px;left:0;width:16px;height:16px;border-radius:50%;border:2px solid var(--line);background:var(--surface);z-index:1;box-sizing:border-box}
+.chain li::after{content:"";position:absolute;top:9px;left:16px;right:0;height:2px;background:var(--line)}
+.chain li:last-child::after{display:none}
+.chain li.on{color:var(--ink)}
+.chain li.on::before{background:var(--ok);border-color:var(--ok)}
+.chain li.on::after{background:var(--ok)}
+.chain li.next{color:var(--accent)}
+.chain li.next::before{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.nums{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s3)}
+.nums div{background:var(--surface);border-radius:var(--r);padding:var(--s4);box-shadow:var(--lift)}
+.nums .v{font-size:var(--t-l);font-weight:640;font-stretch:115%;line-height:1.1;font-variant-numeric:tabular-nums}
+.nums .k{font-size:var(--t-s);color:var(--ink-2);margin-top:var(--s1)}
+table.ba{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.ba th,.ba td{text-align:right;padding:var(--s3) 0;border-bottom:1px solid var(--line);font-size:var(--t-b)}
+.ba th:first-child{text-align:left;font-weight:460;color:var(--ink-2)}
+.ba thead th{font-size:var(--t-s);font-weight:600;color:var(--ink-2)}
+.ba td{font-size:var(--t-m);font-weight:620;font-stretch:112%}
+.ba td.after{color:var(--ok)}
+.ba tr:last-child th,.ba tr:last-child td{border-bottom:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4)}
+.kv{display:flex;justify-content:space-between;gap:var(--s3);padding:var(--s2) 0;border-bottom:1px solid var(--line)}
+.kv:last-child{border-bottom:0}
+.kv b{font-weight:620}
+.ab-row{margin-top:var(--s3)}
+.ab-row .line{display:flex;justify-content:space-between;font-weight:560}
+.ab-row .g-bar{height:6px;border-radius:3px;background:var(--sunk);margin-top:6px;overflow:hidden}
+.ab-row .g-bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.card h2{font-size:var(--t-b);font-weight:620;margin-bottom:var(--s3)}
+.tools{display:flex;flex-wrap:wrap;gap:var(--s3);align-items:center;margin-top:var(--s4)}
+@media (min-width:1000px){
+ .grid{grid-template-columns:400px 1fr;align-items:start}
+ .scan{position:sticky;top:var(--s5)}
+ .scan canvas{max-width:360px}
 }
-function drawQR(canvas,text){const M=makeQR(text),n=M.length,q=4,s=Math.floor(canvas.width/(n+q*2)),off=Math.floor((canvas.width-s*n)/2),c=canvas.getContext('2d');
- c.fillStyle='#fff';c.fillRect(0,0,canvas.width,canvas.height);c.fillStyle='#000';for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(M[y][x])c.fillRect(off+x*s,off+y*s,s,s)}
+@media (max-width:640px){
+ .chain{grid-template-columns:1fr;gap:var(--s2)}
+ .chain li{padding:0 0 0 28px;min-height:20px}
+ .chain li::after{top:18px;left:7px;right:auto;width:2px;height:calc(100% - 8px)}
+ .nums{grid-template-columns:1fr 1fr}
+ .two{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+ <symbol id="i-mark" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20v-6l6-4 6 4v6"/><path d="M12 10V4"/><path d="M10 20v-3h4v3"/></g></symbol>
+ <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L5 13h6l-1 8 8-10h-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+</defs></svg>
+<div class="j">
+ <div class="bar"><span class="wordmark"><svg aria-hidden="true"><use href="#i-mark"/></svg>Darshan Rush</span><span class="tag">SIMULATED</span></div>
+ <h1>Scan to book. Then we cause a rush.</h1>
 
+ <div class="grid">
+  <section class="card scan">
+   <canvas id="qr" width="720" height="720" aria-label="QR code for the pilgrim page"></canvas>
+   <p class="url" id="url">Loading the public address</p>
+   <p class="small" id="cfgnote"></p>
+   <button class="btn btn-primary btn-block rush" id="rush" type="button"><svg aria-hidden="true"><use href="#i-bolt"/></svg>Cause the rush</button>
+   <p class="small rushmsg" id="rushmsg"></p>
+  </section>
+
+  <div class="stack">
+   <section class="card">
+    <h2>What is happening</h2>
+    <ol class="chain" id="chain" aria-label="Incident chain"></ol>
+   </section>
+   <section class="card">
+    <h2>Before and after the flags flipped</h2>
+    <table class="ba"><thead><tr><th></th><th>Before, full map</th><th>After, lite map</th></tr></thead><tbody>
+     <tr><th>Slowest 5% of requests (ms)</th><td id="b-p95">-</td><td class="after" id="a-p95">-</td></tr>
+     <tr><th>Errors</th><td id="b-err">-</td><td class="after" id="a-err">-</td></tr>
+     <tr><th>Pod restarts</th><td id="b-rs">-</td><td class="after" id="a-rs">-</td></tr>
+     <tr><th>Peak requests per second</th><td id="b-rps">-</td><td class="after" id="a-rps">-</td></tr>
+    </tbody></table>
+    <p class="small" id="bamsg" style="margin-top:var(--s3)">Waiting for a rush. Numbers come from a local test cluster with a simulated crowd.</p>
+   </section>
+   <div class="two">
+    <section class="card">
+     <h2>Flagsmith decides</h2>
+     <div id="flags"><p class="small">Loading flags</p></div>
+     <div class="kv" style="margin-top:var(--s3)"><span class="muted">Voice agent v2 rollout</span><b id="roll">-</b></div>
+    </section>
+    <section class="card">
+     <h2>A/B test: voice or route directions <span class="tag" style="margin-left:6px">TEST TRAFFIC</span></h2>
+     <div id="ab"><p class="small">Loading the experiment</p></div>
+    </section>
+   </div>
+   <div hidden><i id="n-phones"></i><i id="n-mode"></i><i id="n-rps"></i><i id="n-restarts"></i></div>
+   <div class="tools">
+    <a class="btn btn-secondary" href="/static/graph.html">Open the recovery graph</a>
+    <button class="btn btn-quiet" id="stop" type="button">Stop rush</button>
+    <button class="btn btn-quiet" id="reset" type="button">Reset numbers</button>
+   </div>
+  </div>
+ </div>
+ <footer class="foot"><p>Simulated crowd. Not affiliated with any temple. Not for operational use.</p></footer>
+</div>
+<script src="/static/qr.js"></script>
+<script>
+/* API: GET /api/config, /api/volunteer/state, /api/metrics-lite, /api/flags, /api/experiment; POST /api/rush/start, /api/rush/stop */
 const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const CHAIN=[['Rush','Rush detected'],['Crash','Crash reported to NudgeBee'],['NudgeBee cause','Cause found by NudgeBee'],['Volunteer yes','Volunteer said yes'],['NudgeBee approval','NudgeBee approved'],['Flags flipped','Flags flipped'],['Recovered','Booking recovered']];
 let VS={},MS={},seenRush=false;
 async function chainTick(){
@@ -80,24 +127,23 @@ async function chainTick(){
  const done=new Set((VS.timeline||[]).map(t=>t.step));
  if(MS.rush||done.has('Rush detected'))seenRush=true;else if(!done.size)seenRush=false;
  const on=CHAIN.map(([n,step])=>n==='Rush'?seenRush:n==='Flags flipped'?(done.has(step)||(seenRush&&MS.map_mode==='lite')):done.has(step));
- let cur=on.indexOf(false);
- $('#chain').innerHTML=CHAIN.map(([n],i)=>`<li class="${on[i]?'on':(i===cur?'next':'')}">${on[i]?'&#10003; ':''}${n}</li>`).join('')}
+ let last=-1;on.forEach((v,i)=>{if(v)last=i});const cur=seenRush?last+1:-1;
+ $('#chain').innerHTML=CHAIN.map(([n],i)=>`<li class="${on[i]?'on':(i===cur?'next':'')}">${n}</li>`).join('')}
 chainTick();setInterval(chainTick,2000);
 const token=new URLSearchParams(location.search).get('t')||localStorage.rushToken||'';if(token)localStorage.rushToken=token;
 async function config(){
  let url=location.origin,note='';
- try{const r=await fetch('/api/config');if(r.ok){const j=await r.json();if(j.public_url)url=j.public_url;else note='No public address set yet. Showing this page address.'}else note='Config not available. Showing this page address.'}catch(e){note='Config not available. Showing this page address.'}
+ try{const r=await fetch('/api/config');if(r.ok){const j=await r.json();if(j.public_url)url=j.public_url;else note='No public address is set yet, so this shows the page address.'}else note='Config is not available, so this shows the page address.'}catch(e){note='Server not reachable, so this shows the page address.'}
  if(/localhost|127\.0\.0\.1/.test(url))note=(note?note+' ':'')+'This is a local address. Phones need the public tunnel address.';
- $('#url').textContent=url;$('#cfgnote').textContent=note;try{drawQR($('#qr'),url)}catch(e){$('#cfgnote').textContent='Could not draw QR: '+e.message}}
+ $('#url').textContent=url.replace(/^https?:\/\//,'');$('#cfgnote').textContent=note;try{drawQR($('#qr'),url)}catch(e){$('#cfgnote').textContent='Could not draw the QR code: '+e.message}}
 config();
 const H={'Content-Type':'application/json'};if(token){H['X-Rush-Token']=token;H['X-Incident-Token']=token}
-$('#rush').onclick=async()=>{const m=$('#rushmsg');m.textContent='Starting...';try{const r=await fetch('/api/rush/start',{method:'POST',headers:H});m.textContent=r.ok?'Rush running. Watch the numbers below.':(r.status===401||r.status===403?'Token needed: open this page with ?t=TOKEN once.':'Could not start the rush ('+r.status+').');if(r.ok)S.rushing=true}catch(e){m.textContent='Server not reachable.'}};
-$('#stop').onclick=async()=>{try{await fetch('/api/rush/stop',{method:'POST',headers:H});$('#rushmsg').textContent='Rush stopped.'}catch(e){}};
-/* before / after */
+$('#rush').onclick=async()=>{const m=$('#rushmsg');m.textContent='Starting the rush';try{const r=await fetch('/api/rush/start',{method:'POST',headers:H});m.textContent=r.ok?'Rush running. Watch the chain and the numbers.':(r.status===401||r.status===403?'This needs the rush token: open this page once with ?t=TOKEN.':'Could not start the rush (server answered '+r.status+').')}catch(e){m.textContent='Server not reachable.'}};
+$('#stop').onclick=async()=>{try{const r=await fetch('/api/rush/stop',{method:'POST',headers:H});$('#rushmsg').textContent=r.ok?'Rush stopped.':'Could not stop the rush ('+r.status+').'}catch(e){$('#rushmsg').textContent='Server not reachable.'}};
 let S=JSON.parse(sessionStorage.ba||'{}');S.b=S.b||{p95:0,err:0,rs:0,rps:0};S.a=S.a||{p95:0,err:0,rs:0,rps:0};
 function save(){sessionStorage.ba=JSON.stringify(S)}
 $('#reset').onclick=()=>{S={b:{p95:0,err:0,rs:0,rps:0},a:{p95:0,err:0,rs:0,rps:0}};save();show()};
-function show(){const f=(id,v,has)=>$(id).textContent=has?v:'-';const hb=S.b.seen,ha=S.flipped;
+function show(){const f=(id,v,has)=>$(id).textContent=has&&v!=null?v:'-';const hb=S.b.seen,ha=S.flipped;
  f('#b-p95',S.b.p95,hb);f('#b-err',S.b.err,hb);f('#b-rs',S.b.rs,hb);f('#b-rps',S.b.rps,hb);
  f('#a-p95',S.a.p95,ha);f('#a-err',S.a.err,ha);f('#a-rs',S.a.rs,ha);f('#a-rps',S.a.rps,ha)}
 async function tick(){
@@ -105,13 +151,28 @@ async function tick(){
  const ph=m.phones??m.clients??m.connected??m.active_uids??m.uids;
  $('#n-phones').textContent=ph==null?'-':(Array.isArray(ph)?ph.length:ph);
  $('#n-mode').textContent=m.map_mode||'-';$('#n-rps').textContent=m.rps!=null?(+m.rps).toFixed(1):'-';$('#n-restarts').textContent=m.restarts??'-';
- const p95=+m.p95_ms||0,err=+m.errors||0,rs=+m.restarts||0,rps=+m.rps||0;
- const mode=m.map_mode;
+ const p95=+m.p95_ms||0,err=+m.errors||0,rs=+m.restarts||0,rps=+m.rps||0;const mode=m.map_mode;
  if(mode==='full'&&(rps>1||err||p95>0)){S.b.seen=true;S.b.p95=Math.max(S.b.p95,Math.round(p95));S.b.err=Math.max(S.b.err,err);S.b.rs=Math.max(S.b.rs,rs);S.b.rps=Math.max(S.b.rps,+rps.toFixed(1));S.baseErr=Math.max(S.baseErr||0,err);S.baseRs=Math.max(S.baseRs||0,rs)}
  if(mode==='lite'&&S.b.seen){S.flipped=true;
   S.a.p95=Math.max(S.a.p95,Math.round(p95));S.a.rps=Math.max(S.a.rps,+rps.toFixed(1));
   S.a.err=Math.max(S.a.err,Math.max(0,err-(err>=S.baseErr?S.baseErr:0)));S.a.rs=Math.max(S.a.rs,Math.max(0,rs-(rs>=S.baseRs?S.baseRs:0)));
-  $('#bamsg').textContent='Recovered. Numbers come from a local test cluster with a simulated crowd. Errors and restarts after are counted since the flip.'}
+  $('#bamsg').textContent='Recovered. Local test cluster, simulated crowd. Errors and restarts after the flip are counted from the flip.'}
  save();show()}
 show();tick();setInterval(tick,2000);
-</script></body></html>
+const val=x=>x&&typeof x==='object'?(x.value!==undefined?x.value:x.enabled):x;
+const NICE={map_mode:'Map on the pilgrim page',slot_mode:'Slot booking',voice_directions:'Directions style',voice_first:'Voice-first layout',voice_agent_v2:'Voice agent v2',ui_copy:'Copy and caps'};
+async function flagsTick(){try{const r=await fetch('/api/flags/decisions?uid=judge-screen');if(!r.ok)throw r.status;const F=await r.json();
+ const rows=(F.flags||[]).filter(f=>f.flag!=='ui_copy'&&f.flag!=='voice_agent_v2');
+ $('#flags').innerHTML=rows.map(f=>`<div class="kv"><span class="muted">${esc(NICE[f.flag]||f.flag)}</span><b>${esc(f.value!=null?f.value:(f.enabled?'on':'off'))}</b></div>`).join('')+`<p class="small" style="margin-top:var(--s2)">${F.source==='flagsmith'?'Read live from Flagsmith for this visitor.':'Flagsmith not reachable: showing defaults.'}</p>`}
+ catch(e){$('#flags').innerHTML='<p class="small">Flags not reachable right now.</p>'}
+ try{const r=await fetch('/api/rollout');if(r.ok){const j=await r.json();$('#roll').textContent=(j.percent!=null?j.percent+'%':'-')}}catch(e){}}
+async function abTick(){try{const r=await fetch('/api/experiment');if(!r.ok)throw r.status;const X=await r.json();const v=X.variants||{};
+ const names={voice:'Voice directions',map:'Route directions'};
+ $('#ab').innerHTML=Object.keys(v).map(k=>{const x=v[k]||{};const rate=Math.round((+x.rate||0)*100);
+  return `<div class="ab-row"><div class="line"><span>${esc(names[k]||k)}</span><span class="num">${rate}%</span></div><div class="g-bar"><i style="width:${Math.max(2,rate)}%"></i></div><p class="small">${x.reached_gate||0} of ${x.exposed||0} pilgrims reached the gate</p></div>`}).join('')+
+  `<p class="small" style="margin-top:var(--s3)">Metric: ${esc(X.metric||'reached_gate')}. ${X.source==='flagsmith'?'Variants assigned by Flagsmith.':'Flagsmith not reachable: local counts.'}</p>`}
+ catch(e){$('#ab').innerHTML='<p class="small">Experiment not reachable right now.</p>'}}
+flagsTick();abTick();setInterval(flagsTick,4000);setInterval(abTick,4000);
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!-- "Flagsmith decides" panel. Paste where wanted, include flags_panel.js once.
+     Attributes: data-uid (default: stored visitor id), data-lang, data-age65 ("true"/"false"), data-refresh (seconds, default 5).
+     Re-render on demand: document.querySelector('[data-flags-panel]').dispatchEvent(new CustomEvent('flags:refresh', {detail:{lang:'ml', age65:true}})) -->
+<section class="fp-card" data-flags-panel data-refresh="5" aria-label="Flagsmith decides">
+  <style>
+    .fp-card{font:14px/1.4 var(--font, system-ui, sans-serif);color:var(--fg, #1d1d1b);background:var(--card, #fff);border:1px solid var(--line, #d9d4c7);border-radius:var(--radius, 12px);padding:12px 14px;max-width:520px}
+    .fp-card h3{margin:0 0 2px;font-size:15px}
+    .fp-sub{margin:0 0 8px;color:var(--muted, #6b675c);font-size:12px}
+    .fp-table{width:100%;border-collapse:collapse}
+    .fp-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted, #6b675c);padding:2px 6px 4px 0}
+    .fp-table td{padding:4px 6px 4px 0;border-top:1px solid var(--line, #e6e2d6);vertical-align:top}
+    .fp-flag{font-family:var(--mono, ui-monospace, monospace);white-space:nowrap}
+    .fp-val{font-family:var(--mono, ui-monospace, monospace);word-break:break-word}
+    .fp-off{color:var(--muted, #6b675c)}
+    .fp-tag{display:inline-block;font-size:11px;border-radius:999px;padding:0 7px;margin-right:4px;background:var(--tag-bg, #eee9da);color:var(--fg, #1d1d1b)}
+    .fp-tag.segment{background:var(--accent-soft, #fde7c4)}
+    .fp-tag.variant{background:var(--accent2-soft, #d8ecdf)}
+    .fp-msg{margin:6px 0 0;font-size:12px;color:var(--warn, #8a4b00)}
+  </style>
+  <h3>Flagsmith decides</h3>
+  <p class="fp-sub" data-fp-sub>Loading...</p>
+  <table class="fp-table"><thead><tr><th>Flag</th><th>Value</th><th>Why</th></tr></thead><tbody data-fp-rows></tbody></table>
+  <p class="fp-msg" data-fp-msg hidden></p>
+</section>

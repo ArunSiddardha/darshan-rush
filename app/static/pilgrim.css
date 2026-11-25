@@ -1,0 +1,104 @@
+/* Pilgrim page: built only from tokens in style.css */
+.lite-line{margin-top:var(--s4);font-size:var(--t-s);color:var(--warn);background:var(--warn-soft);border-radius:var(--r);padding:var(--s3) var(--s4)}
+
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:var(--s7) 0 var(--s5);min-height:calc(100svh - 150px);justify-content:center}
+.prompt{font-size:var(--t-l);font-weight:560;line-height:var(--lh-tight);letter-spacing:-.01em;max-width:15em;margin-bottom:var(--s6);text-wrap:balance}
+.hero .mic{--size:132px}
+.state{margin-top:var(--s5);min-height:1.6em;font-size:var(--t-b);color:var(--ink-2);display:flex;align-items:center;gap:var(--s2)}
+.hero .msg{margin-top:var(--s3);text-align:left;max-width:340px}
+.alt{display:flex;gap:var(--s4);justify-content:center;margin-top:var(--s3)}
+.typed{width:100%;margin-top:var(--s3)}
+/* once there is something to show, the hero stops filling the screen */
+body.has-result .hero{min-height:0;padding-top:var(--s6)}
+body.has-result .prompt{font-size:var(--t-m);margin-bottom:var(--s5)}
+body.has-result .hero .mic{--size:88px}
+
+.reply{margin-top:var(--s4)}
+.reply-text{font-size:var(--t-m);line-height:var(--lh);margin:var(--s2) 0 var(--s4);font-weight:480}
+.reply .btn{min-height:44px}
+
+/* the pass */
+.pass{margin-top:var(--s4);background:var(--surface);border-radius:var(--r);box-shadow:var(--lift);overflow:hidden}
+.pass-top{background:var(--accent);color:#fff;padding:var(--s5) var(--s5) var(--s5)}
+.pass-k{font-size:var(--t-s);font-weight:560;opacity:.8}
+.pass-time{font-size:var(--t-xl);font-weight:660;font-stretch:118%;line-height:1;letter-spacing:-.02em;margin:var(--s3) 0 var(--s2)}
+.pass-time.long{font-size:40px}
+.pass-date{font-size:var(--t-b);opacity:.9}
+.pass-cut{height:20px;position:relative;background:var(--surface);background-image:radial-gradient(circle at 0 50%,var(--bg) 10px,transparent 11px),radial-gradient(circle at 100% 50%,var(--bg) 10px,transparent 11px)}
+.pass-cut::after{content:"";position:absolute;left:20px;right:20px;top:50%;border-top:2px dashed var(--line)}
+.pass-bottom{padding:var(--s2) var(--s5) var(--s5)}
+.pass-bottom .pass-k{color:var(--ink-2);opacity:1}
+.pass-gate{font-size:var(--t-l);font-weight:620;line-height:var(--lh-tight);margin:var(--s1) 0 var(--s2)}
+.pass-actions{display:grid;gap:var(--s3);margin-top:var(--s5)}
+.pass .is-done{background:var(--ok)}
+
+.book-row{margin-top:var(--s4)}
+body.booked .book-row{display:none}
+
+/* crowd rows */
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3)}
+.gates{list-style:none;margin:0;padding:var(--s1) var(--s5)}
+.gates li{padding:var(--s3) 0 var(--s3);border-bottom:1px solid var(--line)}
+.gates li:last-child{border-bottom:0}
+.g-line{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3)}
+.g-name{font-weight:540;display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap}
+.g-min{font-size:var(--t-m);font-weight:620;white-space:nowrap}
+.g-min small{font-size:var(--t-s);font-weight:460;color:var(--ink-2);margin-left:3px;font-stretch:100%}
+.g-bar{height:4px;border-radius:2px;background:var(--sunk);margin-top:var(--s2);overflow:hidden}
+.g-bar i{display:block;height:100%;border-radius:2px;background:var(--ink-3);transition:width .6s var(--ease)}
+.g-bar i.mid{background:var(--warn)}
+.g-bar i.high{background:var(--bad)}
+.gates li.best .g-bar i{background:var(--ok)}
+.chip-ok{background:var(--ok-soft);color:var(--ok)}
+.chip-me{background:var(--accent-soft);color:var(--accent)}
+.empty-row{color:var(--ink-2);font-size:var(--t-s)}
+.stag{margin-top:var(--s3)}
+
+.route-toggle{margin-top:var(--s2)}
+.route-toggle .chev{width:18px;height:18px;transition:transform .2s var(--ease)}
+.route-toggle[aria-expanded=true] .chev{transform:rotate(180deg)}
+.route{list-style:none;margin:var(--s2) 0 0;padding:0 0 0 var(--s2)}
+.route li{position:relative;display:flex;justify-content:space-between;gap:var(--s3);padding:0 0 var(--s5) var(--s6)}
+.route li::before{content:"";position:absolute;left:0;top:5px;width:14px;height:14px;border-radius:50%;background:var(--surface);border:2px solid var(--ink-3)}
+.route li:not(:last-child)::after{content:"";position:absolute;left:7px;top:21px;bottom:2px;width:2px;background:repeating-linear-gradient(var(--line) 0 4px,transparent 4px 8px)}
+.route li.you::before{background:var(--ink);border-color:var(--ink)}
+.route li.mine::before{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.route li.mine{font-weight:620;color:var(--accent)}
+.route .r-min{color:var(--ink-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+.real-out{margin-top:var(--s3);font-size:var(--t-b);line-height:var(--lh)}
+
+/* voice-first view for elders: bigger mic, spoken help, almost no text */
+body.elder .hero .mic{--size:176px}
+body.elder .prompt{font-size:var(--t-l)}
+body.elder #typeLink{display:none}
+body.elder #hearHelp{display:inline-flex!important}
+body.elder .pass-time{font-size:72px}
+body.elder .book-row .btn{min-height:64px;font-size:var(--t-m)}
+
+/* lite mode: the page gets lighter */
+body.lite .g-bar,body.lite #routeBtn,body.lite #route{display:none!important}
+body.lite .gates li{padding:var(--s2) 0}
+
+@media (min-width:720px){
+  .page{max-width:480px;padding-top:var(--s6)}
+  .hero{min-height:560px}
+}
+
+/* v3: no language row; examples, level meter, live captions */
+.hero{min-height:calc(100svh - 120px)}
+.hero .mic{--size:168px}
+.hero .prompt{font-size:var(--t-m);margin:var(--s6) 0 var(--s3);font-weight:580}
+.examples{min-height:3.4em;max-width:16em;color:var(--ink-2);font-size:var(--t-b);line-height:1.6;opacity:0;transition:opacity .35s ease;text-wrap:balance}
+.examples.in{opacity:1}
+body.has-result .examples,body.live .examples{display:none}
+.mic.is-listening{box-shadow:0 0 0 calc(6px + 26px*var(--lvl,0)) var(--accent-soft)}
+.caps{margin-top:var(--s3);font-size:var(--t-m);line-height:1.5;max-width:18em;color:var(--ink)}
+#endLive{margin-top:var(--s4);min-width:140px}
+.langs{display:flex;flex-wrap:wrap;gap:var(--s2);overflow:visible;padding:0}
+.langs button{min-height:48px}
+.ad-out{display:grid;gap:var(--s3);margin-top:var(--s3)}
+.exp>.body .btn-block{display:flex;width:100%}
+body.live .hero .mic{animation:breathe 3s ease-in-out infinite}
+@keyframes breathe{50%{transform:scale(1.04)}}
+@media (prefers-reduced-motion:reduce){body.live .hero .mic{animation:none}}

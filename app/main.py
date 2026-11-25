@@ -361,6 +361,8 @@ def _mount(modname):
 
 volunteer = _mount("volunteer")
 directions = _mount("directions")
+for _m in ("addons_sponsors", "addons_flags", "addons_read", "addons_scam", "addons_live"):
+    _mount(_m)
 
 
 def _has_route(path):

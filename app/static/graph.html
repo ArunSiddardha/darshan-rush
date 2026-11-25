@@ -1,44 +1,75 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Darshan Rush: recovery graph</title><link rel="stylesheet" href="/static/style.css"></head>
-<body class="graph"><div class="wrap">
-<div class="top"><div><h1>Booking recovery</h1><p class="sub" id="status">Waiting for numbers from /api/metrics-lite.</p></div><span class="sim">SIMULATED</span></div>
-<div class="legendbig">
- <div style="color:#f2b25c"><span id="l-p95">-</span><small>slowest 5% of requests, ms</small></div>
- <div style="color:#f08aa6"><span id="l-err">-</span><small>errors</small></div>
- <div style="color:#7fd1b9"><span id="l-rps">-</span><small>requests per second</small></div>
- <div style="color:#f6ead9"><span id="l-mode">-</span><small>map mode</small></div>
-</div>
-<svg id="chart" viewBox="0 0 1400 780" role="img" aria-label="Recovery chart"></svg>
-<p><button class="btn" id="reset">Clear chart</button></p>
-<p class="sub">Local test cluster, simulated crowd. Dashed line: the moment the flags flipped to the lite map and staggered slots.</p>
+<title>Darshan Rush: recovery graph</title>
+<link rel="stylesheet" href="/static/fonts.css">
+<link rel="stylesheet" href="/static/style.css">
+<style>
+.g{max-width:1360px;margin:0 auto;padding:var(--s5) var(--s5) var(--s7)}
+.g h1{font-size:var(--t-l);font-weight:600;line-height:var(--lh-tight);margin-top:var(--s5)}
+.legend{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s3);margin-top:var(--s5)}
+.legend div{background:var(--surface);border-radius:var(--r);padding:var(--s4);box-shadow:var(--lift);border-top:4px solid var(--c)}
+.legend .v{font-size:var(--t-l);font-weight:640;font-stretch:115%;line-height:1.1;font-variant-numeric:tabular-nums}
+.legend .k{font-size:var(--t-s);color:var(--ink-2)}
+.chartcard{margin-top:var(--s4);padding:var(--s4)}
+svg#chart{width:100%;height:auto;display:block;font-family:var(--font)}
+.tools{display:flex;gap:var(--s3);align-items:center;margin-top:var(--s4);flex-wrap:wrap}
+@media (max-width:640px){.legend{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="g">
+ <div class="bar"><span class="wordmark">Darshan Rush</span><span class="tag">SIMULATED</span></div>
+ <h1>Booking recovery</h1>
+ <p class="muted" id="status">Waiting for numbers.</p>
+ <div class="legend">
+  <div style="--c:#2B2E8C"><p class="v" id="l-p95">-</p><p class="k">slowest 5% of requests, ms</p></div>
+  <div style="--c:#B42318"><p class="v" id="l-err">-</p><p class="k">errors in the last 10 s</p></div>
+  <div style="--c:#8A5300"><p class="v" id="l-rps">-</p><p class="k">requests per second</p></div>
+  <div style="--c:#1A1917"><p class="v" id="l-mode">-</p><p class="k">map mode</p></div>
+ </div>
+ <section class="card chartcard"><svg id="chart" viewBox="0 0 1400 600" role="img" aria-label="Recovery chart: slowest requests, errors and requests per second over time"></svg></section>
+ <div class="tools">
+  <a class="btn btn-secondary" href="/static/judge.html">Back to the judge page</a>
+  <button class="btn btn-quiet" id="reset" type="button">Clear chart</button>
+  <span class="small">Local test cluster, simulated crowd. The dark line marks the moment the flags flipped to the lite map and staggered slots.</span>
+ </div>
 </div>
 <script>
+/* API: GET /api/metrics-lite every 2 s */
 const $=s=>document.querySelector(s),NS='http://www.w3.org/2000/svg';
 let D=JSON.parse(sessionStorage.gdata||'[]');const MAX=450;
-const panels=[{k:'p95_ms',label:'p95 ms',c:'#f2b25c'},{k:'errors',label:'errors',c:'#f08aa6'},{k:'rps',label:'requests/s',c:'#7fd1b9'}];
+const panels=[{k:'p95_ms',label:'Slowest 5%, ms',c:'#2B2E8C'},{k:'errors',label:'Errors',c:'#B42318'},{k:'rps',label:'Requests per second',c:'#8A5300'}];
 function el(n,a,t){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;$('#chart').appendChild(e);return e}
+const nice=v=>v>=100?Math.round(v):v>=10?Math.round(v):+v.toFixed(1);
 function draw(){const svg=$('#chart');svg.innerHTML='';
- const L=150,R=1380,H=200,gap=40,top=10;
- if(D.length<2){el('text',{x:700,y:360,'text-anchor':'middle','font-size':34,fill:'#cdbfd8'},'No data yet. Press "Cause the rush" on the judge page.');return}
+ const L=110,R=1380,H=140,gap=50,top=40;
+ if(D.length<2){el('text',{x:700,y:300,'text-anchor':'middle','font-size':32,fill:'#77726A'},'No data yet. Press Cause the rush on the judge page.');return}
  const t0=D[0].t,t1=D[D.length-1].t,span=Math.max(t1-t0,10);const X=t=>L+(t-t0)/span*(R-L);
  panels.forEach((p,i)=>{const y0=top+i*(H+gap),vals=D.map(d=>+d[p.k]||0),mx=Math.max(...vals,p.k==='errors'?2:1)*1.15;const Y=v=>y0+H-v/mx*H;
-  el('rect',{x:L,y:y0,width:R-L,height:H,fill:'none',stroke:'#4a3d61','stroke-width':1.5});
-  [0,.5,1].forEach(f=>{el('text',{x:L-10,y:y0+H-f*H+7,'text-anchor':'end','font-size':22,fill:'#cdbfd8'},(mx*f<10?(mx*f).toFixed(f?1:0):Math.round(mx*f)));});
-  el('text',{x:L-10,y:y0-0,'text-anchor':'end','font-size':0},'');
-  el('text',{x:R-12,y:y0+34,'text-anchor':'end','font-size':26,fill:p.c,'font-weight':700},p.label);
-  el('polyline',{points:D.map(d=>X(d.t)+','+Y(+d[p.k]||0)).join(' '),fill:'none',stroke:p.c,'stroke-width':4,'stroke-linejoin':'round'})});
+  [0,.5,1].forEach(f=>{el('line',{x1:L,x2:R,y1:y0+H-f*H,y2:y0+H-f*H,stroke:'#DEDAD1','stroke-width':f?1:2});
+   el('text',{x:L-14,y:y0+H-f*H+8,'text-anchor':'end','font-size':22,fill:'#55514A','font-variant-numeric':'tabular-nums'},nice(mx*f))});
+  el('text',{x:L,y:y0-12,'font-size':24,'font-weight':600,fill:p.c},p.label);
+  const pts=D.map(d=>X(d.t).toFixed(1)+','+Y(+d[p.k]||0).toFixed(1));
+  el('polygon',{points:L+','+(y0+H)+' '+pts.join(' ')+' '+X(t1)+','+(y0+H),fill:p.c,opacity:.08});
+  el('polyline',{points:pts.join(' '),fill:'none',stroke:p.c,'stroke-width':3.5,'stroke-linejoin':'round','stroke-linecap':'round'})});
  const fi=D.findIndex((d,i)=>i>0&&D[i-1].map_mode==='full'&&d.map_mode==='lite');
- if(fi>0){const x=X(D[fi].t);el('line',{x1:x,x2:x,y1:0,y2:3*H+2*gap+top,stroke:'#f6ead9','stroke-width':3,'stroke-dasharray':'10 8'});
-  el('text',{x:Math.min(x+10,R-420),y:3*H+2*gap+top+36,'font-size':26,fill:'#f6ead9'},'Flags flipped: lite map, staggered slots')}
- const secs=Math.round(span);el('text',{x:L,y:3*H+2*gap+top+36,'font-size':22,fill:'#cdbfd8'},'0 s');
- el('text',{x:R,y:3*H+2*gap+top+36,'text-anchor':'end','font-size':22,fill:'#cdbfd8',opacity:fi>0?0:1},secs+' s')}
+ const bottom=top+3*H+2*gap;
+ if(fi>0){const x=X(D[fi].t);el('line',{x1:x,x2:x,y1:top-30,y2:bottom,stroke:'#1A1917','stroke-width':3});
+  const right=x>R-460;el('rect',{x:right?x-452:x+10,y:top-38,width:442,height:34,rx:8,fill:'#1A1917'});
+  el('text',{x:right?x-436:x+26,y:top-14,'font-size':22,'font-weight':600,fill:'#fff'},'Flags flipped: lite map, staggered slots')}
+ el('text',{x:L,y:bottom+34,'font-size':22,fill:'#55514A'},'0 s');
+ el('text',{x:R,y:bottom+34,'text-anchor':'end','font-size':22,fill:'#55514A'},Math.round(span)+' s')}
 async function tick(){
- let m;try{const r=await fetch('/api/metrics-lite');if(!r.ok)throw 0;m=await r.json()}catch(e){$('#status').textContent='Metrics not reachable. Retrying.';return}
+ let m;try{const r=await fetch('/api/metrics-lite');if(!r.ok)throw 0;m=await r.json()}catch(e){$('#status').textContent='Metrics not reachable. Retrying every 2 seconds.';return}
  D.push({t:Date.now()/1000,p95_ms:+m.p95_ms||0,errors:+m.errors||0,rps:+m.rps||0,map_mode:m.map_mode||''});if(D.length>MAX)D.shift();
  sessionStorage.gdata=JSON.stringify(D);
  $('#l-p95').textContent=Math.round(m.p95_ms||0);$('#l-err').textContent=m.errors??'-';$('#l-rps').textContent=(+m.rps||0).toFixed(1);$('#l-mode').textContent=m.map_mode||'-';
- $('#status').textContent='Live, every 2 seconds. Restarts: '+(m.restarts??'-');draw()}
+ $('#status').textContent='Live, updated every 2 seconds.'+(m.restarts!=null?' Pod restarts: '+m.restarts+'.':'');draw()}
 $('#reset').onclick=()=>{D=[];sessionStorage.gdata='[]';draw()};
 draw();tick();setInterval(tick,2000);
-</script></body></html>
+</script>
+</body>
+</html>

@@ -13,6 +13,7 @@ from typing import NamedTuple, Optional
 import httpx
 
 import config
+import sarvam_keys
 
 BASE = "https://api.sarvam.ai"
 TIMEOUT = 8.0
@@ -63,11 +64,11 @@ def short_lang(code):
 
 
 def available():
-    return bool(config.SARVAM_API_KEY())
+    return bool(config.SARVAM_API_KEY()) or sarvam_keys.available()
 
 
 def _headers():
-    k = config.SARVAM_API_KEY()
+    k = sarvam_keys.current() or config.SARVAM_API_KEY()
     if not k:
         raise NoKey("SARVAM_API_KEY is not set. Voice is unavailable; type instead.")
     return {"api-subscription-key": k}
@@ -78,6 +79,10 @@ def _post(path, what, **kw):
     t0 = time.perf_counter()
     try:
         r = httpx.post(BASE + path, timeout=TIMEOUT, **kw)
+        if r.status_code in (402, 429) and sarvam_keys.on_status(r.status_code):
+            # one key is out of credits or rate limited: fall over to the other key once
+            kw["headers"] = {**(kw.get("headers") or {}), "api-subscription-key": sarvam_keys.current()}
+            r = httpx.post(BASE + path, timeout=TIMEOUT, **kw)
     except httpx.TimeoutException:
         raise SarvamError(f"Sarvam {what} timed out after {int(TIMEOUT)} s")
     except httpx.HTTPError as e:

@@ -1,0 +1,14 @@
+<!-- Live conversation fragment. Place anywhere, include live.css and live.js, then call AddonsLive.init(document.getElementById('ad-live'), {uid:'...', lang:'te' or ()=>'te'}).
+     Needs the endpoints POST /api/live/turn and /api/live/prompt (addons_live.py). Inherits --ink --bg --card --accent --line. -->
+<section class="live" id="ad-live" data-state="idle" aria-label="Live conversation">
+  <div class="live-circle" data-live="circle" aria-hidden="true"><span></span></div>
+  <p class="live-label" data-live="label" role="status" aria-live="polite">Tap once to start talking</p>
+  <button type="button" class="live-btn live-start" data-live="start">Tap once to start talking</button>
+  <p class="live-why">Your phone needs one tap to allow the microphone and the sound. After that, just talk: I listen, answer, and listen again. Say thank you to finish.</p>
+  <div class="live-captions" aria-live="polite">
+    <p class="live-you" data-live="you"></p>
+    <p class="live-app" data-live="app"></p>
+  </div>
+  <button type="button" class="live-btn live-end" data-live="end" hidden>End</button>
+  <p class="live-note" data-live="note" role="alert"></p>
+</section>

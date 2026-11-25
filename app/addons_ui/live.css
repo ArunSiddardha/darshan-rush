@@ -1,0 +1,24 @@
+/* Live conversation. Plain CSS variables so any design system can theme it. */
+.live { --live-accent: var(--accent, #7a3b00); display: grid; justify-items: center; gap: 12px; padding: 16px; color: var(--ink, #111); }
+.live-circle { --lv: 0; width: 160px; height: 160px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--live-accent) 14%, transparent);
+  transform: scale(calc(1 + var(--lv) * 0.25)); transition: transform .08s linear, background .3s; }
+.live-circle span { width: 56%; height: 56%; border-radius: 50%; background: var(--live-accent); opacity: .85; transform: scale(calc(.8 + var(--lv) * .5)); transition: transform .08s linear, background .3s; }
+.live[data-state="listening"] .live-circle span { background: #1f7a3a; }
+.live[data-state="hearing"] .live-circle span { background: #0b6bb8; }
+.live[data-state="thinking"] .live-circle span { background: #b86e00; animation: live-spin 1.2s linear infinite; border-radius: 40%; }
+.live[data-state="speaking"] .live-circle span { background: var(--live-accent); }
+.live[data-state="error"] .live-circle span { background: #b3261e; }
+.live-label { margin: 0; font-size: 1.25rem; font-weight: 600; text-align: center; min-height: 1.6em; }
+.live-btn { min-height: 64px; min-width: 240px; padding: 0 24px; border: 0; border-radius: 16px; font-size: 1.25rem; cursor: pointer; color: #fff; background: var(--live-accent); }
+.live-end { background: #444; min-height: 56px; min-width: 120px; }
+.live-btn[hidden] { display: none; }
+.live-why { margin: 0; max-width: 34ch; text-align: center; font-size: 1rem; line-height: 1.4; opacity: .8; }
+.live[data-state="listening"] .live-why, .live[data-state="hearing"] .live-why, .live[data-state="thinking"] .live-why, .live[data-state="speaking"] .live-why { display: none; }
+.live-captions { width: 100%; max-width: 420px; display: grid; gap: 6px; min-height: 4.5em; }
+.live-captions p { margin: 0; font-size: 1.25rem; line-height: 1.35; }
+.live-you { color: var(--ink, #111); opacity: .75; }
+.live-you:not(:empty)::before { content: "You: "; font-size: .85em; opacity: .7; }
+.live-app { font-weight: 600; }
+.live-note { margin: 0; min-height: 1.2em; color: #b3261e; text-align: center; }
+@keyframes live-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .live-circle, .live-circle span { transition: none; animation: none !important; } }

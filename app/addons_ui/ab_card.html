@@ -1,0 +1,21 @@
+<!-- A/B result card: voice directions vs map directions, metric reached_gate. Include ab_card.js once.
+     data-refresh = seconds (default 5). Reads GET /api/experiment. -->
+<section class="ab-card" data-ab-card data-refresh="5" aria-label="A/B test result">
+  <style>
+    .ab-card{font:14px/1.4 var(--font, system-ui, sans-serif);color:var(--fg, #1d1d1b);background:var(--card, #fff);border:1px solid var(--line, #d9d4c7);border-radius:var(--radius, 12px);padding:12px 14px;max-width:520px}
+    .ab-card h3{margin:0;font-size:15px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .ab-badge{font-size:11px;border-radius:999px;padding:1px 8px;background:var(--accent-soft, #fde7c4);color:var(--fg, #1d1d1b);font-weight:600}
+    .ab-sub{margin:2px 0 8px;font-size:12px;color:var(--muted, #6b675c)}
+    .ab-row{display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:center;margin:6px 0}
+    .ab-name{font-weight:600}
+    .ab-bar{height:10px;background:var(--track, #eee9da);border-radius:6px;overflow:hidden}
+    .ab-fill{height:100%;width:0;background:var(--accent, #c9740e);transition:width .4s}
+    .ab-row[data-lead="1"] .ab-fill{background:var(--accent2, #2f7d4f)}
+    .ab-num{font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted, #6b675c);text-align:right}
+    .ab-foot{margin:6px 0 0;font-size:11px;color:var(--muted, #6b675c)}
+  </style>
+  <h3>A/B test: voice or map directions <span class="ab-badge">test traffic</span></h3>
+  <p class="ab-sub" data-ab-sub>Metric: reached_gate. Loading...</p>
+  <div data-ab-rows></div>
+  <p class="ab-foot" data-ab-foot></p>
+</section>

@@ -316,7 +316,7 @@ Team Phoenix:
 
 | Name | Contact |
 |---|---|
-| Arun Siddardha | [@ArunSiddardha](https://github.com/ArunSiddardha) |
+| Arun Siddardha | arunsiddardha19@gmail.com ([@ArunSiddardha](https://github.com/ArunSiddardha)) |
 | Adhvik Mani Sai | adhvik.murarisetty@gmail.com |
 | Devashish Boini | bdevashish957@gmail.com |
 | Savarana Datta | savaranadatta@gmail.com |

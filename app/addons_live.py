@@ -182,7 +182,7 @@ NUMBER_WORDS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, 
                 "एक": 1, "दो": 2, "तीन": 3, "चार": 4, "पाँच": 5, "पांच": 5, "छह": 6,
                 "ഒരാൾ": 1, "ഒന്ന്": 1, "രണ്ട്": 2, "രണ്ടു": 2, "മൂന്ന്": 3, "നാല്": 4, "അഞ്ച്": 5,
                 "ஒருவர்": 1, "ஒன்று": 1, "இரண்டு": 2, "மூன்று": 3, "நான்கு": 4, "ஐந்து": 5,
-                "ఒకరు": 1, "ఒకటి": 1, "ఇద్దరు": 2, "రెండు": 2, "ముగ్గురు": 3, "మూడు": 3, "నలుగురు": 4, "నాలుగు": 4, "ఐదు": 5,
+                "ఒకరు": 1, "ఒకటి": 1, "ఇద్దర": 2, "రెండు": 2, "ముగ్గుర": 3, "మూడు": 3, "నలుగుర": 4, "నాలుగు": 4, "ఐదు": 5,
                 "ಒಬ್ಬ": 1, "ಒಂದು": 1, "ಇಬ್ಬರು": 2, "ಎರಡು": 2, "ಮೂರು": 3, "ನಾಲ್ಕು": 4, "ಐದು": 5}
 
 
@@ -437,6 +437,10 @@ def handle(text, uid, sid, lang_req, s=None):
         if is_no(low):
             s.update(state="ask_when", when_ts=None, when_set=False)
             return say(_p(lang, "ask_when"), "change")
+        if info["intent"] in ("wait", "verify", "age") and not is_yes(low):
+            reply, ex = directions.respond(text, lang, uid)      # answer the question, then ask for the yes or no again
+            extra["llm_ms"] = ex.pop("llm_ms", 0)
+            return say((reply + " " + _readback(s, lang)).strip(), ex.get("intent", "wait"))
         w, lbl = directions.parse_when(text)   # a new time instead of yes or no changes the booking being offered
         if w:
             s["when_ts"], s["when_set"] = w, True
@@ -598,6 +602,8 @@ async def live_turn(audio: UploadFile = File(None), uid: str = Form("anon"), lan
             return JSONResponse({"error": "audio too large", "ignored": True, "state": s["state"]}, status_code=413)
         use = s["lang"] if s.get("lang_locked") else lang
         detect = auto and not s.get("lang_locked")
+        if detect and s.get("turns") and s.get("state") in ("confirm", "ask_when", "ask_party") and len(data) < 90000:
+            detect = False   # a short answer to our own question ("yes"): keep the language of the conversation, detection mishears one word
         try:
             r = await run_in_threadpool(sarvam.stt, data, audio.filename or "audio.wav", audio.content_type or "audio/wav",
                                         None if detect else (use if use in LANGS else None), "transcribe" if detect else "codemix")

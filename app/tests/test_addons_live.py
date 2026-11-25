@@ -176,3 +176,12 @@ def test_llm_fallback_when_stt_garbles(monkeypatch):
     monkeypatch.setattr(L.sarvam, "chat_json", lambda s, u: ({"answer": "yes"}, 5))
     r, _ = turn("l", "ఓహో అలాగే")
     assert "booked" in r.lower()
+
+
+def test_wait_question_during_readback_and_telugu_long_vowel():
+    turn("w", "book a slot tomorrow morning")
+    r, _ = turn("w", "ఇద్దరూ", "te")           # long vowel variant from speech to text
+    assert L.session("w", "en")["state"] == "confirm"
+    r, _ = turn("w", "how long is the wait")
+    assert "minutes" in r and "Shall I book it" in r
+    assert L.session("w", "en")["state"] == "confirm"

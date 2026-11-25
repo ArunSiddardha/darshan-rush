@@ -74,7 +74,7 @@
       silenceMs: opts.silenceMs || 900, minUtteranceMs: opts.minUtteranceMs || 350, maxUtteranceMs: opts.maxUtteranceMs || 12000,
       startMs: opts.startMs || 150, prerollMs: opts.prerollMs || 400, calibrateMs: opts.calibrateMs || 500,
       onRatio: opts.onRatio || 3, onAbs: opts.onAbs || 0.01, offRatio: opts.offRatio || 1.8, offAbs: opts.offAbs || 0.005,
-      bargeMs: opts.bargeMs || 300, bargeRatio: opts.bargeRatio || 2.5, bargeEnabled: opts.bargeEnabled !== false,
+      bargeMs: opts.bargeMs || 300, bargeRatio: opts.bargeRatio || 2.5, bargeEnabled: opts.bargeEnabled !== false, noLevel: !!opts.noLevel,
       nudgeAfterMs: opts.nudgeAfterMs || 8000, endAfterMs: opts.endAfterMs || 25000, timeoutMs: opts.timeoutMs || 20000,
       audioEl: opts.audioEl || null, testSource: opts.testSource || null, getStream: opts.getStream || null, fetch: opts.fetch || null, greeting: opts.greeting !== false, auto: !!opts.auto
     };
@@ -261,7 +261,7 @@
   };
 
   LP._level = function () {
-    if (this.frames % 2) return;
+    if (this.frames % 2 || this.o.noLevel) return;
     var v;
     if (this.phase === 'speak' && this._env) {
       var i = Math.floor((this.audio.currentTime || 0) * 20); v = this._env[i] == null ? 0 : this._env[i] * 0.9;

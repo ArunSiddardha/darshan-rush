@@ -21,12 +21,12 @@ kn:{prompt:'ಒತ್ತಿ, ದರ್ಶನ ಯಾವಾಗ ಬೇಕು ಎಂ
 hi:{prompt:'दबाइए और बताइए, दर्शन कब चाहिए',listen:'सुन रहा हूँ। बोलने के बाद फिर दबाइए।',think:'आपका स्लॉट ढूँढ रहा हूँ',type:'टाइप करें',send:'भेजें',ph:'जैसे: कल 2 लोगों के लिए बुक करें',book:'सबसे छोटी कतार में बुक करें',crowd:'अभी की भीड़',min:'मिनट',short:'सबसे कम',mine:'आपका गेट',route:'रास्ता दिखाएँ',hide:'रास्ता छिपाएँ',here:'आप यहाँ हैं',slot:'आपका दर्शन स्लॉट',gate:'गेट',reached:'मैं गेट पर पहुँच गया',again:'फिर सुनें',thanks:'धन्यवाद। आपका गेट पर पहुँचना दर्ज हो गया।',lite:'भीड़ ज़्यादा है। पेज हल्का कर दिया गया है। बुकिंग जारी है।',stag:'सबको उचित समय मिले, इसलिए स्लॉट अलग-अलग समय पर दिए जा रहे हैं।',empty:'भीड़ की जानकारी आ रही है।',busy:'बुकिंग में भीड़ है। फिर कोशिश करें।',credits:'आवाज़ सेवा अभी बंद है (क्रेडिट खत्म)। कृपया टाइप करें।',rate:'आवाज़ सेवा अभी व्यस्त है। एक मिनट बाद कोशिश करें, या टाइप करें।',blocked:'माइक ब्लॉक है। ब्राउज़र में अनुमति दें, या टाइप करें।',nomic:'माइक उपलब्ध नहीं है। टाइप करें।',net:'सर्वर से कनेक्शन नहीं है। नेटवर्क देखकर फिर कोशिश करें।',more:'और मदद',read:'इसे पढ़कर सुनाइए',readsub:'टिकट या बोर्ड की फ़ोटो',real:'क्या यह बुकिंग साइट असली है?',realsub:'लिंक डालकर जाँचें',check:'जाँचें',elder:'बड़ा, आवाज़ वाला दृश्य',eldersub:'बड़ा बटन, बोलकर मदद',hear:'इस्तेमाल का तरीका सुनें',you:'आपने कहा',today:'आज'}
 };
 const X={
-en:{rh:'High risk',rc:'Be careful',ru:'Cannot check',langlbl:'Language',tap1:'Tap once to start talking',end:'End',live:'Listening. Just speak.',photo:'Take or choose a photo',orig:'Text in the photo',pasteph:'Paste the link, or type what the person offered',langauto:'Automatic',blip:'I did not catch that. Please tap and say it again.',slow:'The network is slow. One moment.',booked:'Booked'},
-ml:{rh:'ഉയർന്ന അപകടം',rc:'ജാഗ്രത',ru:'പരിശോധിക്കാനായില്ല',langlbl:'ഭാഷ',tap1:'ഒരു തവണ അമർത്തി സംസാരിക്കൂ',end:'അവസാനിപ്പിക്കുക',live:'കേൾക്കുന്നു. സംസാരിക്കൂ.',photo:'ഫോട്ടോ എടുക്കുക',orig:'ഫോട്ടോയിലെ എഴുത്ത്',pasteph:'ലിങ്ക് ഒട്ടിക്കൂ, അല്ലെങ്കിൽ പറഞ്ഞത് ടൈപ്പ് ചെയ്യൂ',langauto:'സ്വയം',blip:'മനസ്സിലായില്ല. വീണ്ടും അമർത്തി പറയൂ.',slow:'നെറ്റ്‌വർക്ക് പതുക്കെയാണ്. ഒരു നിമിഷം.',booked:'ബുക്ക് ചെയ്തു'},
-ta:{rh:'அதிக ஆபத்து',rc:'கவனம்',ru:'சரிபார்க்க இயலவில்லை',langlbl:'மொழி',tap1:'ஒரு முறை அழுத்திப் பேசுங்கள்',end:'முடிக்க',live:'கேட்கிறேன். பேசுங்கள்.',photo:'புகைப்படம் எடுக்கவும்',orig:'புகைப்படத்திலுள்ள எழுத்து',pasteph:'இணைப்பை ஒட்டவும், அல்லது சொன்னதைத் தட்டச்சு செய்யவும்',langauto:'தானாக',blip:'புரியவில்லை. மீண்டும் அழுத்திச் சொல்லுங்கள்.',slow:'நெட்வொர்க் மெதுவாக உள்ளது. ஒரு நிமிடம்.',booked:'பதிவானது'},
-te:{rh:'అధిక ప్రమాదం',rc:'జాగ్రత్త',ru:'తనిఖీ చేయలేకపోయాము',langlbl:'భాష',tap1:'ఒకసారి నొక్కి మాట్లాడండి',end:'ముగించు',live:'వింటున్నాను. మాట్లాడండి.',photo:'ఫోటో తీయండి',orig:'ఫోటోలోని పాఠం',pasteph:'లింక్ అతికించండి, లేదా చెప్పినది టైప్ చేయండి',langauto:'ఆటోమేటిక్',blip:'అర్థం కాలేదు. మళ్లీ నొక్కి చెప్పండి.',slow:'నెట్‌వర్క్ నెమ్మదిగా ఉంది. ఒక్క నిమిషం.',booked:'బుక్ అయింది'},
-kn:{rh:'ಹೆಚ್ಚಿನ ಅಪಾಯ',rc:'ಎಚ್ಚರಿಕೆ',ru:'ಪರಿಶೀಲಿಸಲಾಗಲಿಲ್ಲ',langlbl:'ಭಾಷೆ',tap1:'ಒಮ್ಮೆ ಒತ್ತಿ ಮಾತನಾಡಿ',end:'ಮುಗಿಸಿ',live:'ಕೇಳುತ್ತಿದ್ದೇನೆ. ಮಾತನಾಡಿ.',photo:'ಫೋಟೋ ತೆಗೆಯಿರಿ',orig:'ಫೋಟೋದಲ್ಲಿನ ಪಠ್ಯ',pasteph:'ಲಿಂಕ್ ಅಂಟಿಸಿ, ಅಥವಾ ಹೇಳಿದ್ದನ್ನು ಟೈಪ್ ಮಾಡಿ',langauto:'ಸ್ವಯಂ',blip:'ಅರ್ಥವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಒತ್ತಿ ಹೇಳಿ.',slow:'ನೆಟ್‌ವರ್ಕ್ ನಿಧಾನವಾಗಿದೆ. ಒಂದು ಕ್ಷಣ.',booked:'ಬುಕ್ ಆಗಿದೆ'},
-hi:{rh:'ज़्यादा जोखिम',rc:'सावधान',ru:'जाँच नहीं हो सकी',langlbl:'भाषा',tap1:'एक बार दबाकर बोलिए',end:'बंद करें',live:'सुन रहा हूँ। बोलिए।',photo:'फोटो लें',orig:'फोटो का लिखा हुआ',pasteph:'लिंक चिपकाइए, या जो कहा गया वह लिखिए',langauto:'अपने आप',blip:'समझ नहीं आया। फिर दबाकर बोलिए।',slow:'नेटवर्क धीमा है। एक पल।',booked:'बुक हो गया'}};
+en:{yes:'Yes',no:'No',rh:'High risk',rc:'Be careful',ru:'Cannot check',langlbl:'Language',tap1:'Tap once to start talking',end:'End',live:'Listening. Just speak.',photo:'Take or choose a photo',orig:'Text in the photo',pasteph:'Paste the link, or type what the person offered',langauto:'Automatic',blip:'I did not catch that. Please tap and say it again.',slow:'The network is slow. One moment.',booked:'Booked'},
+ml:{yes:'ശരി',no:'വേണ്ട',rh:'ഉയർന്ന അപകടം',rc:'ജാഗ്രത',ru:'പരിശോധിക്കാനായില്ല',langlbl:'ഭാഷ',tap1:'ഒരു തവണ അമർത്തി സംസാരിക്കൂ',end:'അവസാനിപ്പിക്കുക',live:'കേൾക്കുന്നു. സംസാരിക്കൂ.',photo:'ഫോട്ടോ എടുക്കുക',orig:'ഫോട്ടോയിലെ എഴുത്ത്',pasteph:'ലിങ്ക് ഒട്ടിക്കൂ, അല്ലെങ്കിൽ പറഞ്ഞത് ടൈപ്പ് ചെയ്യൂ',langauto:'സ്വയം',blip:'മനസ്സിലായില്ല. വീണ്ടും അമർത്തി പറയൂ.',slow:'നെറ്റ്‌വർക്ക് പതുക്കെയാണ്. ഒരു നിമിഷം.',booked:'ബുക്ക് ചെയ്തു'},
+ta:{yes:'ஆம்',no:'இல்லை',rh:'அதிக ஆபத்து',rc:'கவனம்',ru:'சரிபார்க்க இயலவில்லை',langlbl:'மொழி',tap1:'ஒரு முறை அழுத்திப் பேசுங்கள்',end:'முடிக்க',live:'கேட்கிறேன். பேசுங்கள்.',photo:'புகைப்படம் எடுக்கவும்',orig:'புகைப்படத்திலுள்ள எழுத்து',pasteph:'இணைப்பை ஒட்டவும், அல்லது சொன்னதைத் தட்டச்சு செய்யவும்',langauto:'தானாக',blip:'புரியவில்லை. மீண்டும் அழுத்திச் சொல்லுங்கள்.',slow:'நெட்வொர்க் மெதுவாக உள்ளது. ஒரு நிமிடம்.',booked:'பதிவானது'},
+te:{yes:'అవును',no:'వద్దు',rh:'అధిక ప్రమాదం',rc:'జాగ్రత్త',ru:'తనిఖీ చేయలేకపోయాము',langlbl:'భాష',tap1:'ఒకసారి నొక్కి మాట్లాడండి',end:'ముగించు',live:'వింటున్నాను. మాట్లాడండి.',photo:'ఫోటో తీయండి',orig:'ఫోటోలోని పాఠం',pasteph:'లింక్ అతికించండి, లేదా చెప్పినది టైప్ చేయండి',langauto:'ఆటోమేటిక్',blip:'అర్థం కాలేదు. మళ్లీ నొక్కి చెప్పండి.',slow:'నెట్‌వర్క్ నెమ్మదిగా ఉంది. ఒక్క నిమిషం.',booked:'బుక్ అయింది'},
+kn:{yes:'ಹೌದು',no:'ಬೇಡ',rh:'ಹೆಚ್ಚಿನ ಅಪಾಯ',rc:'ಎಚ್ಚರಿಕೆ',ru:'ಪರಿಶೀಲಿಸಲಾಗಲಿಲ್ಲ',langlbl:'ಭಾಷೆ',tap1:'ಒಮ್ಮೆ ಒತ್ತಿ ಮಾತನಾಡಿ',end:'ಮುಗಿಸಿ',live:'ಕೇಳುತ್ತಿದ್ದೇನೆ. ಮಾತನಾಡಿ.',photo:'ಫೋಟೋ ತೆಗೆಯಿರಿ',orig:'ಫೋಟೋದಲ್ಲಿನ ಪಠ್ಯ',pasteph:'ಲಿಂಕ್ ಅಂಟಿಸಿ, ಅಥವಾ ಹೇಳಿದ್ದನ್ನು ಟೈಪ್ ಮಾಡಿ',langauto:'ಸ್ವಯಂ',blip:'ಅರ್ಥವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಒತ್ತಿ ಹೇಳಿ.',slow:'ನೆಟ್‌ವರ್ಕ್ ನಿಧಾನವಾಗಿದೆ. ಒಂದು ಕ್ಷಣ.',booked:'ಬುಕ್ ಆಗಿದೆ'},
+hi:{yes:'हाँ',no:'नहीं',rh:'ज़्यादा जोखिम',rc:'सावधान',ru:'जाँच नहीं हो सकी',langlbl:'भाषा',tap1:'एक बार दबाकर बोलिए',end:'बंद करें',live:'सुन रहा हूँ। बोलिए।',photo:'फोटो लें',orig:'फोटो का लिखा हुआ',pasteph:'लिंक चिपकाइए, या जो कहा गया वह लिखिए',langauto:'अपने आप',blip:'समझ नहीं आया। फिर दबाकर बोलिए।',slow:'नेटवर्क धीमा है। एक पल।',booked:'बुक हो गया'}};
 for(const k in X)Object.assign(T[k],X[k]);
 const EX={en:'Book a slot for 2 people tomorrow morning',ml:'നാളെ രാവിലെ 2 പേർക്ക് സ്ലോട്ട് വേണം',ta:'நாளை காலை 2 பேருக்கு ஸ்லாட் வேண்டும்',te:'రేపు ఉదయం 2 మందికి స్లాట్ కావాలి',kn:'ನಾಳೆ ಬೆಳಿಗ್ಗೆ 2 ಜನರಿಗೆ ಸ್ಲಾಟ್ ಬೇಕು',hi:'कल सुबह 2 लोगों के लिए स्लॉट चाहिए'};
 const t=k=>(T[lang]&&T[lang][k])||T.en[k];
@@ -61,7 +61,7 @@ function langs(){const L=[['', t('langauto')]].concat(ORDER.map(k=>[k,LN[k]]));
 /* example phrases cycle through the six scripts until the first words are heard, then stay in the person's language */
 let exI=0,exTimer=0,heard=false,COPY=null,VF=false;
 async function loadCopy(){try{const r=await fetch('/api/ui-copy?lang='+lang);if(r.ok){COPY=await r.json();examples()}}catch(e){}}   // Flagsmith remote config 'ui_copy'
-async function loadVF(){try{const r=await fetch('/api/flags/decisions?uid='+encodeURIComponent(uid)+'&lang='+lang+(localStorage.elder==='1'?'&age65=true':''));
+async function loadVF(){try{const r=await fetch('/api/flags/decisions?uid='+encodeURIComponent(uid)+'&lang='+lang+(localStorage.age65==='1'?'&age65=true':''));
  if(r.ok){const j=await r.json();const f=(j.flags||[]).find(x=>x.flag==='voice_first');const v=!!(f&&f.enabled);if(v!==VF){VF=v;text()}}}catch(e){}}
 function examples(){const e=$('#examples');if(!e)return;clearInterval(exTimer);
  const show=()=>{const one=heard||forced;const k=one?lang:ORDER[exI++%ORDER.length];e.classList.remove('in');
@@ -70,7 +70,7 @@ function examples(){const e=$('#examples');if(!e)return;clearInterval(exTimer);
  show();if(!heard&&!forced&&!matchMedia('(prefers-reduced-motion:reduce)').matches)exTimer=setInterval(show,2600)}
 function text(){document.documentElement.lang=lang;
  const set=(id,k)=>{const e=$(id);if(e)e.textContent=t(k)};
- set('#prompt',live?'live':'tap1');set('#endLive','end');set('#photoLbl','photo');set('#origLbl','orig');set('#langLbl','langlbl');set('#typeLbl','type');set('#go','send');set('#book','book');set('#crowdH','crowd');set('#reachedLbl','reached');
+ set('#prompt',live?'live':'tap1');set('#endLive','end');set('#cYes','yes');set('#cNo','no');set('#photoLbl','photo');set('#origLbl','orig');set('#langLbl','langlbl');set('#typeLbl','type');set('#go','send');set('#book','book');set('#crowdH','crowd');set('#reachedLbl','reached');
  set('#passK','slot');set('#passGateK','gate');set('#moreH','more');set('#readLbl','read');set('#readSub','readsub');set('#realLbl','real');set('#realSub','realsub');
  set('#realGo','check');set('#elderLbl','elder');set('#elderSub','eldersub');set('#hearLbl','hear');set('#soon1','soon');set('#typedLbl','type');
  document.querySelectorAll('.lbl-again').forEach(e=>e.textContent=t('again'));
@@ -146,7 +146,7 @@ async function sendVoice(fd,isAudio){busy=true;setState('think');say(null);$('#m
  const isNotice=j.notice&&j.reply_text===j.notice;
  if(isNotice){say(j._voiceOff||'credits','warn');openType();return}
  if(isAudio&&!j.transcript){fails++;say('blip','warn');if(fails>=2)openType();return}
- fails=0;if(j.intent==='age'||j.age_set)loadVF();
+ fails=0;if(j.intent==='age'||j.age_set){localStorage.age65='1';loadVF()}
  $('#reply').hidden=false;$('#heard').innerHTML=j.transcript?esc(t('you'))+': '+esc(j.transcript):'';$('#replyText').textContent=j.reply_text||'';
  $('#replyText').lang=j.lang||lang;
  lastAudio=j.audio_base64;$('#replyPlay').hidden=!j.audio_base64;play(j.audio_base64);
@@ -194,14 +194,22 @@ const Live={
    if(st==='thinking')m.style.setProperty('--lvl',0)});
   s.on('level',v=>m.style.setProperty('--lvl',(+v).toFixed(2)));
   s.on('caption',c=>{if(c.who==='you'){youT=c.text;appT=''}else appT=c.text;paint()});
-  s.on('turn',()=>{heard=true;if(s.lang&&!forced&&s.lang!==lang){lang=s.lang;text()}restore(true);loadVF()});
+  s.on('turn',m=>{$('#confirmYN').hidden=!(m&&m.state==='confirm');heard=true;if(m&&(m.intent==='age'))localStorage.age65='1';if(s.lang&&!forced&&s.lang!==lang){lang=s.lang;text()}restore(true);loadVF()});
   s.on('error',e=>{if(e&&(e.code==='denied'))say('blocked','warn');else if(e&&e.code==='nomic')say('nomic','warn');else if(e&&e.code==='network')say('net','warn');else if(e&&e.code==='server'&&/credit|unavailable/i.test(e.message||''))say('credits','warn')});
-  s.on('end',()=>{liveSess=null;live=false;document.body.classList.remove('live');end.hidden=true;m.classList.remove('is-listening');m.style.removeProperty('--lvl');m.innerHTML=ICON('mic');setState('');text()});
+  s.on('end',()=>{$('#confirmYN').hidden=true;liveSess=null;live=false;document.body.classList.remove('live');end.hidden=true;m.classList.remove('is-listening');m.style.removeProperty('--lvl');m.innerHTML=ICON('mic');setState('');text()});
   liveSess=s;live=true;document.body.classList.add('live');end.hidden=false;say(null);text();
   await s.start();
   if(s.phase==='off'){liveSess=null;live=false;document.body.classList.remove('live');end.hidden=true;return false}
   m.innerHTML=ICON('stop');return true}};
 window.DarshanLive=Live;
+/* tap fallback for the spoken "shall I book it?": same dialogue, typed answer */
+async function answer(word){const s=liveSess;if(!s)return;$('#confirmYN').hidden=true;
+ try{const fd=new FormData();fd.append('uid',uid);fd.append('lang',forced||lang);fd.append('session_id',s.sessionId);fd.append('text',word);
+  const r=await fetch('/api/live/turn',{method:'POST',body:fd});const j=await r.json();
+  if(j.reply_text){s._caption('you',t(word));s._caption('app',j.reply_text)}
+  if(j.audio_base64)s._enqueue(j.audio_base64);
+  if(j.state==='confirm')$('#confirmYN').hidden=false;restore(true)}catch(e){say('net','warn');$('#confirmYN').hidden=false}}
+$('#cYes').onclick=()=>answer('yes');$('#cNo').onclick=()=>answer('no');
 $('#endLive').onclick=()=>{if(liveSess)liveSess.stop()};
 $('#mic').onclick=async()=>{prime();
  if(liveSess){liveSess.stop();return}

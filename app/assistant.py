@@ -238,7 +238,9 @@ K = {
  "change": ["change", "reschedule", "different time", "another time", "बदल", "മാറ്റ", "மாற்ற", "మార్చ", "ಬದಲ"],
  "cancel": ["cancel", "रद्द", "कैंसल", "റദ്ദ", "ക്യാൻസൽ", "ரத்து", "கேன்சல்", "రద్దు", "క్యాన్సల్", "ರದ್ದು", "ಕ್ಯಾನ್ಸಲ್"],
  "bookverb": ["book a", "book me", "book my", "book it", "book slot", "i want a slot", "i need a slot", "get me a slot", "reserve", "बुक कर", "बुक करो", "ബുക്ക് ചെയ്യ", "புக் பண்ண",
-              "புக் செய்", "பதிவு செய்", "బుక్ చేయ", "ಬುಕ್ ಮಾಡ"],
+              "புக் செய்", "பதிவு செய்", "బుక్ చేయ", "ಬುಕ್ ಮಾಡ",
+              "slot booking", "புக்கிங் பண்ண", "புக்கிங் செய்", "booking பண்ண", "book பண்ண", "ಬುಕಿಂಗ್ ಮಾಡ", "ಬುಕ್ಕಿಂಗ್ ಮಾಡ", "booking ಮಾಡ", "book ಮಾಡ",
+              "బుకింగ్ చేయ", "బుకింగ్ చేస్త", "booking చేయ", "book చేయ", "ബുക്കിംഗ് ചെയ്യ", "booking ചെയ്യ", "book ചെയ്യ", "बुकिंग कर", "बुक कर दो", "booking कर", "book कर"],
  "bye": ["thank", "bye", "goodbye", "that's all", "धन्यवाद", "शुक्रिया", "നന്ദി", "நன்றி", "ధన్యవాదాలు", "ಧನ್ಯವಾದ"],
  "want": ["want", "need", "get me", "chahiye", "chaahiye", "kavali", "venum", "venam", "beku", "चाहिए", "కావాలి", "வேண்டும்", "വേണം", "ಬೇಕು"],
  "walk": ["walk", "चल", "നടക്ക", "நடக்க", "నడవ", "ನಡೆ"],
@@ -389,6 +391,9 @@ def _res(intent, reply, lang, uid, gate_id=None, action="none", show="none", via
 
 
 WHERE_AM_I = re.compile(r"\b(where am i|where i am|which (step|stop|stage|place|point) (am i|i am)|what (step|stop) am i|my (location|position))\b", re.I)
+
+
+WHERE_AM_I_IND = re.compile("ఎక్కడ ఉన్నాను|ఎక్కడున్నాను|எங்கே இருக்கிறேன்|எங்க இருக்கேன்|എവിടെയാണ് ഞാൻ|ഞാൻ എവിടെ|ಎಲ್ಲಿದ್ದೇನೆ|ಎಲ್ಲಿ ಇದ್ದೇನೆ|कहाँ हूँ|कहां हूं|कहाँ हूं|कहां हूँ|kahan hoon|kahan hu")
 
 
 def ask_position(uid, lang):
@@ -635,6 +640,8 @@ def rules(text, lang, uid, session=None):
             state = {"soon": T(lang, "st_soon", m=_mins(n, lang)), "now": T(lang, "st_now"), "past": T(lang, "st_past")}[st]
             return _res("slot_info", T(lang, "slot_info", time=directions.say_time(lang, slot["window"]), gate=gatematch.display(slot["gate"], lang), state=state),
                         lang, uid, gate_id=slot["gate"], show="slot")
+        if directions.parse_when(text)[0] and directions.keyword_intent(text).get("intent") == "book":
+            return _res("book", "", lang, uid, action="book", show="slot", gate_id=target)   # "a slot tomorrow morning": a request, not a question about an existing slot
         return _res("slot_info", T(lang, "slot_none"), lang, uid, show="slot")
     # ---- policy
     if has("fee"):
@@ -878,7 +885,7 @@ def answer(text, lang, uid="anon", session=None, use_model=True, defer_unknown=F
     c = _care(text, lang, uid, r)         # complaint or distress: a tracked care request routed to the nearest volunteer
     if c is not None:
         r = c
-    if r is None and WHERE_AM_I.search(text or ""):
+    if r is None and (WHERE_AM_I.search(text or "") or WHERE_AM_I_IND.search(text or "")):
         if _pos.get(uid):
             _rep, _nx = _pos_reply(uid, lang)
             r = _res("position", _rep, lang, uid, gate_id=_pos.get(uid), show="map", next_gate_id=_nx)

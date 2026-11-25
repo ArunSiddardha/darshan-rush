@@ -446,7 +446,7 @@ def handle(text, uid, sid, lang_req, s=None):
     BRAIN_IN_FLOW = ("distress", "position", "facility", "help_elder", "fee", "carry", "about", "wait_best", "distance", "crowd")
     if st in ("confirm", "ask_when", "ask_party"):
         br = assistant.rules(text, lang, uid, s)
-        if br and br["intent"] in BRAIN_IN_FLOW:
+        if br and br["intent"] in BRAIN_IN_FLOW and not (br["intent"] == "fee" and info["intent"] == "verify"):
             if br["action"] == "call_volunteer":
                 assistant._raise_flag(uid, text, lang)
             extra["brain"] = br
@@ -461,7 +461,9 @@ def handle(text, uid, sid, lang_req, s=None):
 
     # ---- state specific
     if st == "confirm":
-        if is_yes(low) and not is_no(low):
+        # a question while we wait for yes or no ("is this site correct?") is never a yes, even when it contains a yes word
+        asks = info["intent"] in ("wait", "verify") and ("?" in (text or "") or len(low.split()) > 3)
+        if is_yes(low) and not is_no(low) and not asks:
             reply, slot, ex = _do_book(s, uid, lang)
             extra.update(ex)
             s["state"] = "booked" if slot else "idle"
@@ -471,7 +473,7 @@ def handle(text, uid, sid, lang_req, s=None):
         if is_no(low):
             s.update(state="ask_when", when_ts=None, when_set=False)
             return say(_p(lang, "ask_when"), "change")
-        if info["intent"] in ("wait", "verify", "age") and not is_yes(low):
+        if info["intent"] in ("wait", "verify", "age") and (asks or not is_yes(low)):
             reply, ex = directions.respond(text, lang, uid)      # answer the question, then ask for the yes or no again
             extra["llm_ms"] = ex.pop("llm_ms", 0)
             return say((reply + " " + _readback(s, lang)).strip(), ex.get("intent", "wait"))
@@ -493,6 +495,10 @@ def handle(text, uid, sid, lang_req, s=None):
             return say(_p(lang, "ask_when"), "change")
         return _unclear(s, lang, extra)
 
+    if st in ("ask_when", "ask_party") and is_no(low) and not is_yes(low) and len(low.split()) <= 3 and not re.search(r"\d", low):
+        # "no" to "for when?" or "for how many?": the pilgrim does not want the booking after all
+        s.update(state="idle", when_ts=None, party=None, when_set=False, party_skipped=False)
+        return say(_p(lang, "cancel_pending"), "cancel")
     if st in ("ask_when", "ask_party"):
         if info["gate_hint"] or directions.gate_in_text(_gates(), text):
             s["gate"], s["gate_name"] = _pick_gate(text, info["gate_hint"])
@@ -622,6 +628,8 @@ _REAL_SHORT = {"yes", "no", "ok", "hi", "bye", "stop", "help", "haan", "han", "n
 
 def _noise(t):
     core = re.sub(r"[\W_]+", "", t or "", flags=re.U)
+    if core.isdigit():
+        return False             # "2": an answer to "for how many people?"
     if len(core) < 2:
         return True
     words = re.findall(r"\w+", (t or "").lower(), flags=re.U)
@@ -636,11 +644,11 @@ def _noise(t):
 # ---- cross-phone echo guard: several phones side by side hear each other's spoken replies. A transcript that is
 # almost word for word a reply the app itself spoke in the last few seconds (on any phone) is not a question.
 _spoken = collections.deque(maxlen=200)     # (heard_until_ts, set of words)
-_WORD = re.compile(r"[^\W\d_]+", re.UNICODE)
+_SPLIT = re.compile(r"[\s.,!?;:\u0964\"'()\[\]\-\u2013\u2014/]+")   # whole words: \\w would cut Indian-script words at every vowel sign
 
 
 def _words(t):
-    return [w.lower() for w in _WORD.findall(t or "")]
+    return [w.lower() for w in _SPLIT.split(t or "") if w and not w.isdigit()]
 
 
 def note_spoken(reply):
@@ -675,10 +683,12 @@ async def live_turn(audio: UploadFile = File(None), uid: str = Form("anon"), lan
         data = await audio.read()
         if len(data) > MAX_AUDIO:
             return JSONResponse({"error": "audio too large", "ignored": True, "state": s["state"]}, status_code=413)
-        use = s["lang"] if s.get("lang_locked") else lang
+        use = s["lang"] if (s.get("lang_locked") or s.get("turns")) else lang   # mid-conversation: the language already spoken, not the page language
         detect = auto and not s.get("lang_locked")
         if detect and s.get("turns") and s.get("state") in ("confirm", "ask_when", "ask_party") and len(data) < 90000:
             detect = False   # a short answer to our own question ("yes"): keep the language of the conversation, detection mishears one word
+        if not detect and use in LANGS:
+            lang = use
         try:
             r = await run_in_threadpool(sarvam.stt, data, audio.filename or "audio.wav", audio.content_type or "audio/wav",
                                         None if detect else (use if use in LANGS else None), "transcribe" if detect else "codemix")
@@ -693,6 +703,12 @@ async def live_turn(audio: UploadFile = File(None), uid: str = Form("anon"), lan
             notice = sarvam.NO_CREDITS_MSG
         except sarvam.SarvamError as e:
             notice = f"Voice unavailable ({e}). Type instead."
+    if not s.get("lang_locked"):
+        sl_ = directions.script_lang(transcript)
+        if sl_:
+            lang = sl_                # written in Telugu: answer in Telugu, whatever the page or the detector said
+        elif (text or "").strip() and s.get("turns") and len(re.findall(r"[A-Za-z]{2,}", transcript)) < 3:
+            lang = s["lang"]          # a tapped Yes, a typed "2": keep the language of the conversation, not the page language
     base = {"transcript": transcript, "lang": s["lang"] if s.get("lang_locked") else lang, "state": s["state"],
             "end_session": False, "slot": s.get("slot"), "notice": notice}
     if notice:
@@ -703,6 +719,9 @@ async def live_turn(audio: UploadFile = File(None), uid: str = Form("anon"), lan
         lat["total_ms"] = int((time.perf_counter() - t0) * 1000)
         return {**base, "reply_text": "", "audio_base64": None, "ignored": True, "latency": lat}
     reply, extra, end = await run_in_threadpool(handle, transcript, uid, sid, lang, s)
+    if not (reply or "").strip() and not end and s["state"] in ("ask_when", "ask_party", "confirm"):
+        # never answer with silence in the middle of a booking: ask our question again
+        reply = _readback(s, s["lang"]) if s["state"] == "confirm" else _question_for(s, s["lang"])
     lat["llm_ms"] = extra.get("llm_ms", 0)
     if (audio is not None and not (text or "").strip() and len(_words(transcript)) <= 2 and s["state"] == "idle"
             and extra.get("intent") in (None, "unknown") and not end):

@@ -554,6 +554,24 @@ async def _read_request(request: Request):
     return form.get("text"), audio, None, dict(form)
 
 
+_SCRIPTS = (("te", 0x0C00, 0x0C7F), ("ta", 0x0B80, 0x0BFF), ("ml", 0x0D00, 0x0D7F), ("kn", 0x0C80, 0x0CFF), ("hi", 0x0900, 0x097F))
+
+
+def script_lang(text):
+    """The language a text is written in, from its script (Telugu, Tamil, Malayalam, Kannada, Devanagari); None for Latin or mixed-unknown.
+    A pilgrim who speaks or types Telugu is answered in Telugu even when the page or the detector says English."""
+    n = {}
+    for ch in text or "":
+        o = ord(ch)
+        for k, a, b in _SCRIPTS:
+            if a <= o <= b:
+                n[k] = n.get(k, 0) + 1
+    if not n:
+        return None
+    k = max(n, key=n.get)
+    return k if n[k] >= 3 else None
+
+
 @router.post("/api/directions")
 async def api_directions(request: Request):
     from starlette.concurrency import run_in_threadpool
@@ -578,6 +596,8 @@ async def api_directions(request: Request):
         except sarvam.SarvamError as e:
             return JSONResponse({"transcript": "", "reply_text": f"Voice unavailable ({e}). Type instead.",
                                  "audio_base64": None, "notice": str(e), "latency": {**lat, "total_ms": 0}}, status_code=200)
+    if str(d.get("readback", "")).lower() not in ("1", "true"):
+        lang = script_lang(transcript) or lang
     if lang not in LANGS:
         lang = "en"
     if str(d.get("readback", "")).lower() in ("1", "true") and transcript:

@@ -303,7 +303,7 @@
     if (j.lang) this.lang = j.lang;
     this._caption('you', j.transcript);
     this._caption('app', j.reply_text);
-    var m = { transcript: j.transcript, reply_text: j.reply_text, intent: j.intent, state: j.state, latency: j.latency, client: client, spoke_at: null };
+    var m = { transcript: j.transcript, reply_text: j.reply_text, intent: j.intent, state: j.state, latency: j.latency, client: client, spoke_at: null, raw: j };
     this.metrics.push(m); this._lastMetric = m; this._emit('turn', m);
     if (j.error) { this._emit('error', { code: 'server', message: j.notice || j.reply_text }); }
     this.endAfter = !!j.end_session;

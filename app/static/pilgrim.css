@@ -106,3 +106,15 @@ body.live .hero .mic{animation:breathe 3s ease-in-out infinite}
 #confirmYN{margin-top:var(--s4);width:100%;max-width:340px}
 #confirmYN .btn{min-height:64px;font-size:var(--t-m)}
 body.live .hero .prompt{display:none}
+/* Polish: while listening or thinking, the state replaces the prompt (one line, large) */
+body.st .hero .prompt,body.st .examples{display:none}
+body.st .state{font-size:var(--t-m);color:var(--ink);font-weight:580;margin-top:var(--s6)}
+body.live .state::before{content:"";width:10px;height:10px;border-radius:50%;background:#F26B1D;box-shadow:0 0 0 4px rgba(242,107,29,.18);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){body.live .state::before{animation:none}}
+.hero .prompt{max-width:18em}
+.hero .msg{max-width:360px;width:100%}
+
+/* quiet Map link under the talk button */
+.map-link{color:var(--ink-2);text-decoration:underline;text-underline-offset:4px;margin-top:var(--s1)}
+body.live .map-link{display:none}

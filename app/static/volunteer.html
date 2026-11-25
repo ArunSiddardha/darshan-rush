@@ -3,10 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F3F1EC">
 <title>Darshan Rush: volunteer desk</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<meta name="description" content="Book a darshan slot by talking, in your own language. It stays fair when everyone arrives at once. A prototype with a simulated crowd.">
+<meta property="og:title" content="Darshan Rush">
+<meta property="og:description" content="Book a darshan slot by talking, in your own language. It stays fair when everyone arrives at once.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preload" href="/static/fonts/AnekLatin-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/fonts.css">
 <link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/map.css">
 <style>
 .top{display:flex;align-items:center;justify-content:space-between;padding:var(--s5) 0 var(--s4)}
 .view{display:none}.view.on{display:block}
@@ -37,7 +44,7 @@ body.live .talk{animation:breathe 3s ease-in-out infinite}
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
- <symbol id="i-mark" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20v-6l6-4 6 4v6"/><path d="M12 10V4"/><path d="M10 20v-3h4v3"/></g></symbol>
+ <symbol id="i-mark" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 10.5v3M12 8v8M15.5 10.5v3"/></g></symbol>
  <symbol id="i-mic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/></g></symbol>
  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></symbol>
  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -58,6 +65,7 @@ body.live .talk{animation:breathe 3s ease-in-out infinite}
     <button class="btn btn-primary act" id="goWalk" type="button"><svg aria-hidden="true"><use href="#i-ticket"/></svg><span id="walkT"></span></button>
     <button class="btn btn-secondary act" id="goCrowd" type="button"><svg aria-hidden="true"><use href="#i-people"/></svg><span id="crowdT"></span></button>
    </div>
+   <details class="site-ov exp-card" id="siteOv"><summary id="ovT"></summary><div id="ovMap"></div></details>
   </section>
 
   <section class="view" id="v-ask">
@@ -107,6 +115,7 @@ body.live .talk{animation:breathe 3s ease-in-out infinite}
 </div>
 <audio id="player"></audio>
 <script src="/static/addons_ui/live.js"></script>
+<script src="/static/map.js"></script>
 <script>
 /* One screen at a time. API: GET /api/volunteer/state, /audio; POST /api/volunteer/reply, /crowd-report, /api/directions (walkin) */
 const $=s=>document.querySelector(s);let S={},playedQ=null,playedC=null,rec=null,chunks=[],lastOk=Date.now(),armed=0,prevStatus=null,primed=false,AC=null;
@@ -230,7 +239,13 @@ $('#wmic').onclick=()=>record($('#wmic'),$('#wout'),async(b,ext)=>{
  $('#wres').hidden=false;const sl=j.slot||{};const tm=String(sl.label||'').match(/\d{1,2}:\d{2}/g)||[];$('#wgate').textContent=[sl.gate?t('gate')+': '+sl.gate:'',tm[1]?tm[0]+' - '+tm[1]:''].filter(Boolean).join('  ·  ');$('#wtime').textContent=tm[0]||sl.label||'';$('#wsay').textContent=j.reply_text||'';$('#wsay').lang=j.lang||'en';
  wAudio=j.audio_base64?'data:audio/wav;base64,'+j.audio_base64:null;$('#wplay').hidden=!wAudio;if(wAudio)play(wAudio)});
 $('#wplay').onclick=()=>wAudio&&play(wAudio);
-text();poll();setInterval(poll,2000);
+let OV=null;
+function ovText(){const e=$('#ovT');if(e)e.innerHTML=esc((SiteMap.STR[L]||SiteMap.STR.en).staffH)+'<svg class="chev" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'}
+function initOv(){if(!window.SiteMap)return;OV=SiteMap.create($('#ovMap'),{uid:'volunteer-desk',lang:()=>L,compact:true,staff:true,
+ onReport:async s=>{const f=new FormData();f.append('text',s.name+', many people waiting');try{await fetch('/api/volunteer/crowd-report',{method:'POST',body:f})}catch(e){}}});
+ $('#siteOv').addEventListener('toggle',()=>{if($('#siteOv').open){OV.start(5000)}});ovText()}
+const _text=text;text=function(){_text();if(window.SiteMap){ovText();if(OV)OV.render()}};
+text();initOv();if(new URLSearchParams(location.search).get('ov'))$('#siteOv').open=true;poll();setInterval(poll,2000);
 </script>
 </body>
 </html>

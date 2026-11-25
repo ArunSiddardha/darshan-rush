@@ -3,17 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F3F1EC">
 <title>Darshan Rush</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<meta name="description" content="Book a darshan slot by talking, in your own language. It stays fair when everyone arrives at once. A prototype with a simulated crowd.">
+<meta property="og:title" content="Darshan Rush">
+<meta property="og:description" content="Book a darshan slot by talking, in your own language. It stays fair when everyone arrives at once.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="preload" href="/static/fonts/AnekLatin-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/fonts.css">
 <link rel="stylesheet" href="/static/style.css">
 <link rel="stylesheet" href="/static/pilgrim.css">
+<link rel="stylesheet" href="/static/map.css">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
  <defs>
-  <symbol id="i-mark" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20v-6l6-4 6 4v6"/><path d="M12 10V4"/><path d="M10 20v-3h4v3"/></g></symbol>
+  <symbol id="i-mark" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 10.5v3M12 8v8M15.5 10.5v3"/></g></symbol>
   <symbol id="i-mic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/></g></symbol>
   <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
@@ -41,6 +47,7 @@
   <button class="mic" id="mic" type="button" aria-label="Speak"><svg aria-hidden="true"><use href="#i-mic"/></svg></button>
   <p class="prompt" id="prompt"></p>
   <p class="examples" id="examples" aria-hidden="true"></p>
+  <a class="map-link" id="mapLink" href="#siteMap"></a>
   <p class="state" id="state"></p>
   <p class="caps" id="caps" aria-live="polite" hidden></p>
   <div class="row2 yn" id="confirmYN" hidden><button class="btn btn-yes" id="cYes" type="button"></button><button class="btn btn-no" id="cNo" type="button"></button></div>
@@ -77,6 +84,8 @@
   </div>
  </section>
 
+
+ <section id="siteMap" aria-label="Map"></section>
 
  <!-- below the fold -->
  <section class="section" id="crowdSec">
@@ -148,6 +157,7 @@
 <script src="/static/addons_ui/read_photo.js"></script>
 <script src="/static/addons_ui/site_check.js"></script>
 <script src="/static/addons_ui/live.js"></script>
+<script src="/static/map.js"></script>
 <script src="/static/app.js"></script>
 </body>
 </html>

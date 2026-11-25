@@ -1,0 +1,5 @@
+NAME                       READY   STATUS    RESTARTS   AGE
+darshan-7b45564d79-zkjhk   1/1     Running   0          79s
+darshan-7b45564d79-zkjhk   0/1     OOMKilled   0          115s
+darshan-7b45564d79-zkjhk   0/1     Running     1 (0s ago)   115s
+darshan-7b45564d79-zkjhk   1/1     Running     1 (6s ago)   2m1s

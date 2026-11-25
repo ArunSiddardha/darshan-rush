@@ -13,3 +13,12 @@ metrics/recovery.csv
 .env.*.local
 voice_tests/audio/
 voice_tests/out/
+
+# film working files (kept locally)
+demo/raw/
+demo/work/
+demo/v2/edit/
+demo/v2/_unused/
+demo/v2/from_arun/
+demo/v2/cards/_work/
+demo/v2/darshan-rush-demo.mp4

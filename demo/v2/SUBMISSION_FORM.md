@@ -1,6 +1,6 @@
 # Submission form: ready-to-paste answers
 
-Paste each block under the matching form label. Replace VIDEO_URL and LIVE_URL. Facts checked against the code in `app/` and the notes on 25 Nov 2026. Numbers: `metrics/rehearsal1.md` (25 Nov 2026 14:07) unless stated.
+Paste each block under the matching form label. Replace https://drive.google.com/file/d/1Q1--7aCu7ZJrTQjNaBVR0S58QlCgF01J/view and https://sacrifice-brain-troubleshooting-conference.trycloudflare.com. Facts checked against the code in `app/` and the notes on 25 Nov 2026. Numbers: `metrics/rehearsal1.md` (25 Nov 2026 14:07) unless stated.
 
 ---
 
@@ -8,8 +8,8 @@ Paste each block under the matching form label. Replace VIDEO_URL and LIVE_URL. 
 
 - [ ] Repository https://github.com/ArunSiddardha/darshan-rush is public (open it in a private window, logged out).
 - [ ] Video is under 2 minutes (target 1:50, see `VIDEO_SCRIPT_110s.md`), uploaded as unlisted or public, and plays in a private window.
-- [ ] LIVE_URL opens in a private window on a phone. If the tunnel is down, say so in the Live demo field rather than leaving a dead link.
-- [ ] README has the real video link and live link (no VIDEO_URL, LIVE_URL, NUDGEBEE_RUN_PROOF_LINK or TEAM_MEMBER placeholders left).
+- [ ] https://sacrifice-brain-troubleshooting-conference.trycloudflare.com opens in a private window on a phone. If the tunnel is down, say so in the Live demo field rather than leaving a dead link.
+- [ ] README has the real video link and live link (no https://drive.google.com/file/d/1Q1--7aCu7ZJrTQjNaBVR0S58QlCgF01J/view, https://sacrifice-brain-troubleshooting-conference.trycloudflare.com, NUDGEBEE_RUN_PROOF_LINK or TEAM_MEMBER placeholders left).
 - [ ] Team members are listed in the README and on the form.
 - [ ] Every number in answer 5 matches the number on screen in the final video (if the final take differs from 19 s / 3.1 s / 15 ms, change both).
 - [ ] Submit well before 15:30, when judges are assigned. Late edits may not be reviewed.
@@ -35,13 +35,13 @@ https://github.com/ArunSiddardha/darshan-rush
 
 ## Demo video
 
-VIDEO_URL
+https://drive.google.com/file/d/1Q1--7aCu7ZJrTQjNaBVR0S58QlCgF01J/view
 
 ---
 
 ## Live demo
 
-LIVE_URL
+https://sacrifice-brain-troubleshooting-conference.trycloudflare.com
 
 Note: this is a temporary Cloudflare quick tunnel to our local kind cluster, so the address can change if the tunnel restarts and it may be offline after the event. The film shows everything the live link does. Open it on a phone, tap once and talk.
 
@@ -56,7 +56,7 @@ Darshan Rush serves one person: an elderly pilgrim like Lakshmamma, 68, who spea
 Temple staff get a volunteer page: walk-in booking for pilgrims without a phone, voice crowd reports, "Ask anything" about waits and open requests, and care requests to close.
 
 What happens in a rush:
-1. Everyone books at once. The pod on our Kubernetes cluster runs out of memory and is OOMKilled (a real kernel kill, 19 s into the rush in the recorded rehearsal, about 23 s in today's runs).
+1. Everyone books at once. The pod on our Kubernetes cluster runs out of memory and is OOMKilled (a real kernel kill, 36 seconds into the rush in the run shown in the video; 19 to 36 seconds across our runs).
 2. NudgeBee's agent sees the event, investigates and posts the root cause to our app: exit code 137, memory limit reached.
 3. The app asks the volunteer, Meera, by voice in Malayalam whether to switch to the light map and staggered slots. She says "Sari, cheyyu" ("Okay, do it").
 4. Her yes starts a NudgeBee approval workflow. A duty officer clicks Approve in NudgeBee.

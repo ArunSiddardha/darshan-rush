@@ -74,7 +74,7 @@ Darshan Rush is built for exactly those weeks. It sits in front of the booking s
 - **A rush that really breaks it, and a fix a volunteer approves by voice.** On a real Kubernetes cluster a rush kills the booking service (OOMKilled). NudgeBee investigates and explains why. The volunteer is asked in Malayalam and says yes. A duty officer confirms in NudgeBee. NudgeBee itself changes two Flagsmith flags, and booking switches to a light page and staggered slots with no redeploy.
 - **Measured, not claimed.** In the recorded run the service died 36 seconds into the rush; after the flags changed, the same rush ran at about 1,000 requests a second with 0 errors, the slowest 5% at 14 ms, and no restart. Evidence: [metrics/proof](metrics/proof/README.md). Ordinary traffic: about 400 simulated pilgrims at once on one small replica with 0 errors ([metrics/loadtest_normal.md](metrics/loadtest_normal.md)).
 - **All three sponsor tools are load-bearing**: 4 NudgeBee automations (3 run end to end today), 10 Flagsmith flags with segments, remote config, an A/B test and a staged rollout, and Sarvam speech to text, translation, text to speech and chat. Remove any one and the flow stops. A live page, `/sponsors`, shows what each is doing.
-- **Seven screens** (pilgrim, staff, start, for temples, sponsors, presenter, graph), **388 automated tests**, about 7,600 lines of Python, and honest documents on [what is simulated](docs/LIVE_VS_SIMULATED.md) and [what real traffic would need](docs/SCALE.md).
+- **Seven screens** (pilgrim, staff, start, for temples, sponsors, presenter, graph), **390 automated tests**, about 7,600 lines of Python, and honest documents on [what is simulated](docs/LIVE_VS_SIMULATED.md) and [what real traffic would need](docs/SCALE.md).
 - **A business model**: the shrine pays about Rs 10 per voice booking, it costs about Rs 3.5, and pilgrims never pay ([business/BUSINESS.md](business/BUSINESS.md); market size is our estimate).
 
 
@@ -278,7 +278,7 @@ To run the app without a cluster: `cd app && ../.venv/bin/python -m uvicorn main
 
 ## Tests
 
-354 tests passed on 25 Nov 2026 (the count grows as features land). Run them with no secrets and no network:
+390 tests passed on 25 Nov 2026 (the count grows as features land). Run them with no secrets and no network:
 
 ```bash
 cd app && ../.venv/bin/python -m pytest -q tests

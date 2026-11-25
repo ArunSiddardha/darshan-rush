@@ -19,7 +19,7 @@ import unicodedata
 from pathlib import Path
 
 KNOWLEDGE_DIR = Path(__file__).resolve().parent / "knowledge"
-THRESHOLD = 1.8          # minimum score of the best entry; below it we say "I do not know"
+THRESHOLD = 2.2          # minimum score of the best entry; below it we say "I do not know"
 _lock = threading.Lock()
 _state = {"key": None, "pack": None, "index": None}
 

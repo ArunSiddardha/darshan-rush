@@ -158,7 +158,7 @@ YES_IND = ["हाँ", "हां", "ठीक", "जी हाँ", "बुक
            "అవును", "సరే", "ఓకే", "ಹೌದು", "ಸರಿ", "ಓಕೆ"]
 NO_LAT = {"no", "nope", "nah", "nahi", "illa", "illai", "vendam", "venda", "vaddu", "bedaa", "beda", "cancel"}
 NO_IND = ["नहीं", "ना ", "नही", "ഇല്ല", "വേണ്ട", "வேண்டாம்", "இல்லை", "వద్దు", "లేదు", "ಬೇಡ", "ಇಲ್ಲ"]
-BYE_LAT = ["thank", "thanks", "bye", "goodbye", "that's all", "that is all", "stop", "no more", "dhanyavad", "shukriya",
+BYE_LAT = ["thank", "thanks", "bye", "goodbye", "that's all", "that is all", "no more", "dhanyavad", "shukriya",
            "nandri", "nandi", "dhanyavadalu", "dhanyavada", "nanni", "that will be all", "i am done", "i'm done"]
 BYE_IND = ["धन्यवाद", "शुक्रिया", "बस", "अलविदा", "നന്ദി", "ബൈ", "നിർത്ത", "நன்றி", "போதும்", "ధన్యవాదాలు", "ధన్యవాదములు", "చాలు",
            "ಧನ್ಯವಾದ", "ಸಾಕು", "ಬೈ"]
@@ -200,6 +200,17 @@ def is_no(low):
 
 
 def is_bye(low):
+    low = (low or "").strip()
+    if "?" in low or re.search(r"\b(next|what|which|where|how|after|before)\b", low) or re.search(r"अगला|अगली|क्या|कहाँ|അടുത്ത|ഏത്|എവിടെ|அடுத்த|எது|எங்கே|తర్వాత|ఏది|ఎక్కడ|ಮುಂದಿನ|ಯಾವುದು|ಎಲ್ಲಿ", low):
+        return False            # a question is never goodbye
+    try:
+        import gatematch
+        if gatematch.find_gates(low):
+            return False        # a stop name in the sentence means a route question
+    except Exception:
+        pass
+    if re.fullmatch(r"\W*stop\W*", low) or re.search(r"stop (listening|talking)", low):
+        return True
     if re.search(r"\b(next|bus|last|which|what|where|how)\b[^.?!]*\bstop\b|\bstop\b\s*(name|number|after|before|is)", low):
         return False            # "next stop", "which stop", "stop after forest path" are questions, not goodbye
     return _any(low, BYE_LAT) or _any(low, BYE_IND)
@@ -603,8 +614,22 @@ def _unclear(s, lang, extra):
 
 
 # ------------------------------------------------------------------ HTTP
+_FILLER = {"uh", "um", "umm", "uhh", "hmm", "hm", "hmmm", "mm", "mmm", "ah", "aah", "ahh", "er", "erm", "eh", "oh", "huh", "ha", "haa", "ho", "uf", "oo", "ooh",
+           "आ", "अ", "हम्म", "ऊं", "हूं", "ഉം", "ഹും", "ആ", "ம்", "ஹ்ம்", "ஆ", "ఉమ్", "హ్మ్", "ఆ", "ಉಂ", "ಹ್ಮ್", "ಆ"}
+_REAL_SHORT = {"yes", "no", "ok", "hi", "bye", "stop", "help", "haan", "han", "nahi", "illa", "sari", "seri", "aam", "avunu", "ade", "athe", "houdu", "beda", "vendam", "vaddu"}
+
+
 def _noise(t):
-    return len(re.sub(r"[\W_]+", "", t or "", flags=re.U)) < 2
+    core = re.sub(r"[\W_]+", "", t or "", flags=re.U)
+    if len(core) < 2:
+        return True
+    words = re.findall(r"\w+", (t or "").lower(), flags=re.U)
+    if all(w in _FILLER for w in words):
+        return True
+    if len(words) == 1 and re.fullmatch(r"[a-z]+", words[0]) and len(words[0]) <= 3 and words[0] not in _REAL_SHORT \
+            and not re.search(r"[aeiou]", words[0][:1] + words[0][1:2]) and words[0] not in ("who", "why", "wc", "atm"):
+        return True              # a cough transcribed as a letter or two
+    return False
 
 
 @router.post("/api/live/turn")

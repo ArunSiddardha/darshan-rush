@@ -199,7 +199,9 @@ K = {
               "fainted", "collapsed", "heart attack", "bleeding", "accident", "help me", "tappipoy", "kaanavillai", "kanavillai", "kaananilla", "kaanaanilla",
               "kaanathaay", "kho gaya", "kho gayi", "kho gaye", "khoo gaya", "kanapadatam", "खो गया", "खो गई", "खो गए", "गुम", "बेहोश", "आपातकाल", "मदद करो",
               "తప్పిపోయ", "కనపడ", "స్పృహ", "ప్రమాదం", "காணவில்லை", "தொலைந்", "மயக்கம்", "அவசர", "விபத்து", "കാണാനില്ല", "കാണാതായി", "നഷ്ടപ്പെട്ടു",
-              "ബോധം", "അടിയന്തര", "അപകടം", "ಕಾಣೆಯಾ", "ಕಳೆದು", "ಪ್ರಜ್ಞೆ", "ತುರ್ತು", "ಅಪಘಾತ"],
+              "ബോധം", "അടിയന്തര", "അപകടം", "ಕಾಣೆಯಾ", "ಕಳೆದು", "ಪ್ರಜ್ಞೆ", "ತುರ್ತು", "ಅಪಘಾತ",
+              "കാണുന്നില്ല", "കുട്ടിയെ കാണ", "காணவில்லை", "కనిపించడం", "కనబడ", "ಕಾಣುತ್ತಿಲ್ಲ", "ಕಾಣ್ತಿಲ್ಲ", "नहीं मिल रहा", "नहीं मिल रही", "दिख नहीं रहा", "दिख नहीं रही",
+              "nahi mil raha", "nahi mil rahi", "kanapadatledu", "kanapadatla", "kaanunnilla", "kaanunilla", "kaanala", "kaanapadala", "kanpadala", "kaanuttilla", "bacha kho", "baccha kho"],
  "water": ["water", "drinking", "thirst", "paani", "pani ", "neellu", "neeru", "vellam", "thanneer", "tanni", "kudineer", "पानी", "पीने", "വെള്ളം", "കുടിവെള്ളം",
            "தண்ணீர்", "குடிநீர்", "నీళ్", "నీరు", "తాగునీరు", "ನೀರು"],
  "toilet": ["toilet", "restroom", "washroom", "bathroom", "latrine", "शौचालय", "टॉयलेट", "ടോയ്‌ലറ്റ്", "ടോയ്ലറ്റ്", "ടോയിലറ്റ്", "கழிப்பறை", "டாய்லெட்", "టాయిలెట్",
@@ -234,7 +236,7 @@ K = {
  "bye": ["thank", "bye", "goodbye", "that's all", "धन्यवाद", "शुक्रिया", "നന്ദി", "நன்றி", "ధన్యవాదాలు", "ಧನ್ಯವಾದ"],
  "want": ["want", "need", "get me", "chahiye", "chaahiye", "kavali", "venum", "venam", "beku", "चाहिए", "కావాలి", "வேண்டும்", "വേണം", "ಬೇಕು"],
  "walk": ["walk", "चल", "നടക്ക", "நடக்க", "నడవ", "ನಡೆ"],
- "elderw": ["elder", "old", "cannot walk", "can't walk", "disabled", "tired", "weak", "बुज़ुर्ग", "बुजुर्ग", "മുതിർന്ന", "വയസ്സായ", "முதியவ", "வயதான", "పెద్దవార", "ವಯಸ್ಸಾದ"],
+ "elderw": ["senior", "grandmother", "grandfather", "ಹಿರಿಯ", "పెద్ద", "முதியோர்", "முதியவர்", "बड़े बुज़ुर्ग", "बड़े बुजुर्ग", "elder", "old", "cannot walk", "can't walk", "disabled", "tired", "weak", "बुज़ुर्ग", "बुजुर्ग", "മുതിർന്ന", "വയസ്സായ", "முதியவ", "வயதான", "పెద్దవార", "ವಯಸ್ಸಾದ"],
 }
 POS_LAT = re.compile(r"\b(i\s*(am|m|'m|’m)\s+(now\s+|just\s+)?(at|in|near|reaching|standing)|i\s*have\s+reached|reached|arrived|reaching|came to|now at|am at|"
                      r"i'?m at|im at|vachanu|vachaanu|vacchanu|vachhanu|vachesanu|vannu|vandhen|vanthen|vandhuten|vanthuten|vanduten|pahunch|pahuncha|aa gaya|aagaya|ethi|ethiyi|etthi|ettiyi|"
@@ -520,6 +522,33 @@ def _effort_reply(kind, lang, uid):
     return out
 
 
+_AFTER_W = ["after", "comes after", "के बाद", "बाद में", "കഴിഞ്ഞാൽ", "കഴിഞ്ഞ്", "ശേഷം", "பிறகு", "பின்", "తర్వాత", "తరువాత", "ನಂತರ", "ಆಮೇಲೆ", "ಬಳಿಕ",
+            "kazhinjal", "kazhinju", "ke baad", "baad", "piragu", "pirahu", "tarvata", "tharuvata", "nantara", "aamele"]
+_AFTER_T = {
+ "en": "After {a} comes {b}, {walk} on foot. The wait there is {wait}.", "hi": "{a} के बाद {b} आता है, पैदल {walk}। वहाँ इंतज़ार {wait} है।",
+ "ml": "{a} കഴിഞ്ഞാൽ {b} ആണ്, നടക്കാൻ {walk}. അവിടെ കാത്തിരിപ്പ് {wait}.", "ta": "{a} க்குப் பிறகு {b}, நடந்து {walk}. அங்கே காத்திருப்பு {wait}.",
+ "te": "{a} తర్వాత {b}, నడవడానికి {walk}. అక్కడ వేచి ఉండే సమయం {wait}.", "kn": "{a} ನಂತರ {b}, ನಡೆಯಲು {walk}. ಅಲ್ಲಿ ಕಾಯುವ ಸಮಯ {wait}.",
+}
+_AFTER_LAST = {"en": "{a} is the last stop, the shrine itself.", "hi": "{a} आखिरी पड़ाव है।", "ml": "{a} അവസാനത്തെ സ്ഥലമാണ്.", "ta": "{a} கடைசி இடம்.",
+               "te": "{a} చివరి చోటు.", "kn": "{a} ಕೊನೆಯ ಸ್ಥಳ."}
+
+
+def _after_reply(low, found, lang, uid):
+    """'what is next after <stop>': answered from the named stop, no position needed."""
+    if not found or not _w(low, _AFTER_W):
+        return None
+    if _w(low, POS_IND) or POS_LAT.search(low):
+        return None
+    a = found[0][0]
+    i = ORDER.index(a)
+    if i == len(ORDER) - 1:
+        return _res("next", _AFTER_LAST.get(lang, _AFTER_LAST["en"]).format(a=gatematch.display(a, lang)), lang, uid, gate_id=a, show="map")
+    b = ORDER[i + 1]
+    gs = _gates()
+    return _res("next", _AFTER_T.get(lang, _AFTER_T["en"]).format(a=gatematch.display(a, lang), b=gatematch.display(b, lang),
+                walk=_mins(WALK[(a, b)], lang), wait=_mins(gs[b]["wait_min"], lang)), lang, uid, gate_id=b, show="map", next_gate_id=b)
+
+
 def rules(text, lang, uid, session=None):
     """Returns a result dict, or None when the rules cannot classify the text (then the model gets a chance)."""
     low = gatematch.norm(text).strip()
@@ -537,6 +566,9 @@ def rules(text, lang, uid, session=None):
         info_stop = "g1" if "info" in FACILITIES["g1"] else ORDER[0]
         near = _nearest("info", pos_before) or info_stop
         return _res("distress", T(lang, "distress", info=gatematch.display(near, lang)), lang, uid, action="call_volunteer", show="none")
+    _ar = _after_reply(low, found, lang, uid)
+    if _ar:
+        return _ar
     # ---- where the pilgrim says they are
     say_pos = bool(found) and (POS_LAT.search(low) or _w(low, POS_IND))
     target = None
@@ -563,7 +595,8 @@ def rules(text, lang, uid, session=None):
         return _res("facility", T(lang, "fac", fac=FAC_LABEL[fac].get(lang) or FAC_LABEL[fac]["en"], stops=stops, near=near), lang, uid,
                     gate_id=n, show="map", facility=fac)
     # ---- elders
-    if any(r in low for r in directions.RELATIVES) and (has("elderw") or has("walk") or "help" in low):
+    _helpw = ["help", "सहायता", "मदद", "സഹായ", "உதவி", "సహాయ", "సాయం", "ಸಹಾಯ", "madad", "sahayam", "udavi", "sahaya"]
+    if (any(r in low for r in directions.RELATIVES) and (has("elderw") or has("walk") or "help" in low)) or (has("elderw") and (_w(low, _helpw) or has("want")) and not has("distress")):
         return _res("help_elder", T(lang, "elder", w=_stops_with("wheelchair", lang), r=_stops_with("rest", lang)), lang, uid, show="map", facility="wheelchair")
     # ---- slot talk
     if has("cancel"):
@@ -668,9 +701,15 @@ def _kb_answer(text, lang, uid):
         return None
     if not hits or hits[0]["score"] < kb.THRESHOLD:
         return None
+    if re.search(r"\b(rain|raining|forecast|minister|president|cricket|election|news|stock|movie|film|politic)", (text or "").lower()):
+        return None              # off topic: the honest 'I do not have that' line
     ans = re.sub(r"\s*\(g[1-5]\)", "", hits[0]["answer"])          # never read stop ids aloud
     parts = re.split(r"(?<=[.!?])\s", ans)
-    ans = " ".join(parts[:1 if _brief() else 2])                      # short when spoken
+    ans = parts[0]
+    if len(parts) > 1 and not _brief() and len(ans) + len(parts[1]) < 160:   # at most two short sentences, about 160 characters
+        ans = ans + " " + parts[1]
+    if len(ans) > 200:
+        ans = ans[:200].rsplit(" ", 1)[0].rstrip(",;:") + "."
     if lang != "en":
         tr = _translate(ans, lang)
         if not tr:
@@ -833,7 +872,9 @@ def answer(text, lang, uid="anon", session=None, use_model=True, defer_unknown=F
         if hit and time.time() - hit[0] < CACHE_S:
             r = dict(hit[1])
         else:
+            _t0 = time.time()
             v = validate(_model(text, lang, uid, hist), uid, lang) if use_model else None
+            _llm_ms = int((time.time() - _t0) * 1000) if use_model else 0
             if v:
                 if v["position_gate_id"] and v["action"] == "set_position":
                     set_position(uid, v["position_gate_id"])
@@ -842,7 +883,7 @@ def answer(text, lang, uid="anon", session=None, use_model=True, defer_unknown=F
                     v["reply"] = T(lang, "distress", info=gatematch.display(_nearest("info", _pos.get(uid)) or "g1", lang))
                 r = _res(v["intent"], v["reply"], lang, uid, gate_id=v["gate_id"], action=v["action"],
                          show="map" if v["intent"] in ("position", "wait_gate", "wait_best", "next", "distance", "facility") else "slot" if v["action"] in ("book", "change", "cancel") else "none",
-                         via="llm")
+                         via="llm", llm_ms=_llm_ms)
                 _cache[key] = (time.time(), dict(r))
             else:
                 kba = _kb_answer(text, lang, uid)

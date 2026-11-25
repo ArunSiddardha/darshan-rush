@@ -229,7 +229,7 @@ def _rules_answer(text, low, f):
         if n.get("root_cause"):
             return "nudgebee", f"NudgeBee found: {n['root_cause']}" + (f" Proposed fix: {n['proposed_fix']}" if n.get("proposed_fix") else "")
         return "nudgebee", "NudgeBee has not reported a cause. Everything is quiet."
-    if _has(low, ["rush", "തിരക്ക് മോഡ്"]) and _has(low, ["are we", "is it", "since", "status", "mode", "on", "off", "ആണോ"]):
+    if _has(low, ["rush", "തിരക്ക് മോഡ്"]) and _has(low, ["are we", "is it", "is there", "any", "now", "right now", "since", "status", "mode", "on", "off", "ആണോ"]):
         if f.get("rush"):
             since = f" since {f['rush_since']}" if f.get("rush_since") else ""
             return "rush", f"Yes, rush mode is on{since}. Slots are {f.get('slot_mode') or 'staggered'} and the map is {f.get('map_mode') or 'light'}."

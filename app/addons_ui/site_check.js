@@ -14,7 +14,7 @@
         var j = await r.json();
         q('status').textContent = j.notice || '';
         if (j.reply_text) {
-          q('badge').textContent = BADGE[j.verdict] || ''; q('reply').textContent = j.reply_text;
+          q('badge').textContent = (window.DARSHAN_BADGE || BADGE)[j.verdict] || ''; q('reply').textContent = j.reply_text;
           var ul = q('reasons'); ul.textContent = '';
           (j.reasons || []).forEach(function (x) { var li = document.createElement('li'); li.textContent = x; ul.appendChild(li); });
           q('play').hidden = !j.audio_base64; q('out').hidden = false;

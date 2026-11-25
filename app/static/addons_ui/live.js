@@ -76,7 +76,7 @@
       onRatio: opts.onRatio || 3, onAbs: opts.onAbs || 0.01, offRatio: opts.offRatio || 1.8, offAbs: opts.offAbs || 0.005,
       bargeMs: opts.bargeMs || 300, bargeRatio: opts.bargeRatio || 2.5, bargeEnabled: opts.bargeEnabled !== false,
       nudgeAfterMs: opts.nudgeAfterMs || 8000, endAfterMs: opts.endAfterMs || 25000, timeoutMs: opts.timeoutMs || 20000,
-      audioEl: opts.audioEl || null, getStream: opts.getStream || null, fetch: opts.fetch || null, greeting: opts.greeting !== false
+      audioEl: opts.audioEl || null, testSource: opts.testSource || null, getStream: opts.getStream || null, fetch: opts.fetch || null, greeting: opts.greeting !== false, auto: !!opts.auto
     };
     this.sessionId = opts.sessionId || 's-' + Math.random().toString(36).slice(2, 10);
     this.lang = this.o.lang; this.state = 'idle'; this.level = 0; this.metrics = []; this.log = [];
@@ -107,7 +107,8 @@
     try { var pp = this.audio.play(); if (pp && pp.catch) pp.catch(function () {}); } catch (e) {}
     // 2) one microphone stream for the whole session
     try {
-      this.stream = this.o.getStream ? await this.o.getStream() : await navigator.mediaDevices.getUserMedia({
+      if (this.o.testSource) this._testNode = await this.o.testSource(this.ctx); // tests only: audio node in the same context instead of a mic
+      else this.stream = this.o.getStream ? await this.o.getStream() : await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 } });
     } catch (e) {
       var denied = e && (e.name === 'NotAllowedError' || e.name === 'SecurityError' || e.name === 'PermissionDeniedError');
@@ -116,7 +117,7 @@
       return;
     }
     var self = this;
-    this.stream.getAudioTracks().forEach(function (tr) {
+    if (this.stream) this.stream.getAudioTracks().forEach(function (tr) {
       tr.addEventListener('ended', function () { self._finish('lost', 'The microphone stopped. Tap to talk again.'); });
     });
     this._onVis = function () { self._visibility(); }; document.addEventListener('visibilitychange', this._onVis);
@@ -130,7 +131,7 @@
   };
 
   LP._wireCapture = async function () {
-    var self = this, src = this.ctx.createMediaStreamSource(this.stream), sink = this.ctx.createGain();
+    var self = this, src = this._testNode || this.ctx.createMediaStreamSource(this.stream), sink = this.ctx.createGain();
     sink.gain.value = 0; sink.connect(this.ctx.destination); this.src = src; this.sink = sink;
     function onFrame(f) { self._frame(f); }
     if (this.ctx.audioWorklet && window.Blob && window.URL) {
@@ -183,7 +184,7 @@
     if (this.phase === 'off') return;
     if (document.hidden) { this.hearing = false; this.buf = null; this._log('hidden'); return; }
     this._log('visible'); this._wake();
-    var live = this.stream && this.stream.getAudioTracks().some(function (t) { return t.readyState === 'live'; });
+    var live = !this.stream || this.stream.getAudioTracks().some(function (t) { return t.readyState === 'live'; });
     if (!live) return this._finish('lost', 'The microphone stopped. Tap to talk again.');
     this._tryResume();
     if (this.audio && this._playing && this.audio.paused) { var self = this; var p = this.audio.play(); if (p && p.catch) p.catch(function () { self._playEnded(); }); }
@@ -223,7 +224,7 @@
       if (this.lv > th.off) { this.silentMs = 0; this.voicedMs += dt; } else this.silentMs += dt;
       if (this.silentMs >= o.silenceMs || this.bufMs >= o.maxUtteranceMs) this._endUtterance(this.silentMs < o.silenceMs ? 'max' : 'silence');
     } else {
-      this.aboveMs = this.lv > th.on ? this.aboveMs + dt : Math.max(0, this.aboveMs - dt);
+      this.aboveMs = r > th.on ? this.aboveMs + dt : Math.max(0, this.aboveMs - dt); // raw frame level, not the smoothed one: a click must not look like speech
       if (this.aboveMs >= o.startMs) this._beginUtterance(); else if (this.phase === 'listen') this._idle(dt);
     }
     this._level();
@@ -279,7 +280,7 @@
     for (var attempt = 0; attempt < 2; attempt++) {
       try {
         var fd = new FormData(); fd.append('audio', job.wav, 'utterance.wav'); fd.append('uid', this.o.uid);
-        fd.append('lang', this.lang); fd.append('session_id', this.sessionId);
+        fd.append('lang', this.lang); fd.append('session_id', this.sessionId); if (this.o.auto) fd.append('auto', '1');
         var r = await this._fetch(this.o.endpoint, { method: 'POST', body: fd });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return await r.json();
@@ -314,6 +315,7 @@
     try {
       var fd = new FormData(); fd.append('kind', kind); fd.append('lang', this.lang); fd.append('session_id', this.sessionId);
       var r = await this._fetch(this.o.promptEndpoint, { method: 'POST', body: fd }), j = await r.json();
+      for (var w = 0; kind === 'greeting' && this.calMs < this.o.calibrateMs && w < 40 && this.phase !== 'off'; w++) await new Promise(function (ok) { setTimeout(ok, 50); }); // measure the noise floor in quiet first
       if (this.phase === 'off' || this.hearing) { this.nudgePlaying = false; return; }
       this._caption('app', j.reply_text);
       if (j.audio_base64 && this.phase === 'listen') { this.phase = 'speak'; this.echo = 0; this.bargeAbove = 0; this._enqueue(j.audio_base64); }

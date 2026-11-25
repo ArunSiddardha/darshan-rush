@@ -227,7 +227,7 @@ $('#wmic').onclick=()=>record($('#wmic'),$('#wout'),async(b,ext)=>{
  if(!r.ok||(j.notice&&!j.transcript)){o.textContent=cause(j,r.status)||t('blip');return}
  if(!j.transcript){o.textContent=t('blip');return}
  o.textContent=t('heard')+': "'+j.transcript+'"';
- $('#wres').hidden=false;const sl=j.slot||{};$('#wgate').textContent=sl.gate?t('gate')+': '+sl.gate:'';$('#wtime').textContent=sl.label||'';$('#wsay').textContent=j.reply_text||'';$('#wsay').lang=j.lang||'en';
+ $('#wres').hidden=false;const sl=j.slot||{};const tm=String(sl.label||'').match(/\d{1,2}:\d{2}/g)||[];$('#wgate').textContent=[sl.gate?t('gate')+': '+sl.gate:'',tm[1]?tm[0]+' - '+tm[1]:''].filter(Boolean).join('  ·  ');$('#wtime').textContent=tm[0]||sl.label||'';$('#wsay').textContent=j.reply_text||'';$('#wsay').lang=j.lang||'en';
  wAudio=j.audio_base64?'data:audio/wav;base64,'+j.audio_base64:null;$('#wplay').hidden=!wAudio;if(wAudio)play(wAudio)});
 $('#wplay').onclick=()=>wAudio&&play(wAudio);
 text();poll();setInterval(poll,2000);

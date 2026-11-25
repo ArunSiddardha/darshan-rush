@@ -176,3 +176,17 @@ body{background:
 .pass-top{background:linear-gradient(160deg,#2B2E8C 0%,#3A3FB0 62%,#5D55B8 100%);position:relative;overflow:hidden}
 .pass-top::after{content:"";position:absolute;right:-70px;top:-90px;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(242,107,29,.55) 0%,rgba(242,107,29,0) 68%)}
 .pass-top>*{position:relative;z-index:1}
+
+/* Stronger Sarvam-style gradient (Arun, 25 Nov): saffron arc at the top centre, periwinkle wings, fading to white */
+body{background:
+  radial-gradient(64% 250px at 50% -10px, rgba(249,115,22,.96) 0%, rgba(249,115,22,.62) 36%, rgba(249,115,22,0) 74%) no-repeat,
+  radial-gradient(95% 460px at -5% 90px, rgba(122,146,255,.58) 0%, rgba(122,146,255,0) 68%) no-repeat,
+  radial-gradient(95% 460px at 105% 90px, rgba(122,146,255,.58) 0%, rgba(122,146,255,0) 68%) no-repeat,
+  linear-gradient(180deg,#FFFFFF 0,#FBFAF7 560px) no-repeat,
+  var(--bg);}
+.pass-top{background:
+  radial-gradient(120% 150px at 50% -30px, rgba(249,115,22,.95) 0%, rgba(249,115,22,0) 70%),
+  linear-gradient(165deg,#3B43C4 0%,#2B2E8C 70%)}
+.pass-top::after{display:none}
+.mic{background:linear-gradient(180deg,#3B43C4 0%,#2B2E8C 100%);box-shadow:0 0 0 10px rgba(249,115,22,.16),0 22px 46px -18px rgba(43,46,140,.65)}
+.mic.is-listening{background:linear-gradient(180deg,#FB8A3C 0%,#F26B1D 100%)}

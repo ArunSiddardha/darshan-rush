@@ -15,7 +15,7 @@ select{font-size:1.1rem;min-height:48px}#log{font:12px/1.4 ui-monospace,monospac
   fetch('live.html').then(function (r) { return r.text(); }).then(function (h) {
     document.getElementById('mount').innerHTML = h;
     window.demo = AddonsLive.init(document.getElementById('ad-live'), {
-      uid: qs.get('uid') || 'demo-user', lang: function () { return lang.value; },
+      uid: qs.get('uid') || 'demo-user', testSource: window.__testSource, nudgeAfterMs: +qs.get('nudge') || undefined, endAfterMs: +qs.get('end') || undefined, bargeEnabled: qs.get('barge') !== '0', lang: function () { return lang.value; },
       onSession: function (s) {
         window.liveSession = s; var L = document.getElementById('log');
         ['state', 'turn', 'end', 'error'].forEach(function (n) { s.on(n, function (d) { L.textContent += n + ' ' + JSON.stringify(d).slice(0, 220) + '\n'; L.scrollTop = 1e9; }); });

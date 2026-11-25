@@ -9,6 +9,28 @@
 
 **Built in one day at Festive Hacks (25 November 2026) by Team Phoenix:** Arun Siddardha, Adhvik Mani Sai, Devashish Boini, Savarana Datta.
 
+## The pain point: festival seasons
+
+Every big shrine has a few weeks a year when everyone comes at once.
+
+- **Sabarimala**: the season is open now (from 16 November 2026) with a cap of about 80,000 pilgrims a day. In November 2025 pilgrims who had already booked still waited 10 to 12 hours, and the Kerala High Court stepped in with caps on bookings.
+- **Tirupati**: on 8 January 2025 six people died in a crush at a counter handing out darshan tokens. Tokens then moved online.
+- **Kasibugga, Andhra Pradesh**: on 1 November 2025 nine to ten people died in a temple rush.
+
+The pattern is the same each time. Booking sites, counters and queues work on a normal day and fail on the peak day. The people who lose out first are the ones who cannot fight a website or a crowd: elders, people who do not read English, people without a smartphone. And the staff on the ground are volunteers, not engineers, so nobody is watching a dashboard when the system starts to fail.
+
+(Figures are as reported in the press; sources are in `business/BUSINESS.md` and the research notes.)
+
+## The selling point: a rush-ready voice layer for the peak season
+
+Darshan Rush is built for exactly those weeks. It sits in front of the booking system a shrine already has.
+
+- **For the pilgrim**: no form, no English, no standing in a crush for a number. Tap once and talk in your own language. Get a fair slot, hear it read back, see where you are and how far you have to go.
+- **For the peak day**: when everyone arrives at once, it does not fall over. It switches to a light page and staggered slots, so every pilgrim still gets a turn and arrivals are spread out.
+- **For the staff**: the system explains what went wrong in plain words and asks a volunteer, by voice, in their language. No dashboard, no engineer on call.
+- **For the shrine**: nothing to rip out. Pay per voice booking in season (about Rs 10; it costs us about Rs 3.5). Pilgrims never pay. No ads, no data sales. Start with one festival day, free.
+- **For any crowded venue**: the knowledge is a pack that can be swapped, so the same product serves another shrine, a stadium, a station or a hospital queue.
+
 ## What we built, at a glance
 
 - **A voice assistant for pilgrims in six languages** (Telugu, Tamil, Malayalam, Kannada, Hindi, English). One tap, then a hands-free conversation: it detects the language from speech, books a darshan slot, and answers ordinary questions (waiting times, the way, how many steps are left, water, toilets, medical help, help for elders) from a swappable venue knowledge pack of 46 entries. Sarvam does the listening, translating, speaking and reasoning.

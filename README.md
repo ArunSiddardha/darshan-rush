@@ -55,6 +55,7 @@ open http://localhost:8088/static/graph.html      # 10 recovery chart
 | `FLAGSMITH_ENV_KEY` | Server-side environment key for reading flags and sending events |
 | `FLAGSMITH_ADMIN_KEY` | Used by the NudgeBee workflow to flip flags |
 | `NUDGEBEE_APPROVE_WEBHOOK` | Approval workflow URL called after the volunteer says yes |
+| `NUDGEBEE_CRASH_WEBHOOK` | Optional. NudgeBee crash-report webhook. After a restart during a rush the app posts once: namespace, pod, reason, restart count, map mode |
 | `INCIDENT_TOKEN` | Shared secret for `POST /api/incident` and the rush button |
 | `HEAVY_MB` | Memory the full map mode allocates per request (what makes the pod run out of memory) |
 | `STATE_FILE` | Where the volunteer state is kept |

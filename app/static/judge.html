@@ -8,6 +8,7 @@
 <p class="sub" id="cfgnote" style="text-align:center"></p>
 <button class="btn rushbtn" id="rush">Cause the rush</button>
 <p class="sub" id="rushmsg" style="text-align:center;min-height:26px"></p>
+<ol class="chain" id="chain" aria-label="Incident chain"></ol>
 <div class="nums">
  <div><div class="v" id="n-phones">-</div><div class="k">phones connected</div></div>
  <div><div class="v" id="n-mode">-</div><div class="k">map mode now</div></div>
@@ -71,6 +72,17 @@ function drawQR(canvas,text){const M=makeQR(text),n=M.length,q=4,s=Math.floor(ca
  c.fillStyle='#fff';c.fillRect(0,0,canvas.width,canvas.height);c.fillStyle='#000';for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(M[y][x])c.fillRect(off+x*s,off+y*s,s,s)}
 
 const $=s=>document.querySelector(s);
+const CHAIN=[['Rush','Rush detected'],['Crash','Crash reported to NudgeBee'],['NudgeBee cause','Cause found by NudgeBee'],['Volunteer yes','Volunteer said yes'],['NudgeBee approval','NudgeBee approved'],['Flags flipped','Flags flipped'],['Recovered','Booking recovered']];
+let VS={},MS={},seenRush=false;
+async function chainTick(){
+ try{VS=await (await fetch('/api/volunteer/state')).json()}catch(e){}
+ try{MS=await (await fetch('/api/metrics-lite')).json()}catch(e){}
+ const done=new Set((VS.timeline||[]).map(t=>t.step));
+ if(MS.rush||done.has('Rush detected'))seenRush=true;else if(!done.size)seenRush=false;
+ const on=CHAIN.map(([n,step])=>n==='Rush'?seenRush:n==='Flags flipped'?(done.has(step)||(seenRush&&MS.map_mode==='lite')):done.has(step));
+ let cur=on.indexOf(false);
+ $('#chain').innerHTML=CHAIN.map(([n],i)=>`<li class="${on[i]?'on':(i===cur?'next':'')}">${on[i]?'&#10003; ':''}${n}</li>`).join('')}
+chainTick();setInterval(chainTick,2000);
 const token=new URLSearchParams(location.search).get('t')||localStorage.rushToken||'';if(token)localStorage.rushToken=token;
 async function config(){
  let url=location.origin,note='';

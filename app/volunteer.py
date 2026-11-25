@@ -21,7 +21,7 @@ import sarvam
 
 router = APIRouter()
 
-STEPS = ["Rush detected", "Cause found by NudgeBee", "Asked the volunteer", "Volunteer said yes",
+STEPS = ["Rush detected", "Crash reported to NudgeBee", "Cause found by NudgeBee", "Asked the volunteer", "Volunteer said yes",
          "NudgeBee approved", "Flags flipped", "Booking recovered"]
 QUESTION_EN = "Heavy rush. Shall I switch to staggered slots? Every pilgrim still gets a slot."
 QUESTION_ML = "വലിയ തിരക്ക്. സ്ലോട്ടുകൾ ഇടവിട്ട രീതിയിലേക്ക് മാറ്റട്ടെ? എല്ലാ തീർത്ഥാടകർക്കും സ്ലോട്ട് ലഭിക്കും."
@@ -129,17 +129,36 @@ def mark_rush_detected():
     mark("Rush detected")
 
 
+def mark_crash_reported():
+    mark("Crash reported to NudgeBee")
+
+
+def mark_crash_seen(sent):
+    """The app restarted during a rush. Shown on the timeline even when the webhook is not set."""
+    mark("Rush detected")
+    if sent:
+        mark_crash_reported()
+    else:
+        note("Crash seen, but not reported to NudgeBee (webhook missing or failed)")
+
+
+ROOT_CAUSE_MAX = 1500
+
+
 def start_incident(summary, root_cause, proposed_fix, event_id):
     """Called when NudgeBee reports a cause. Builds the Malayalam question (text now, audio right after)."""
+    summary = _clean(summary)
+    root_cause = _clean(root_cause)[:ROOT_CAUSE_MAX]
     with _lock:
         if STATE["event_id"] == event_id and STATE["status"] != "idle":
             return  # NudgeBee may post the same event twice
-        t_rush = next((t["t"] for t in STATE["timeline"] if t["step"] == "Rush detected"), None)
+        keep = {t["step"]: t["t"] for t in STATE["timeline"]
+                if t["step"] in ("Rush detected", "Crash reported to NudgeBee")}
         reset()
         STATE.update(event_id=event_id, summary=summary, root_cause=root_cause, proposed_fix=proposed_fix,
                      question_text=QUESTION_ML, question_en=QUESTION_EN, status="asking")
-        if t_rush:
-            STATE["timeline"].append({"step": "Rush detected", "t": t_rush})
+        for step, tt in keep.items():
+            STATE["timeline"].append({"step": step, "t": tt})
         mark("Rush detected")
         mark("Cause found by NudgeBee")
         mark("Asked the volunteer")
@@ -150,6 +169,15 @@ def start_incident(summary, root_cause, proposed_fix, event_id):
         if n:
             STATE["notes"].append(n)
         _save()
+
+
+def _clean(x):
+    return "" if x is None else str(x).strip()
+
+
+def is_busy():
+    with _lock:
+        return STATE["status"] in ("asking", "approved")
 
 
 # ---------------------------------------------------------------- yes / no
@@ -367,17 +395,63 @@ async def _text_or_audio(request: Request):
         return "", {"transcript": "", "decision": "unavailable", "notice": f"Voice unavailable ({e}). Type instead."}, 0
 
 
+_FIELDS = ("event_id", "summary", "root_cause", "proposed_fix")
+
+
+def tolerant_parse(raw):
+    """Parse an incident body that may be slightly broken JSON (raw newlines, unescaped quotes, markdown).
+    Falls back to cutting the text between the four known keys. Returns a dict (possibly empty)."""
+    raw = (raw or "").strip()
+    try:
+        d = json.loads(raw, strict=False)
+        if isinstance(d, dict):
+            return d
+    except Exception:
+        pass
+    keys = "|".join(_FIELDS)
+    marks = [(m.start(), m.end(), m.group(1)) for m in
+             re.finditer(r'["\']?\b(' + keys + r')\b["\']?\s*[:=]\s*', raw)]
+    out = {}
+    for i, (_, end, name) in enumerate(marks):
+        chunk = raw[end: marks[i + 1][0] if i + 1 < len(marks) else len(raw)]
+        chunk = chunk.strip()
+        if i + 1 < len(marks):
+            chunk = re.sub(r'[,&\s]+$', '', chunk)
+        else:
+            chunk = re.sub(r'[\s}]+$', '', chunk)
+        chunk = chunk.rstrip(",").strip()
+        if len(chunk) >= 2 and chunk[0] in "\"'" and chunk[-1] == chunk[0]:
+            chunk = chunk[1:-1]
+        elif chunk[:1] in "\"'":
+            chunk = chunk[1:]
+        out[name] = chunk.replace('\\n', "\n").replace('\\"', '"')
+    return out
+
+
+async def read_incident_body(request):
+    ct = request.headers.get("content-type", "").lower()
+    raw = (await request.body()).decode("utf-8", "replace")
+    if "form" in ct and not raw.lstrip().startswith("{"):  # curl -d sends JSON as a form type
+        from urllib.parse import parse_qsl
+        try:
+            return dict(parse_qsl(raw, keep_blank_values=True))
+        except Exception:
+            pass
+    return tolerant_parse(raw)
+
+
 @router.post("/api/incident")
-async def api_incident(request: Request, x_incident_token: str = Header(None)):
+async def api_incident(request: Request, x_incident_token: str = Header(None), force: int = 0):
     from starlette.concurrency import run_in_threadpool
     _check_token(x_incident_token)
-    try:
-        b = await request.json()
-    except Exception:
-        raise HTTPException(400, "JSON body required")
-    await run_in_threadpool(start_incident, b.get("summary"), b.get("root_cause"), b.get("proposed_fix"),
-                            str(b.get("event_id") or f"evt-{int(time.time())}"))
-    return {"ok": True, "status": STATE["status"]}
+    b = await read_incident_body(request)
+    if not any(b.get(k) for k in ("summary", "root_cause", "proposed_fix")):
+        raise HTTPException(400, "no summary or root_cause found in the body")
+    if not force and is_busy():
+        return {"ok": True, "status": "duplicate"}
+    eid = str(b.get("event_id") or "").strip() or f"evt-{int(time.time() * 1000)}"
+    await run_in_threadpool(start_incident, b.get("summary"), b.get("root_cause"), b.get("proposed_fix"), eid)
+    return {"ok": True, "status": STATE["status"], "event_id": eid}
 
 
 @router.post("/api/volunteer/reset")

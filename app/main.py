@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import config
+import crash
 import flags
 import queue_sim
 import slots
@@ -302,6 +303,7 @@ def rush_start(x_rush_token: Optional[str] = Header(None), x_incident_token: Opt
                            for i in range(n)]
         RUSH.update(sent=0, failed=0, started=time.time())
     queue_sim.set_rush(True)
+    crash.rush_started()
     if hasattr(volunteer, "mark_rush_detected"):
         try:
             volunteer.mark_rush_detected()
@@ -317,6 +319,7 @@ def rush_stop(x_rush_token: Optional[str] = Header(None), x_incident_token: Opti
     _check_rush_token(x_rush_token, x_incident_token)
     RUSH["stop"].set()
     queue_sim.set_rush(False)
+    crash.rush_stopped()
     return {"ok": True, "running": False, "sent": RUSH["sent"], "failed": RUSH["failed"]}
 
 
@@ -387,6 +390,20 @@ def _startup():
             volunteer.load()
         except Exception as e:
             log.error("volunteer.load failed: %s", e)
+    try:
+        rec = crash.check_after_start(flags.map_mode())
+        if rec:
+            log.warning("previous process died during a rush; crash report sent=%s", rec.get("sent"))
+            if hasattr(volunteer, "mark_crash_seen"):
+                volunteer.mark_crash_seen(rec.get("sent"))
+    except Exception as e:
+        log.error("crash check failed: %s", e)
+
+
+@app.on_event("shutdown")
+def _shutdown():
+    RUSH["stop"].set()
+    crash.rush_stopped()  # graceful stop is not a crash
 
 
 STATIC.mkdir(exist_ok=True)

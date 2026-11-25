@@ -34,3 +34,24 @@ HEAVY_MB=12, HEAVY_HOLD_S=1.5 (hold grows 15% per concurrent render, so latency 
 2. Create the NudgeBee workflows (nudgebee/README.md): workflow 1 posts to `{PUBLIC_URL}/api/incident` with `X-Incident-Token`; workflow 2 has the approval plus the two Flagsmith HTTP tasks. Put the automation webhook URL in `.env` as NUDGEBEE_APPROVE_WEBHOOK, then `scripts/secrets.sh` and `scripts/deploy.sh`.
 3. Run `scripts/rehearsal.sh` once more before filming; run `scripts/reset_demo.sh` before each take.
 4. Earlier slip (Lane A): FLAGSMITH_ENV_KEY was printed once in a session; rotate if that matters.
+
+## Pass 2 (25 Nov 2026, after NudgeBee cloud went live)
+
+### Changed
+- Crash self-report (`app/crash.py`, wired in `main.py`): a marker `/data/rush_marker.json` is set when a rush starts and cleared on the stop button and on graceful shutdown (SIGTERM, so `rollout restart` and `reset_demo.sh` are not crashes). If the next start finds it still set, the app counts a restart, POSTs once to `NUDGEBEE_CRASH_WEBHOOK` (`namespace, pod, reason, what_happened, restarts_seen, map_mode, reported_at`) and marks "Crash reported to NudgeBee" on the volunteer timeline (new step 2 of 8). With no webhook set, the timeline shows "Rush detected" and a note says the crash was not reported. The rush stays stopped after the crash (the new process has no rush threads; nothing auto-starts one). `NUDGEBEE_CRASH_WEBHOOK` added to config.py, the deployment (optional secretKeyRef), `.env.example` and the README table. `reset_demo.sh` also removes the marker.
+- `/api/incident` (in volunteer.py): tolerant parsing (JSON with raw newlines, then a regex cut between the four keys for unescaped quotes, text/plain, form bodies, JSON sent with a form content type); missing event_id is generated; root_cause trimmed to 1500 chars; while status is asking or approved a new incident returns `200 {"status":"duplicate"}` unless `?force=1`; no recognisable field returns 400.
+- Volunteer page: English summary under the Malayalam question, "What NudgeBee found" expander (root cause), after yes "Waiting for the duty officer to confirm in NudgeBee" until the flags flip, then "Booking recovered".
+- Judge page: chain line Rush > Crash > NudgeBee cause > Volunteer yes > NudgeBee approval > Flags flipped > Recovered, lit from `/api/volunteer/state` and `/api/metrics-lite`.
+- Pilgrim page: smaller empty band above the mic in the map variant. The lite banner text already existed for all six languages (checked in app.js).
+
+### Verified
+- 93 tests pass (11 new in `app/tests/test_pass2.py`, webhook mocked).
+- Live in the cluster: a rush OOM-killed the pod (restarts 1), the new process came up with the rush stopped, the timeline showed "Rush detected" plus the "not reported" note (webhook empty). A malformed incident (unescaped quotes, raw newline) was accepted and gave "asking".
+- Built, deployed, `/healthz` ok, `reset_demo.sh` run at the end: full/open, state idle, pod healthy.
+
+### Unverified
+- The crash POST to a real NudgeBee webhook (none set yet; only mocked). Set `NUDGEBEE_CRASH_WEBHOOK` in `.env`, then `scripts/secrets.sh` and a pod restart (`deploy.sh` or reset_demo).
+- Whether NudgeBee's real payload from its LLM summary parses as expected; the tolerant parser is tested with synthetic bodies only.
+- The new volunteer, judge and pilgrim page layouts were syntax-checked (node) but not looked at in a browser this pass.
+- The judge chain "Flags flipped" light depends on the page having seen the rush or timeline; a reload after recovery still lights it from the timeline.
+- Deployment secretKeyRef `optional: true` with the key absent: pod started fine (this run), webhook empty.

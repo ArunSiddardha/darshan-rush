@@ -23,7 +23,8 @@ label{display:block;font-size:12px;color:var(--mut);margin:10px 0 3px}select,inp
 <body><div class="phone">
 <h1>Volunteer desk</h1><div class="small">Spot counter. Simulated crowd, prototype.</div>
 <div class="card"><div class="status" id="status">All quiet.</div>
-<div id="qbox" style="display:none;margin-top:10px"><p class="q" id="qt" lang="ml"></p><div class="small" id="qen"></div><div class="small" id="why"></div></div>
+<div id="qbox" style="display:none;margin-top:10px"><p class="q" id="qt" lang="ml"></p><div class="small" id="qen"></div><div class="small" id="why"></div>
+<details id="found" style="display:none;margin-top:8px"><summary class="small" style="cursor:pointer">What NudgeBee found</summary><pre id="rc" class="small" style="white-space:pre-wrap;word-break:break-word;margin:6px 0 0;font-family:inherit"></pre></details></div>
 <button class="mic" id="mic" disabled aria-label="Answer by voice">🎤</button>
 <div class="hear" id="hear"></div>
 <div class="row" style="margin-top:10px"><button class="y" id="yes" disabled>Yes</button><button class="n" id="no" disabled>No</button></div>
@@ -50,15 +51,17 @@ label{display:block;font-size:12px;color:var(--mut);margin:10px 0 3px}select,inp
 <script>
 const $=s=>document.querySelector(s);let S={},playedQ=null,playedC=null,rec=null,chunks=[];
 const fmt=t=>new Date(t*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-const MSG={idle:'All quiet. Nothing needs you.',asking:'Please answer: yes or no',declined:'You said no. Nothing was changed.',approved:'Approved. NudgeBee is applying the fix...',recovered:'Slots are staggered and booking works.'};
+const MSG={idle:'All quiet. Nothing needs you.',asking:'Please answer: yes or no',declined:'You said no. Nothing was changed.',approved:'Waiting for the duty officer to confirm in NudgeBee',recovered:'Booking recovered. Slots are staggered.'};
 function play(u){const p=$('#player');p.src=u;p.play().catch(()=>{$('#hear').textContent='Tap the mic once to enable sound'})}
 async function poll(){
  try{S=await (await fetch('/api/volunteer/state')).json()}catch(e){return}
  const asking=S.status==='asking';
  $('#qbox').style.display=S.question_text?'block':'none';$('#qt').textContent=S.question_text||'';$('#qen').textContent=S.question_en||'';
- $('#why').textContent=S.summary?('NudgeBee found: '+S.summary):'';
+ $('#why').textContent=S.summary||'';
+ $('#found').style.display=S.root_cause?'block':'none';$('#rc').textContent=S.root_cause||'';
  $('#mic').disabled=!asking||!S.voice_available;$('#yes').disabled=$('#no').disabled=!asking;
  $('#status').textContent=(S.status==='approved'&&S.webhook_ok===false)?'Approved, but the NudgeBee webhook is not configured. Nothing was changed.':(MSG[S.status]||S.status);
+ $('#status').title=S.status==='approved'?'The approval in NudgeBee is an in-app button: a second person confirms (two-person rule).':'';
  $('#tl').innerHTML=(S.steps||[]).map(s=>{const e=(S.timeline||[]).find(t=>t.step===s);return `<li class="${e?'done':''}"><span>${e?'✓ ':''}${s}</span><span>${e?fmt(e.t):''}</span></li>`}).join('');
  const L=S.latency||{};$('#lat').textContent=Object.keys(L).length?('Latency: '+Object.entries(L).map(([k,v])=>k.replace('_ms','')+' '+v+' ms').join(' · ')):'';
  $('#notice').textContent=(S.notes||[]).join(' · ');

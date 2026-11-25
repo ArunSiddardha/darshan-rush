@@ -32,6 +32,12 @@ spec:
               value: "3"
             - name: STATE_FILE
               value: /data/state.json
+            - name: NUDGEBEE_CRASH_WEBHOOK
+              valueFrom:
+                secretKeyRef:
+                  name: darshan-secrets
+                  key: NUDGEBEE_CRASH_WEBHOOK
+                  optional: true
           volumeMounts:
             - name: data
               mountPath: /data

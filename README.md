@@ -9,6 +9,21 @@
 
 > Simulated crowd. Not affiliated with any temple. Not for operational use.
 
+## Links
+
+All open without a login; the live ones run from one laptop through a temporary tunnel and may go offline after the event):
+- Start here (choose pilgrim, temple staff or judge): https://sacrifice-brain-troubleshooting-conference.trycloudflare.com/start
+- Pilgrim screen (tap once and talk; the map is on the same screen): https://sacrifice-brain-troubleshooting-conference.trycloudflare.com/
+- Temple staff screen (the rush question, book for a pilgrim, report crowd, ask anything, requests near you): https://sacrifice-brain-troubleshooting-conference.trycloudflare.com/volunteer
+- For temples (what a shrine gets and what it costs): https://sacrifice-brain-troubleshooting-conference.trycloudflare.com/for-temples
+- Sponsors page (Sarvam, Flagsmith and NudgeBee shown live): https://sacrifice-brain-troubleshooting-conference.trycloudflare.com/sponsors
+- Presenter page (QR code, the chain of steps, cause the rush): https://sacrifice-brain-troubleshooting-conference.trycloudflare.com/judge
+- Recovery graph: https://sacrifice-brain-troubleshooting-conference.trycloudflare.com/graph
+- Demo video: https://drive.google.com/file/d/1Q1--7aCu7ZJrTQjNaBVR0S58QlCgF01J/view
+- Repository: https://github.com/ArunSiddardha/darshan-rush
+- Proof of one real end-to-end run (crash lines, NudgeBee approval, Flagsmith before and after): https://github.com/ArunSiddardha/darshan-rush/tree/main/metrics/proof
+- How each sponsor is used, with file paths: https://github.com/ArunSiddardha/darshan-rush#readme
+
 ## Judge this in 90 seconds
 
 1. Open https://sacrifice-brain-troubleshooting-conference.trycloudflare.com on a phone, tap once, say "I need a slot for tomorrow morning" in Telugu, Tamil, Malayalam, Kannada, Hindi or English. The language is detected from your speech (Sarvam). No form, no language picker.

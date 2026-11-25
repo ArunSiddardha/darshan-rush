@@ -97,8 +97,7 @@ def index():
 
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon():
-    from fastapi.responses import Response
-    return Response(status_code=204)
+    return FileResponse(STATIC / "favicon.svg", media_type="image/svg+xml")
 
 
 @app.get("/volunteer")
@@ -119,6 +118,12 @@ def graph_page():
 @app.get("/map")
 def map_page():
     return _page("map.html") if (STATIC / "map.html").exists() else _page("index.html")
+
+
+@app.get("/api/map")
+def api_map(uid: str = "anon", lang: str = "en"):
+    import assistant
+    return assistant.map_data(uid, lang if lang in ("en", "hi", "ml", "ta", "te", "kn") else "en")
 
 
 @app.get("/healthz")

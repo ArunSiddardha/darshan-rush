@@ -367,14 +367,13 @@ def get_gates(uid="anon", lang="en"):
 
 
 def gate_in_text(gates, text):
-    """A gate whose own name words ('River', 'Crossing', 'Steps') are spoken in the text, best match first."""
-    low = (text or "").lower()
-    best, score = None, 0
+    """The stop the pilgrim names (six scripts, romanised, fuzzy; see gatematch). The gate actually mentioned always wins."""
+    import gatematch
+    gid = gatematch.best_gate(text)
     for g in gates or []:
-        n = sum(1 for w in re.findall(r"[a-z]{4,}", str(g.get("name", "")).lower()) if w in low)
-        if n > score:
-            best, score = g, n
-    return best
+        if g.get("id") == gid:
+            return g
+    return None
 
 
 def pick_gate(gates, hint):
@@ -474,6 +473,42 @@ def respond(text, lang, uid="anon", walkin=False, gates=None):
     return _t(lang, "unknown"), extra
 
 
+def respond_brain(text, lang, uid="anon", walkin=False):
+    """Same brain as the live turn. Returns (reply, extra). Booking, verify and age questions keep the older exact flow."""
+    lang = lang if lang in LANGS else "en"
+    if walkin:
+        return respond(text, lang, uid, walkin)
+    kw = keyword_intent(text)
+    try:
+        import sys
+        import assistant
+        if assistant.queue_sim is not sys.modules.get("queue_sim"):
+            raise RuntimeError("state module replaced")
+        br = assistant.answer(text, lang, uid, None, defer_unknown=kw["intent"] in ("book", "walkin", "verify", "age"))
+    except Exception:   # state modules missing or faked: the older exact flow still answers
+        return respond(text, lang, uid)
+    if br is None or br["action"] == "book":
+        reply, extra = respond(text, lang, uid)
+        if br is not None:
+            extra["brain"] = br
+        return reply, extra
+    extra = {"intent": br["intent"], "via": br["via"], "llm_ms": br.get("llm_ms", 0), "stub": False, "age_set": False, "brain": br}
+    if br["action"] == "cancel":
+        sl = _mod("slots")
+        ok = bool(sl and sl.cancel(uid))
+        return assistant.T(lang, "cancelled" if ok else "cancel_none"), extra
+    if br["action"] == "change":
+        when, _lbl = parse_when(text)
+        sl = _mod("slots")
+        if when and sl and sl.get(uid):
+            sl.cancel(uid)
+            reply, ex2 = respond(text, lang, uid)
+            ex2["brain"] = {**br, "show": "slot"}
+            return reply, ex2
+        return assistant.T(lang, "ask_new_time"), extra
+    return br["reply"], extra
+
+
 def speak(text, lang):
     """Returns (audio_b64 or None, tts_ms, notice or None)."""
     import os
@@ -550,12 +585,22 @@ async def api_directions(request: Request):
     elif not transcript:
         reply, extra = _t(lang, "unknown"), {"intent": "unknown", "via": "none"}
     else:
-        reply, extra = await run_in_threadpool(respond, transcript, lang, uid, walkin)
+        reply, extra = await run_in_threadpool(respond_brain, transcript, lang, uid, walkin)
         lat["llm_ms"] = extra.pop("llm_ms", 0)
     b64, lat["tts_ms"], notice = await run_in_threadpool(speak, reply, lang)
     lat["total_ms"] = int((time.perf_counter() - t0) * 1000)
+    extra = dict(extra)
+    try:
+        import sys
+        import assistant
+        if assistant.queue_sim is not sys.modules.get("queue_sim"):
+            raise RuntimeError("state module replaced")
+        br_fields = assistant.brain_fields(uid, extra)
+    except Exception:
+        br_fields = {}
+    extra.pop("brain", None)
     out = {"transcript": transcript, "reply_text": reply, "audio_base64": b64, "lang": lang,
-           "notice": notice, "latency": lat, **extra}
+           "notice": notice, "latency": lat, **extra, **br_fields}
     bk = extra.get("booking")
     if bk and isinstance(bk.get("slot"), dict):
         out["slot"] = {"gate": bk["slot"].get("gate"), "label": bk["slot"].get("label")}

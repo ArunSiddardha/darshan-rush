@@ -50,7 +50,7 @@ def test_party_already_said_is_skipped():
 def test_unclear_never_books():
     import slots
     r, _ = turn("c", "hmm blah blah")
-    assert "slot" in r.lower()
+    assert "volunteer" in r.lower() or "slot" in r.lower()
     turn("c", "book a slot")
     r, _ = turn("c", "purple elephant")
     assert "Sorry" in r and slots.total() == 0

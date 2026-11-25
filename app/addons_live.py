@@ -19,6 +19,7 @@ from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
+import assistant
 import directions
 import sarvam
 
@@ -427,6 +428,23 @@ def handle(text, uid, sid, lang_req, s=None):
         s.update(state="ask_when", when_ts=None, when_set=False)
         return say(_p(lang, "ask_when"), "change")
 
+    # ---- the brain: questions about the route, waits, facilities, help are answered from the live state in every state
+    BRAIN_IN_FLOW = ("distress", "position", "facility", "help_elder", "fee", "carry", "about", "wait_best", "distance", "crowd")
+    if st in ("confirm", "ask_when", "ask_party"):
+        br = assistant.rules(text, lang, uid, s)
+        if br and br["intent"] in BRAIN_IN_FLOW:
+            if br["action"] == "call_volunteer":
+                assistant._raise_flag(uid, text, lang)
+            extra["brain"] = br
+            q = _readback(s, lang) if st == "confirm" else _question_for(s, lang)
+            return say((br["reply"] + " " + q).strip(), br["intent"])
+    elif st in ("idle", "booked"):
+        br = assistant.answer(text, lang, uid, s, defer_unknown=info["intent"] in ("book", "walkin", "verify", "age"))
+        if br and br["action"] not in ("book", "change", "cancel"):
+            extra["brain"] = br
+            extra["via"], extra["llm_ms"] = br["via"], br.get("llm_ms", 0)
+            return say(br["reply"], br["intent"])
+
     # ---- state specific
     if st == "confirm":
         if is_yes(low) and not is_no(low):
@@ -639,7 +657,7 @@ async def live_turn(audio: UploadFile = File(None), uid: str = Form("anon"), lan
     _pool.submit(warm, warm_lang)
     return {**base, "lang": out_lang, "reply_text": reply, "audio_base64": b64, "state": s["state"], "end_session": end,
             "slot": extra.get("slot") or s.get("slot"), "notice": tnotice, "ignored": False, "intent": extra.get("intent"),
-            "via": extra.get("via"), "age_set": extra.get("age_set", False), "latency": lat}
+            "via": extra.get("via"), "age_set": extra.get("age_set", False), "latency": lat, **assistant.brain_fields(uid, extra)}
 
 
 @router.post("/api/live/prompt")

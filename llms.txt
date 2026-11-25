@@ -1,0 +1,17 @@
+# Darshan Rush
+
+> Open-source, voice-first darshan slot booking and crowd assistant for temples and pilgrimages in India. Pilgrims talk in Telugu, Tamil, Malayalam, Kannada, Hindi or English. Built with Sarvam AI, Flagsmith and NudgeBee on Kubernetes by Team Phoenix at Festive Hacks 2026 (WeMakeDevs, WeAreDevelopers Conference India, Bengaluru). Prototype with a simulated crowd; not affiliated with any temple.
+
+## Key facts
+- Problem: festival-season crowding breaks token counters and booking sites, and leaves out elderly pilgrims who do not read English.
+- Pilgrim side: one tap, hands-free voice, slot booking, waiting times, route with steps and distances, water and toilets, complaints routed to the nearest volunteer.
+- Staff side: live crowd view, incident summary in plain words, approve a fix by voice.
+- Rush recovery: NudgeBee diagnoses the crash and runs an approval workflow; Flagsmith flags switch to a lite map and staggered slots without a redeploy.
+- Measured: same simulated rush, about 3 s and a crash before; 14 ms p95, 0 errors after.
+- Team: Arun Siddardha, Adhvik Mani Sai, Devashish Boini, Savarana Datta.
+
+## Docs
+- [README](https://github.com/ArunSiddardha/darshan-rush/blob/main/README.md): what it does, sponsors, architecture, setup
+- [Proof of the incident run](https://github.com/ArunSiddardha/darshan-rush/tree/main/metrics/proof)
+- [Load test](https://github.com/ArunSiddardha/darshan-rush/blob/main/metrics/loadtest_normal.md)
+- [Film (2 minutes)](https://drive.google.com/file/d/1iCtl5hU7A-w38qRJBh4k7SwM4Ja9yfyP/view)

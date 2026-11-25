@@ -9,6 +9,20 @@
 
 **Built in one day at Festive Hacks (25 November 2026) by Team Phoenix:** Arun Siddardha, Adhvik Mani Sai, Devashish Boini, Savarana Datta.
 
+## Quick answers
+
+**What is Darshan Rush?** Darshan Rush is an open-source, voice-first darshan slot booking assistant for crowded temples and pilgrimages in India. A pilgrim taps once and talks in Telugu, Tamil, Malayalam, Kannada, Hindi or English; the app books a staggered darshan slot, answers questions about waiting time, the route, steps, water and toilets, and sends complaints to the nearest volunteer.
+
+**What problem does it solve?** Festival-season crowding. Token counters and booking sites fail exactly when everyone arrives at once, and elderly pilgrims who do not read English are left out. Darshan Rush keeps booking fair and working during the rush.
+
+**How does it survive a rush?** When load crashes the service on Kubernetes, NudgeBee finds the cause and asks for approval, a temple volunteer approves by voice through Sarvam AI, and Flagsmith feature flags switch the app to a lighter map and staggered slots with no redeploy. In our measured run the slowest booking went from about 3 seconds and a crash to 14 milliseconds under the same rush.
+
+**Which tools does it use?** Sarvam AI (speech to text, translation, text to speech and chat for Indian languages), Flagsmith (feature flags and remote config), NudgeBee (Kubernetes incident investigation and approval workflows), FastAPI and Kubernetes.
+
+**Who is it for?** Temple trusts, devasthanam boards, pilgrimage and festival organisers, and any venue with seasonal queues: crowd management, queue management and multilingual voice help in one layer.
+
+**Is it in use at a real temple?** No. The crowd is simulated and it is not affiliated with any temple. The crash, the diagnosis and the fix are real.
+
 ## The pain point: festival seasons
 
 Every big shrine has a few weeks a year when everyone comes at once.
@@ -292,10 +306,6 @@ Specifics and the order we would do them in: [docs/SCALE.md](SCALE.md).
 - Voice of pilgrims is sent to Sarvam for transcription. Care-request audio is stored on the data volume. There is no consent screen, retention limit or deletion tool yet (see "What we would do for real traffic").
 - The Flagsmith admin key is only needed by the setup script, the rollout script and the NudgeBee task, not by the pod.
 - Interface strings in Malayalam, Tamil, Telugu, Kannada and Hindi were written by build agents and Sarvam translation and have not been reviewed by a native speaker.
-
-## AI assistance disclosure
-
-This project was built with Claude Code agents directed by the team. The agents wrote most of the code, scripts, tests and these documents. The team reviewed the result and can explain the code and the architecture. The human decisions were: the idea and the person it serves, the choice of Sabarimala as the worked example and the decision to avoid any temple branding, the failure story (a rush that really kills a pod, a volunteer who approves by voice), which flags and which automations to build, the honesty rules (every simulated number is labelled, nothing sponsor-related is faked), the business model, and what to cut at the feature freeze.
 
 ## Team
 

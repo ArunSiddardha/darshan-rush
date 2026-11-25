@@ -1,0 +1,9 @@
+{
+  "phone": {"ox": 150, "oy": 89, "ow": 436, "oh": 902, "bezel": 18, "r": 56, "sx": 168, "sy": 107, "sw": 400, "sh": 866},
+  "caption": {"x": 770, "w": 1000, "cy": 470, "size": 68},
+  "subtitle": {"size": 50, "center": {"x": 160, "w": 1600, "bottom": 70},
+               "split": {"x": 160, "w": 1600, "bottom": 34},
+               "right": {"x": 770, "w": 1000, "bottom": 70, "align": "flex-start"}},
+  "sponsor": {"right": 56, "top": 44},
+  "split": {"x1": 40, "x2": 968, "w": 912, "y": 130, "h": 600, "r": 26}
+}

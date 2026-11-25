@@ -1,0 +1,30 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: app/requirements.txt
+      - name: Install requirements
+        run: python -m pip install -r app/requirements.txt
+      - name: Run the test suite (no secrets, no network calls)
+        working-directory: app
+        env:
+          SARVAM_API_KEY: ""
+          SARVAM_API_KEY_2: ""
+          FLAGSMITH_ENV_KEY: ""
+          NUDGEBEE_APPROVE_WEBHOOK: ""
+          NUDGEBEE_CRASH_WEBHOOK: ""
+          NUDGEBEE_ASSISTANT_WEBHOOK: ""
+          STATE_FILE: ${{ runner.temp }}/darshan-state.json
+        run: python -m pytest -q tests

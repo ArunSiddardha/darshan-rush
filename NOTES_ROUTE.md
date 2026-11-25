@@ -29,3 +29,4 @@ Helpers: `totals()`, `remaining_from(stop, booked_gate)`, `stretch(a, b)`, `desc
 - "From here" strip state and lite mode were not screenshotted (logic exercised only via /api/map and code reading).
 - Translations of the new strings are mine, not checked by a native speaker.
 - "Steps left to Main Steps" counts to the shrine, not to that stop.
+- assistant.py left uncommitted: it also holds the integrator's edits (commit it together).

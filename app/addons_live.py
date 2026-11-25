@@ -346,13 +346,22 @@ def _window_for(ts):
     return first
 
 
+def _gname(gid, fallback, lang):
+    """The stop's name written in the pilgrim's language ("బేస్ క్యాంప్"), not the English name inside a Telugu sentence."""
+    try:
+        import gatematch
+        return gatematch.display(gid, lang) if gid else (fallback or "")
+    except Exception:
+        return fallback or ""
+
+
 def _readback(s, lang):
     sl = _slots()
     ts = _window_for(s["when_ts"])
     s["when_ts"] = ts
     when = directions.say_time(lang, ts) if ts else ""
     party = _p(lang, "party", n=s["party"]) if s["party"] and s["party"] > 1 else ""
-    return _p(lang, "confirm", when=when, gate=s["gate_name"] or "", party=party)
+    return _p(lang, "confirm", when=when, gate=_gname(s.get("gate"), s["gate_name"], lang), party=party)
 
 
 def _do_book(s, uid, lang):
@@ -366,7 +375,7 @@ def _do_book(s, uid, lang):
     sd = res["slot"] if isinstance(res.get("slot"), dict) else {}
     when = directions.say_time(lang, sd["window"]) if sd.get("window") else directions._slot_text(res)
     gname = sd.get("gate_name") or s["gate_name"] or ""
-    reply = directions._t(lang, "book_ok").format(when=when, gate=gname)
+    reply = directions._t(lang, "book_ok").format(when=when, gate=_gname(sd.get("gate") or s.get("gate"), gname, lang))
     slot = {"label": sd.get("label"), "gate": sd.get("gate"), "gate_name": gname, "when": when, "mode": res.get("mode")}
     return reply, slot, {"booking": res}
 

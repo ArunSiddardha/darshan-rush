@@ -212,7 +212,7 @@ K = {
            "தண்ணீர்", "குடிநீர்", "నీళ్", "నీరు", "తాగునీరు", "ನೀರು"],
  "toilet": ["toilet", "restroom", "washroom", "bathroom", "latrine", "शौचालय", "टॉयलेट", "ടോയ്‌ലറ്റ്", "ടോയ്ലറ്റ്", "ടോയിലറ്റ്", "கழிப்பறை", "டாய்லெட்", "టాయిలెట్",
             "మరుగుదొడ్డి", "ಶೌಚಾಲಯ", "ಟಾಯ್ಲೆಟ್"],
- "medical": ["medical", "doctor", "first aid", "clinic", "hospital", "medicine", "डॉक्टर", "चिकित्सा", "मेडिकल", "ഡോക്ടർ", "മെഡിക്കൽ", "ചികിത്സ", "மருத்துவ", "டாக்டர்",
+ "medical": ["medical", "doctor", "first aid", "clinic", "hospital", "medicine", "प्राथमिक उपचार", "प्राथमिक चिकित्सा", "फर्स्ट एड", "ప్రథమ చికిత్స", "ఫస్ట్ ఎయిడ్", "వైద్య", "முதலுதவி", "பர்ஸ்ட் எய்ட்", "ಪ್ರಥಮ ಚಿಕಿತ್ಸೆ", "ಫಸ್ಟ್ ಏಡ್", "ವೈದ್ಯ", "പ്രഥമ ശുശ്രൂഷ", "डॉक्टर", "चिकित्सा", "मेडिकल", "ഡോക്ടർ", "മെഡിക്കൽ", "ചികിത്സ", "மருத்துவ", "டாக்டர்",
              "వైద్య", "డాక్టర్", "మెడికల్", "ವೈದ್ಯ", "ಡಾಕ್ಟರ್", "ಮೆಡಿಕಲ್"],
  "rest": ["rest area", "resting", "bench", "sit down", "विश्राम", "വിശ്രമ", "ஓய்வு", "విశ్రాంతి", "ವಿಶ್ರಾಂತಿ"],
  "wheelchair": ["wheelchair", "wheel chair", "व्हीलचेयर", "വീൽചെയർ", "വീൽ ചെയർ", "வீல்சேர்", "வீல் சேர்", "వీల్ చైర్", "వీల్‌చైర్", "ವೀಲ್ ಚೇರ್", "ವೀಲ್‌ಚೇರ್"],
@@ -221,7 +221,7 @@ K = {
  "info": ["information", "info counter", "help desk", "helpdesk", "counter", "सूचना", "काउंटर", "ഇൻഫർമേഷൻ", "കൗണ്ടർ", "தகவல்", "கவுண்டர்", "సమాచార", "కౌంటర్", "ಮಾಹಿತಿ", "ಕೌಂಟರ್"],
  "fee": ["fee", "pay ", "payment", "charge", "cost", "price", "money", "free of", "is it free", "paise", "पैसे", "शुल्क", "फीस", "भुगतान", "പണം", "ഫീസ്", "ചാർജ്",
          "கட்டணம்", "பணம்", "ఫీజు", "డబ్బు", "ఛార్జి", "ಶುಲ್ಕ", "ಹಣ", "ಫೀಸ್"],
- "carry": ["carry", "bring", "pack", "what to take", "should i take", "ले जाना", "साथ में", "കൊണ്ടുപോ", "കരുതേ", "கொண்டு", "எடுத்து", "తీసుకు", "ತೆಗೆದುಕೊಂಡು", "ಒಯ್ಯ"],
+ "carry": ["carry", "bring", "pack", "what to take", "should i take", "ले जाना", "साथ में", "take my", "allowed inside", "తీసుకెళ్ల", "కొండు సెల్ల", "ले जा सक", "ले जाने", "अंदर ले", "കൊണ്ടുപോ", "കരുതേ", "கொண்டு", "எடுத்து", "తీసుకు", "ತೆಗೆದುಕೊಂಡು", "ಒಯ್ಯ"],
  "about": ["what is this", "who are you", "what can you do", "what do you do", "this app", "यह क्या", "यह ऐप", "ഇത് എന്താണ്", "ഈ ആപ്പ്", "ഇതെന്താണ്", "இது என்ன", "ఇది ఏమిటి",
            "ఈ యాప్", "ಇದು ಏನು", "ಈ ಆಪ್"],
  "crowd": ["crowd", "busy", "rush", "भीड़", "തിരക്ക്", "கூட்டம்", "రద్దీ", "ಜನಸಂದಣಿ"],
@@ -936,6 +936,11 @@ def _raise_flag(uid, text, lang):
         pos = _pos.get(uid)
         where = f", last stop {queue_sim.BY_ID[pos]['name']}" if pos else ""
         volunteer.note(f"Pilgrim needs help (uid {uid}{where}, {lang}): {text.strip()[:90]}")
+        try:
+            import addons_staff
+            addons_staff.add_help(pos, text.strip()[:120], uid, "distress")     # also on the staff help list, so "anyone needing help?" finds it
+        except Exception:
+            pass
     except Exception:
         pass
 

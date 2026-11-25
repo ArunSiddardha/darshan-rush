@@ -125,6 +125,15 @@ def gather():
                          "proposed_fix": pub.get("proposed_fix"), "steps_done": [t.get("step") for t in pub.get("timeline", [])]}
         f["voice_available"] = pub.get("voice_available")
     f["help_open"] = [h for h in HELP if h["status"] == "open"]
+    cs = _mod("care_store")
+    f["care_open"] = []
+    if cs:
+        for r in (_try(cs.all_requests, []) or []):
+            if r.get("status") in getattr(cs, "ACTIVE", ("open", "assigned", "on_the_way")):
+                a = r.get("assigned_to") or {}
+                f["care_open"].append({"id": r.get("id"), "category": str(r.get("category") or "other").replace("_", " "), "urgency": r.get("urgency"),
+                                       "stop": r.get("stop_name") or "unknown stop", "status": str(r.get("status")).replace("_", " "),
+                                       "volunteer": a.get("name") if isinstance(a, dict) else None, "text": (r.get("summary_en") or r.get("transcript") or "")[:70]})
     f["webhooks"] = {"nudgebee_approve": bool(_try(lambda: __import__("config").NUDGEBEE_APPROVE_WEBHOOK(), "")),
                      "nudgebee_crash": bool(_try(lambda: __import__("config").NUDGEBEE_CRASH_WEBHOOK(), ""))}
     return f
@@ -145,6 +154,9 @@ def facts_text(f):
         L.append(f"Next free slot window starts {nf['start']} ({nf['count']} of {nf['cap']} booked)")
     ho = f.get("help_open", [])
     L.append(f"Open help requests: {len(ho)}" + "".join(f"; #{h['id']} {_stop_name(h['stop']) if h['stop'] else 'unknown stop'}: {h['text'] or h['kind']}" for h in ho[:5]))
+    co = f.get("care_open", [])
+    L.append(f"Open complaints and care requests: {len(co)}" + "".join(
+        f"; {c['id']} {c['category']} ({c['urgency']}) at {c['stop']}, {c['status']}" + (f", with {c['volunteer']}" if c['volunteer'] else "") for c in co[:6]))
     n = f.get("nudgebee") or {}
     if n:
         L.append(f"NudgeBee: status {n.get('status')}; cause: {n.get('root_cause') or 'none yet'}; fix: {n.get('proposed_fix') or 'none'}")
@@ -216,9 +228,23 @@ def _rules_answer(text, low, f):
         if f.get("bookings_total") is None:
             return "bookings", "I cannot read the booking list."
         return "bookings", f"{f['bookings_this_hour']} booking{'s' if f['bookings_this_hour'] != 1 else ''} in this hour, {f['bookings_total']} in total."
+    if _has(low, ["complaint", "complaints", "care request", "care requests", "open request", "open requests", "pending request", "issues", "grievance", "പരാതി"]):
+        co = f.get("care_open", [])
+        if not co:
+            return "complaints", "There are no open complaints right now."
+        emer = [c for c in co if c["urgency"] == "emergency"]
+        c = (emer or co)[0]
+        who = f", {c['volunteer']} is on it" if c["volunteer"] else ", nobody has taken it yet"
+        return "complaints", (f"{len(co)} open complaint{'s' if len(co) != 1 else ''}" + (f", {len(emer)} of them an emergency" if emer else "")
+                              + f". The most urgent is {c['id']}: {c['category']} at {c['stop']}{who}.")
     if _has(low, ["help", "needing", "needs help", "assist", "സഹായം", "സഹായ"]) and _has(low, ["any", "pilgrim", "who", "anyone", "ആർക്ക", "ഏതെങ്കിലും", "needing"]) \
             and not _has(low, ["handled", "mark"]):
         ho = f.get("help_open", [])
+        co = [c for c in f.get("care_open", []) if c["urgency"] in ("emergency", "urgent")]
+        if not ho and co:
+            c = co[0]
+            return "help_open", (f"{len(co)} pilgrim{'s need' if len(co) != 1 else ' needs'} help. The most urgent is {c['id']}: {c['category']} at {c['stop']}"
+                                 + (f", {c['volunteer']} is on it." if c["volunteer"] else ", nobody has taken it yet."))
         if not ho:
             return "help_open", "No pilgrim is waiting for help right now."
         h = ho[0]
@@ -377,6 +403,17 @@ def answer(text, lang="en", staff_id="staff", confirm=None, use_llm=True):
             PENDING.pop(staff_id, None)        # a new question replaces the pending action
     if not text:
         return {**out, "reply": "I did not hear anything. Please try again."}
+    d_ = _mod("directions")
+    if d_ and _try(lambda: d_.script_lang(text)) and use_llm:
+        # asked in Telugu, Hindi, Tamil, Kannada or Malayalam: read it in English so every rule and action works, answer back in the staff language
+        try:
+            import sarvam
+            en = sarvam.translate(text, "en").text.strip()
+            if en:
+                out["understood_en"] = en
+                text, low = en, en.lower()
+        except Exception:
+            pass
     if _wants_rush_switch(low):
         return {**out, "intent": "rush_switch_refused", "reply": RUSH_MSG}
     act = _parse_action(text, low)
@@ -407,6 +444,7 @@ def answer(text, lang="en", staff_id="staff", confirm=None, use_llm=True):
             if not numbers_ok(reply, facts + " " + text):
                 return {**out, "intent": str(j.get("intent") or "unknown"), "reply": UNKNOWN_MSG, "via": "llm_rejected_numbers", "llm_ms": ms}
             a = _valid_action(j.get("action"), f)
+            reply = re.sub(r"\s*[\(\[]?\b[gG][1-5]\b[\)\]]?\s*", " ", reply).strip()     # stop ids are internal
             res = {**out, "intent": str(j.get("intent") or "unknown")[:40], "reply": reply, "reply_lang": lang, "via": "llm", "llm_ms": ms}
             if a:
                 with _lock:
@@ -470,6 +508,8 @@ async def staff_ask(request: Request):
                     "needs_confirmation": False, "notice": msg, "lang": lang, "via": "none"}
     res = await run_in_threadpool(answer, text, lang, staff_id, str(confirm).lower() if confirm else None)
     reply = res["reply"]
+    if lang == "en" and res.get("understood_en"):
+        lang = (_mod("directions").script_lang(text) or lang)      # asked in Telugu on an English page: answer in Telugu
     if res.get("reply_lang") != lang:
         reply, notice = await run_in_threadpool(_translate, reply, lang)
     audio, tts_ms, n2 = await run_in_threadpool(_speak, reply, lang)
